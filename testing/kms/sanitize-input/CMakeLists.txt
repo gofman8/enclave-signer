@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.18)
+project(swap_kms_input_sanitizers C)
+find_package(json-c CONFIG REQUIRED)
+if(NOT TARGET LibJsonC::Json)
+  add_library(LibJsonC::Json ALIAS json-c::json-c)
+endif()
+find_package(aws-nitro-enclaves-sdk-c CONFIG REQUIRED)
+find_path(NITRO_SDK_INCLUDE_DIR aws/nitro_enclaves/internal/cms.h REQUIRED)
+add_executable(input-stress input_stress.c)
+target_compile_features(input-stress PRIVATE c_std_11)
+target_include_directories(input-stress PRIVATE "${NITRO_SDK_INCLUDE_DIR}")
+target_compile_options(input-stress PRIVATE -Wall -Wextra -Werror -Wpedantic
+  -fsanitize=address,undefined -fno-omit-frame-pointer -g)
+target_link_options(input-stress PRIVATE -fsanitize=address,undefined
+  "-Wl,--wrap=aws_client_bootstrap_new")
+target_link_libraries(input-stress PRIVATE AWS::aws-nitro-enclaves-sdk-c LibJsonC::Json)
