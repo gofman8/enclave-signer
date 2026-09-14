@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.18)
 project(swap-kms-sdk-local-e2e LANGUAGES C)
 
 if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -21,7 +21,7 @@ get_target_property(SDK_LINK_LIBRARIES AWS::aws-nitro-enclaves-sdk-c INTERFACE_L
 set(RELOCATED_SDK_LINK_LIBRARIES "")
 foreach(LINK_LIBRARY IN LISTS SDK_LINK_LIBRARIES)
   get_filename_component(LINK_NAME "${LINK_LIBRARY}" NAME)
-  if(LINK_NAME STREQUAL "libnsm.so")
+  if(LINK_NAME STREQUAL "libnsm.so" OR LINK_NAME STREQUAL "libnsm.so.0")
     list(APPEND RELOCATED_SDK_LINK_LIBRARIES "${NSM_LINK_LIBRARY}")
   else()
     list(APPEND RELOCATED_SDK_LINK_LIBRARIES "${LINK_LIBRARY}")
@@ -43,4 +43,5 @@ target_include_directories(mock-nsm PRIVATE "${NSM_INCLUDE_DIR}")
 target_compile_options(mock-nsm PRIVATE -Wall -Wextra -Werror)
 set_target_properties(mock-nsm PROPERTIES
   OUTPUT_NAME nsm
+  SOVERSION 0
   LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/mock")
