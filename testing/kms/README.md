@@ -68,6 +68,10 @@ instead of stopping another service. Defaults:
 Use `--kms-port`, `--broker-port`, `--aws-port`, and `--control-port` for port
 overrides; `--node /path/to/node` selects a Node executable. `--sdk-image`,
 `--sdk-prefix` select an existing builder image and installed dependency prefix.
+Preflight rejects exports whose dependency manifest, reviewed SDK cleanup patch,
+or SDK source provenance differs from this checkout. The report retains the
+upstream SDK commit, patch hash and effective REST source hash. Verify this check
+with `python -m unittest discover -s testing/kms -p 'test_sdk_provenance.py'`.
 The prefix includes the pinned upstream CMS header and its checksum; the helper
 build does not require a separate SDK source checkout. `CARGO_TARGET_DIR`
 selects the enclave build cache and `KMS_E2E_PARENT_TARGET_DIR` selects the parent

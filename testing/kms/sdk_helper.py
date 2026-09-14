@@ -4,6 +4,7 @@ Only the test executable links the endpoint/CA wrappers and loads mock libnsm.
 The production helper source and pinned SDK libraries are compiled unchanged.
 """
 
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -11,6 +12,27 @@ import shutil
 import subprocess
 import sys
 import uuid
+
+
+def verify_sdk_provenance(root, prefix):
+    """Refuse stale exported libraries before building the test helper."""
+    installed = prefix / "share/swap-kms"
+    manifest = (root / "build/swap-kms-dependencies.tsv").read_bytes()
+    if (installed / "dependencies.tsv").read_bytes() != manifest:
+        raise RuntimeError("SDK prefix dependency manifest differs from this checkout")
+    sdk_commit = next(fields[2] for line in manifest.decode().splitlines()
+        if (fields := line.split()) and fields[0] == "aws-nitro-enclaves-sdk-c")
+    patch = (root / "build/patches/nitro-sdk-cleanup.patch").read_bytes()
+    if (installed / "patches/nitro-sdk-cleanup.patch").read_bytes() != patch:
+        raise RuntimeError("SDK prefix cleanup patch differs from this checkout")
+    provenance = json.loads((installed / "sdk-source.json").read_text())
+    if provenance.get("upstream_commit") != sdk_commit or provenance.get(
+            "patch_sha256") != hashlib.sha256(patch).hexdigest():
+        raise RuntimeError("SDK prefix source provenance differs from this checkout")
+    source_hash = provenance.get("effective_rest_c_sha256", "")
+    if len(source_hash) != 64 or any(c not in "0123456789abcdef" for c in source_hash):
+        raise RuntimeError("SDK prefix has no valid effective REST source hash")
+    return provenance
 
 
 class SdkHelper:
@@ -30,6 +52,7 @@ class SdkHelper:
         self.name = "swap-kms-sdk-e2e-" + uuid.uuid4().hex[:12]
         self.running = False
         self.image_id = None
+        self.source_provenance = None
         self.wrapper = artifacts / "sdk-helper-wrapper.py"
 
     def run(self, command, **kwargs):
@@ -40,6 +63,7 @@ class SdkHelper:
         if not (prefix / "lib/libnsm.so").is_file() or not (
                 prefix / "include/aws/nitro_enclaves/internal/cms.h").is_file():
             raise RuntimeError("Build the pinned SDK dependencies first; see testing/kms/README.md")
+        self.source_provenance = verify_sdk_provenance(self.root, prefix)
         self.image_id = subprocess.check_output([*self.command, "image", "inspect",
             "--format", "{{.Id}}", self.args.sdk_image], env=self.env, text=True).strip()
         command = ["run", "--detach", "--rm", "--name", self.name,

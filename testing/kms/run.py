@@ -685,6 +685,7 @@ class Suite:
             "production_helper_binary_sha256": binary_hash(self.args.sdk_prefix / "bin/swap-kms-tool"),
             "sdk_image": self.args.sdk_image,
             "sdk_image_id": self.sdk_helper.image_id if self.sdk_helper is not None else None,
+            "sdk_source_provenance": self.sdk_helper.source_provenance if self.sdk_helper is not None else None,
             "dependency_manifest_sha256": binary_hash(ROOT / "build/swap-kms-dependencies.tsv"),
             "production_helper_source_sha256": binary_hash(ROOT / "enclave/kms-tool/main.c"),
             "python_dependencies": {name: __import__("importlib.metadata", fromlist=["version"]).version(name)
