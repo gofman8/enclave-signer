@@ -4,16 +4,23 @@ This tooling belongs only on `kms-testing`. The production implementation branch
 is `codex/rgb-swap-kms-persistence`. Never merge the testing feature, local CA/PCR
 hooks, emulator, or generated artifacts into that branch.
 
-The suite launches actual enclave, seed-broker, and parent-service processes. The
+The suite launches actual enclave, seed-broker, and parent-service processes,
+plus the real AWS Nitro Enclaves C SDK helper in a Linux container. The
 enclave generates its seed through a local KMS API, commits the encrypted blob to
 local S3, decrypts the committed blob, derives its normal keys, and signs through
 the existing gas transaction path. It then repeats this across process restarts
-and replicas. No AWS account, cloud resources, LocalStack token, Docker daemon,
-or Nitro device is needed for this suite.
+and replicas. No AWS account, cloud resources, LocalStack token, or Nitro device
+is needed. Docker runs the Linux-only official SDK and NSM test adapter.
+
+The helper migration's harness is prepared but has not yet completed an E2E run:
+the current execution sandbox blocks the local Docker socket and TCP listeners.
+The previous 35-scenario report predates this SDK migration and must not be
+treated as validation of the new helper. A fresh run produces its own report
+including the helper binary hash.
 
 ## Run
 
-Prerequisites: Rust/Cargo 1.96, Python 3.12, Node.js 22 or newer, npm, and the
+Prerequisites: Docker, Rust/Cargo 1.96, Python 3.12, Node.js 22 or newer, npm, and the
 repository's normal native build dependencies (including CMake, Perl, and
 protoc). Existing GitHub access must be able to fetch the private RGB and parent
 protocol dependencies. The runner rewrites only this process's private SSH
@@ -23,6 +30,15 @@ read or print GitHub tokens or change global Git configuration.
 From the repository root:
 
 ```sh
+docker build -t codex-swap-kms-sdk-builder:cd61b61 \
+  -f testing/kms/Dockerfile.sdk-tools .
+mkdir -p .artifacts/kms-sdk/build .artifacts/kms-sdk/prefix
+docker run --rm \
+  --mount "type=bind,source=$PWD,target=/src,readonly" \
+  --mount "type=bind,source=$PWD/.artifacts/kms-sdk/build,target=/opt/swap-kms-build" \
+  --mount "type=bind,source=$PWD/.artifacts/kms-sdk/prefix,target=/opt/swap-kms" \
+  --env SWAP_KMS_DEPENDENCIES_ONLY=1 \
+  codex-swap-kms-sdk-builder:cd61b61 sh /src/build/build-swap-kms-tool.sh
 python3.12 -m venv .artifacts/kms-e2e/venv
 .artifacts/kms-e2e/venv/bin/python -m pip install \
   -r testing/kms/requirements.txt -c testing/kms/requirements.lock
@@ -30,10 +46,15 @@ npm ci --prefix testing/kms
 .artifacts/kms-e2e/venv/bin/python testing/kms/run.py
 ```
 
-The runner builds both enclave/client binaries and both parent/client binaries
+The dependency command builds the exact pinned libraries listed in
+`build/swap-kms-dependencies.tsv`. The runner then compiles the production helper
+source with only the test linker wrappers and mock NSM library. It builds both
+enclave/client binaries and both parent/client binaries
 with locked Cargo dependencies, starts the local services, runs the assertions,
 and stops its processes even on failure. It returns nonzero on the first failure.
-The emulator, clients, and broker bind only to loopback. It refuses occupied ports
+The emulator, clients, and broker bind only to loopback. The container connects
+through Docker Desktop/Colima's `host.docker.internal`; native Linux uses host
+networking to reach loopback. It refuses occupied ports
 instead of stopping another service. Defaults:
 
 | Port | Local service |
@@ -45,7 +66,9 @@ instead of stopping another service. Defaults:
 | Ephemeral | Enclave and parent TCP/gRPC listeners |
 
 Use `--kms-port`, `--broker-port`, `--aws-port`, and `--control-port` for port
-overrides; `--node /path/to/node` selects a Node executable. `CARGO_TARGET_DIR`
+overrides; `--node /path/to/node` selects a Node executable. `--sdk-image`,
+`--sdk-prefix`, and `--sdk-source` select an existing builder image, installed
+dependency prefix, and the pinned SDK source directory. `CARGO_TARGET_DIR`
 selects the enclave build cache and `KMS_E2E_PARENT_TARGET_DIR` selects the parent
 cache. `--skip-build` reuses those binaries. The normal invocation builds the
 testing feature itself; it does not enable `dev-mode` or `allow-seed-import`.
@@ -57,6 +80,12 @@ only in process memory/environment. Inherited AWS credentials, profiles, proxy
 settings, and external indexer settings are removed or replaced for the suite.
 The JSON report is `.artifacts/kms-e2e/report.json`.
 
+The runner also builds the previous Rust KMS client from the fixed Git commit
+`3d5086558faba04d589ddc63abc6bfc43a8743b9` into an isolated artifact directory.
+Keep repository history available when cloning. Its existing encrypted seed is
+then restored by the new SDK helper, comparing every public key and the verified
+signature. The original 35 scenarios plus this migration check make 36 scenarios.
+
 ## What runs
 
 - Bootstrap uses `GenerateDataKey(NumberOfBytes=64)`, attested Recipient CMS,
@@ -67,6 +96,8 @@ The JSON report is `.artifacts/kms-e2e/report.json`.
   replica. The actual parent gRPC `EVM_GAS_TX` route produces the same signature.
 - Two bootstrap enclaves are synchronized after generation to force competing
   `IfNoneMatch="*"` writes. Both activate the same stored identity and signature.
+- Ciphertext generated and persisted by the pinned pre-migration Rust client
+  restores through the official SDK with the same keys and signature.
 - Missing recovery state, altered ciphertext, another valid ciphertext, and a
   wrong expected identity all fail initialization without generating a replacement.
 - Native IAM read/write/KMS denial and malformed KMS response cases leave the
@@ -117,10 +148,23 @@ retain them. Audit entries identify retained context keys. Unknown ignored keys
 or engine errors fail the test; production policies are not weakened to fit an
 emulator.
 
-Native processes use the gated `local-kms-e2e` feature for a local CA and mock PCR0
-(`aa` repeated 48 bytes for bootstrap, `bb` for recovery). It retains the AWS
-hostname, HTTPS-only transport, certificate/hostname validation, and disabled
-redirects. Release compilation with this feature is prohibited. These mocks do
+Native processes use the gated `local-kms-e2e` feature to select the test helper
+wrapper and forward only a local CA, port, and mock PCR0
+(`aa` repeated 48 bytes for bootstrap, `bb` for recovery). The production helper
+source is compiled unchanged against the same AWS SDK static libraries. Linker
+wrappers substitute its socket endpoint and use the SDK's public TLS trust-store
+override for the generated local CA, retaining AWS hostname/SNI, certificate and
+hostname validation, SigV4, and response/CMS processing. A replacement `libnsm.so`
+returns explicitly mocked CBOR containing the SDK's actual RSA public key. The
+SDK requests no nonce; the emulator also continues to accept the previous Rust
+client's 32-byte nonce form. The SDK's entropy-seeding call still reads the mock
+NSM RNG; only its privileged entropy-counter ioctl is simulated. No container
+capability is granted for that operation.
+
+The native wrapper uses bounded private stdin/stdout pipes and an explicit Docker
+socket selected before the enclave starts. Credentials never enter Docker
+arguments or helper environment variables. Release compilation with this
+feature is prohibited. These mocks do
 not validate AWS's Nitro trust chain, real NSM evidence, vsock transport, or AWS
 service-policy enforcement. Those still require a real Nitro deployment.
 

@@ -142,8 +142,11 @@ def mock_recipient(parameters):
         if document["module_id"] != "mock" or document["digest"] != "SHA384":
             raise ValueError("mock document marker")
         pcr = bytes(document["pcrs"][0])
-        nonce = bytes(document["nonce"])
-        if len(pcr) != 48 or len(nonce) != 32:
+        # AWS's C SDK binds its generated RSA public key in the attestation
+        # request and does not supply a nonce. The older Rust client supplies
+        # 32 bytes. Both explicitly mocked forms exercise the same policy path.
+        nonce = document.get("nonce")
+        if len(pcr) != 48 or (nonce is not None and len(bytes(nonce)) != 32):
             raise ValueError("PCR or nonce size")
         key = serialization.load_der_public_key(bytes(document["public_key"]))
         if not isinstance(key, rsa.RSAPublicKey) or key.key_size != 2048:

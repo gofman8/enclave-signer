@@ -20,6 +20,7 @@ import shutil
 import socket
 import subprocess
 import sys
+import tarfile
 import time
 
 from cryptography import x509
@@ -34,11 +35,13 @@ from botocore.awsrequest import AWSRequest
 from botocore.config import Config
 from botocore.credentials import Credentials
 from botocore.exceptions import ClientError
+from sdk_helper import SdkHelper
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
 BOOTSTRAP = "aa" * 48
 RESTORE = "bb" * 48
+LEGACY_COMMIT = "3d5086558faba04d589ddc63abc6bfc43a8743b9"
 
 
 def isolated_env():
@@ -117,6 +120,9 @@ class Suite:
         self.results = []
         self.counter = 0
         self.fixture = None
+        self.sdk_helper = None
+        self.legacy_enclave = self.artifacts / "legacy-target/debug/utexo-bridge-enclave"
+        self.failure = None
 
     def api(self, path, data=None):
         response = self.http.request("GET" if data is None else "POST",
@@ -157,6 +163,8 @@ class Suite:
         for process, log in reversed(self.processes):
             self.stop(process)
             log.close()
+        if self.sdk_helper is not None:
+            self.sdk_helper.close()
 
     @contextmanager
     def case(self, name):
@@ -193,7 +201,7 @@ class Suite:
         return self.start("broker", [sys.executable, ROOT / "deploy/swap-seed-broker.py",
             "--tcp", f"127.0.0.1:{self.args.broker_port}"], env, self.args.broker_port)
 
-    def signer(self, restore_address=None, **overrides):
+    def signer(self, restore_address=None, legacy=False, **overrides):
         f = self.fixture
         with socket.socket() as sock:
             sock.bind(("127.0.0.1", 0))
@@ -201,6 +209,7 @@ class Suite:
         env = isolated_env()
         env.update(SWAP_KMS_KEY_ARN=f["key_arn"], SWAP_KMS_REGION=f["region"],
             SWAP_KMS_SEED_ID=f["seed_id"], SWAP_KMS_ALLOW_CREATE="0" if restore_address else "1",
+            SWAP_KMS_E2E_HELPER=str(self.sdk_helper.wrapper),
             SWAP_KMS_E2E_CA_PEM=str(self.certs["ca.pem"]),
             SWAP_KMS_E2E_PCR0=RESTORE if restore_address else BOOTSTRAP,
             SWAP_KMS_E2E_PORT=str(self.args.kms_port),
@@ -214,7 +223,8 @@ class Suite:
             env["SWAP_KMS_EXPECTED_EVM_ADDRESS"] = restore_address
         env.update(overrides)
         env = {key: value for key, value in env.items() if value is not None}
-        process = self.start("enclave", [self.enclave], env, port)
+        process = self.start("legacy-enclave" if legacy else "enclave",
+            [self.legacy_enclave if legacy else self.enclave], env, port)
         return process, f"127.0.0.1:{port}"
 
     def call(self, address, command, success=True):
@@ -365,6 +375,40 @@ class Suite:
             self.stop(a)
             self.stop(b)
         self.stop(broker)
+
+    def legacy_compatibility(self):
+        self.fixture_reset("legacy-client")
+        broker = self.broker()
+        with self.case("restore ciphertext created by the previous Rust KMS client"):
+            old, old_address = self.signer(legacy=True)
+            keys = self.call(old_address, "init")["keys"]
+            signature = self.call(old_address, "sign")
+            assert signature["verified"]
+            ciphertext = self.object()
+            self.stop(old)
+            self.api("/audit/reset", {})
+            new, new_address = self.signer(keys["evm_address"])
+            assert self.call(new_address, "init")["keys"] == keys
+            assert self.call(new_address, "sign") == signature
+            assert self.object() == ciphertext
+            assert not self.actions("GenerateDataKey")
+            self.stop(new)
+        self.stop(broker)
+
+    def build_legacy_client(self):
+        source = self.artifacts / "legacy-source"
+        archive = self.artifacts / "legacy-source.tar"
+        subprocess.run(["git", "archive", "--format=tar", "--output", str(archive), LEGACY_COMMIT],
+            cwd=ROOT, env=isolated_env(), check=True)
+        source.mkdir(exist_ok=True)
+        with tarfile.open(archive) as files:
+            files.extractall(source, filter="data")
+        archive.unlink()
+        env = git_env()
+        env["CARGO_TARGET_DIR"] = str(self.artifacts / "legacy-target")
+        subprocess.run(["cargo", "build", "--locked", "--no-default-features",
+            "--features", "local-kms-e2e", "--bin", "utexo-bridge-enclave"],
+            cwd=source, env=env, check=True)
 
     def failures(self):
         for fault in ("s3_read_denied", "s3_write_denied", "kms_denied", "kms_plaintext",
@@ -525,7 +569,7 @@ class Suite:
                 assert self.object() is None
                 if name in {"untrusted TLS certificate", "wrong TLS hostname", "plaintext HTTP endpoint"}:
                     # A later IAM/ARN denial must not mask a TLS validation bug.
-                    assert "KMS HTTPS request failed" in failure["error"]["message"]
+                    assert "AWS Nitro SDK helper rejected" in failure["error"]["message"]
                     assert not [event for event in self.audit() if event["service"] == "kms"]
                 self.stop(enclave)
             self.stop(broker)
@@ -539,18 +583,33 @@ class Suite:
 
         report = {
             "branch": "kms-testing", "completed_at": datetime.now(timezone.utc).isoformat(),
+            "status": "failed" if self.failure or not self.results or
+                any(item["status"] != "passed" for item in self.results) else "passed",
+            "failure": self.failure,
             "git_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
             "source_dirty": bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True)),
             "enclave_binary_sha256": binary_hash(self.enclave),
             "parent_binary_sha256": binary_hash(self.parent),
-            "suite": "real enclave, broker and parent processes with local Moto KMS/IAM/STS/S3",
-            "boundary": "Nitro Recipient uses mock CBOR and local TLS CA; AWS hardware trust chain is not exercised.",
+            "sdk_helper_binary_sha256": binary_hash(self.artifacts / "sdk-helper-build/bin/swap-kms-tool"),
+            "legacy_client_commit": LEGACY_COMMIT,
+            "legacy_client_binary_sha256": binary_hash(self.legacy_enclave),
+            "suite": "real enclave, official AWS C SDK helper, broker and parent processes with local Moto KMS/IAM/STS/S3",
+            "boundary": "Official SDK uses mock libnsm, test endpoint/CA linker wrappers and simulated entropy ioctl; AWS hardware trust chain is not exercised.",
             "results": self.results,
         }
         (self.artifacts / "report.json").write_text(json.dumps(report, indent=2) + "\n")
 
     def run(self):
+        # Include preflight failures in a fresh report; never leave the old
+        # pre-migration success report looking like this attempt's result.
+        for port in (self.args.aws_port, self.args.control_port, self.args.kms_port, self.args.broker_port):
+            with socket.socket() as sock:
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                sock.bind(("127.0.0.1", port))
+        self.sdk_helper = SdkHelper(ROOT, self.artifacts, self.args, isolated_env())
+        self.sdk_helper.start()
         if not self.args.skip_build:
+            self.build_legacy_client()
             subprocess.run(["cargo", "build", "--locked", "--no-default-features",
                 "--features", "local-kms-e2e", "--bin", "utexo-bridge-enclave", "--bin", "kms-e2e-client"],
                 cwd=ROOT, env=git_env(), check=True)
@@ -560,6 +619,7 @@ class Suite:
                 "--bin", "utexo-bridge-parent", "--bin", "kms-e2e-grpc-client"],
                 cwd=ROOT / "parent", env=env, check=True)
         assert self.enclave.is_file() and self.client.is_file(), "Build test binaries first"
+        assert self.legacy_enclave.is_file(), "Build the pinned legacy client before using --skip-build"
         self.start("emulator", [sys.executable, HERE / "emulator.py",
             "--aws-port", self.args.aws_port, "--control-port", self.args.control_port,
             "--kms-port", self.args.kms_port, "--cert", self.certs["server.pem"],
@@ -567,6 +627,7 @@ class Suite:
             port=self.args.control_port)
         self.api("/health")
         self.lifecycle()
+        self.legacy_compatibility()
         self.concurrent_bootstrap()
         self.failures()
         self.policy_checks()
@@ -581,14 +642,17 @@ def main():
     parser.add_argument("--control-port", type=int, default=15001)
     parser.add_argument("--kms-port", type=int, default=3445)
     parser.add_argument("--broker-port", type=int, default=3446)
+    parser.add_argument("--sdk-image", default="codex-swap-kms-sdk-builder:cd61b61")
+    parser.add_argument("--sdk-prefix", type=Path, default=ROOT / ".artifacts/kms-sdk/prefix")
+    parser.add_argument("--sdk-source", type=Path,
+        default=ROOT / ".artifacts/kms-sdk/build/src/aws-nitro-enclaves-sdk-c")
     args = parser.parse_args()
-    for port in (args.aws_port, args.control_port, args.kms_port, args.broker_port):
-        with socket.socket() as sock:
-            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            sock.bind(("127.0.0.1", port))  # fail before starting anything on occupied ports
     suite = Suite(args)
     try:
         suite.run()
+    except BaseException as error:
+        suite.failure = {"type": type(error).__name__, "message": str(error)}
+        raise
     finally:
         suite.cleanup()
         suite.write_report()
