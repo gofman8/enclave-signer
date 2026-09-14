@@ -24,7 +24,7 @@ from urllib.parse import urlparse
 import boto3
 from botocore.config import Config
 import cbor2
-from asn1crypto import algos, cms
+from asn1crypto import algos, cms, core
 from cryptography.hazmat.primitives import hashes, padding, serialization
 from cryptography.hazmat.primitives.asymmetric import padding as rsa_padding, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -186,7 +186,20 @@ def recipient_cms(public_key, plaintext):
             "encrypted_content": encrypted,
         },
     })
-    return cms.ContentInfo({"content_type": "enveloped_data", "content": envelope}).dump()
+    # AWS Recipient responses use streaming BER containers. The official SDK's
+    # specialized parser expects this shape (see its CMS fixtures), whereas
+    # asn1crypto's default dump emits definite-length DER for every container.
+    # Keep recipient/algorithm fields DER and wrap the streaming containers.
+    def streaming(tag, content):
+        return bytes((tag, 0x80)) + content + b"\x00\x00"
+
+    info = envelope["encrypted_content_info"]
+    encrypted_info = streaming(0x30, info["content_type"].dump()
+        + info["content_encryption_algorithm"].dump()
+        + streaming(0xA0, core.OctetString(encrypted).dump()))
+    data = streaming(0x30, envelope["version"].dump()
+        + envelope["recipient_infos"].dump() + encrypted_info)
+    return streaming(0x30, cms.ContentType("enveloped_data").dump() + streaming(0xA0, data))
 
 
 def install_adapters(state):

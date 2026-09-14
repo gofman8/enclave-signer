@@ -12,11 +12,11 @@ the existing gas transaction path. It then repeats this across process restarts
 and replicas. No AWS account, cloud resources, LocalStack token, or Nitro device
 is needed. Docker runs the Linux-only official SDK and NSM test adapter.
 
-The helper migration's harness is prepared but has not yet completed an E2E run:
-the current execution sandbox blocks the local Docker socket and TCP listeners.
-The previous 35-scenario report predates this SDK migration and must not be
-treated as validation of the new helper. A fresh run produces its own report
-including the helper binary hash.
+All 36 scenarios passed locally on 2026-09-14 with the official SDK helper,
+including restoration of ciphertext produced by the previous Rust KMS client.
+The report records the source revision and hashes of the actual helper, enclave,
+parent, and legacy client binaries. The original 35-scenario report predates
+this SDK migration and is retained only as historical evidence.
 
 ## Run
 
@@ -127,7 +127,8 @@ the suite does not leave Moto's default authentication bypass enabled.
 
 Moto does not implement Nitro Recipient responses and its resource-policy
 condition coverage is limited. `emulator.py` therefore wraps its real KMS result
-in CMS using RSA-OAEP SHA256/MGF1 SHA256 and AES-256-CBC, taking the recipient key
+in AWS-compatible streaming BER CMS using RSA-OAEP SHA256/MGF1 SHA256 and
+AES-256-CBC, taking the recipient key
 from the repository's explicitly mocked CBOR attestation. It removes `Plaintext`
 and supplies the AWS `Decrypt.EncryptionAlgorithm` field omitted by Moto. It also
 checks an incoming KMS payload hash against the body before native SigV4
@@ -173,7 +174,20 @@ and corruption to model a hostile or faulty storage host. That control is not an
 AWS API or part of the production broker. Moto state lives for one suite run;
 the suite restarts the signer and broker while the emulated S3 service stays up.
 
-## Production fix found and backported
+## Production fixes found and backported
+
+The official SDK's pinned CRT could destroy an HTTP connection's event loop
+when the local server closed its response, before client cleanup released the
+connection. The production helper now retains one CRT bootstrap reference until
+after KMS client destruction. This uses the official reference-counting APIs and
+leaves upstream sources unchanged. Every successful E2E helper call requires a
+clean exit and exercises this server-close path. The fix, checked-in NSM Cargo
+lockfile, and verified build-cache fixes are in production commit `12b1419`.
+
+The test-only CMS adapter now emits the streaming BER format consumed by AWS's
+SDK parser. This emulator change stays on `kms-testing`.
+
+## Earlier broker restart fix
 
 An immediate restart of the broker's development TCP listener failed because its
 closed connections remained in `TIME_WAIT`. Enabling `SO_REUSEADDR` on that TCP

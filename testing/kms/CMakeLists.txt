@@ -7,7 +7,26 @@ endif()
 
 # Compile exactly the production helper against the same pinned AWS libraries.
 # The executable wrappers and runtime NSM replacement exist only in this project.
+list(APPEND CMAKE_MODULE_PATH "${NITRO_SDK_SOURCE_DIR}/cmake/modules")
+find_package(LibJsonC REQUIRED)
+find_package(aws-nitro-enclaves-sdk-c CONFIG REQUIRED)
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../../enclave/kms-tool" production-helper)
+# Upstream's static export records libnsm as an absolute build-time path.
+# Resolve only that shared library again when mounting the identical dependency
+# prefix elsewhere in the test container. The SDK objects remain unchanged.
+find_library(NSM_LINK_LIBRARY NAMES nsm REQUIRED)
+get_target_property(SDK_LINK_LIBRARIES AWS::aws-nitro-enclaves-sdk-c INTERFACE_LINK_LIBRARIES)
+set(RELOCATED_SDK_LINK_LIBRARIES "")
+foreach(LINK_LIBRARY IN LISTS SDK_LINK_LIBRARIES)
+  get_filename_component(LINK_NAME "${LINK_LIBRARY}" NAME)
+  if(LINK_NAME STREQUAL "libnsm.so")
+    list(APPEND RELOCATED_SDK_LINK_LIBRARIES "${NSM_LINK_LIBRARY}")
+  else()
+    list(APPEND RELOCATED_SDK_LINK_LIBRARIES "${LINK_LIBRARY}")
+  endif()
+endforeach()
+set_target_properties(AWS::aws-nitro-enclaves-sdk-c PROPERTIES
+  INTERFACE_LINK_LIBRARIES "${RELOCATED_SDK_LINK_LIBRARIES}")
 target_sources(swap-kms-tool PRIVATE "${CMAKE_CURRENT_LIST_DIR}/sdk-test-adapter.c")
 target_link_options(swap-kms-tool PRIVATE
   "-Wl,--wrap=aws_nitro_enclaves_rest_client_new"
