@@ -35,7 +35,7 @@ fn request(address: &str, request: Request) -> Result<Response> {
     }
     let mut stream = TcpStream::connect_timeout(&address, Duration::from_secs(5)).map_err(error)?;
     stream
-        .set_read_timeout(Some(Duration::from_secs(90)))
+        .set_read_timeout(Some(Duration::from_secs(30)))
         .map_err(error)?;
     stream
         .set_write_timeout(Some(Duration::from_secs(10)))

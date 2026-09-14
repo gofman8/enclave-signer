@@ -53,6 +53,7 @@ FAULTS = {
     "kms_wrong_key", "kms_invalid_cms", "kms_short_seed", "kms_http_error",
     "bootstrap_barrier",
     "kms_wrong_algorithm",
+    "kms_slow_response",
 }
 
 
@@ -325,6 +326,10 @@ def install_adapters(state):
                 event["response_fields"] = sorted(response)
             if original is original_generate and state.bootstrap_barrier is not None:
                 state.bootstrap_barrier.wait(timeout=15)
+            if original is original_generate and state.faults.get("kms_slow_response"):
+                # After normal SigV4/Recipient/policy checks and event recording,
+                # outlast the helper's twelve-second custody budget.
+                time.sleep(13)
             return json.dumps(response)
         return wrapped
 
@@ -387,6 +392,7 @@ def setup_fixture(state, values):
             "REPLACE_ACCOUNT_ID": ACCOUNT,
             "REPLACE_KEY_ADMIN_ROLE": "local-e2e-key-admin",
             "REPLACE_SIGNER_ROLE": "local-e2e-signer",
+            "REPLACE_KMS_KEY_ARN": key_arn,
             "REPLACE_BOOTSTRAP_PCR0": BOOTSTRAP_PCR0,
             "REPLACE_RESTORE_PCR0": RESTORE_PCR0,
             "REPLACE_SEED_ID": seed_id,
@@ -400,12 +406,20 @@ def setup_fixture(state, values):
         s3 = client(state, "s3", admin)
         s3.create_bucket(Bucket=bucket, CreateBucketConfiguration={"LocationConstraint": REGION})
         s3.put_bucket_versioning(Bucket=bucket, VersioningConfiguration={"Status": "Enabled"})
+        s3.put_public_access_block(Bucket=bucket, PublicAccessBlockConfiguration={
+            "BlockPublicAcls": True, "IgnorePublicAcls": True,
+            "BlockPublicPolicy": True, "RestrictPublicBuckets": True,
+        })
+        s3.put_bucket_ownership_controls(Bucket=bucket, OwnershipControls={
+            "Rules": [{"ObjectOwnership": "BucketOwnerEnforced"}],
+        })
         s3.put_bucket_policy(Bucket=bucket, Policy=json.dumps(state.bucket_policy))
-        # Broad identity actions make the *actual production resource policies*
-        # decisive, while resource ARNs still prevent cross-key/object access.
-        identity_policy = {"Version": "2012-10-17", "Statement": [
-            {"Effect": "Allow", "Action": "kms:*", "Resource": key_arn},
-            {"Effect": "Allow", "Action": "s3:*", "Resource": [f"arn:aws:s3:::{bucket}", f"arn:aws:s3:::{bucket}/{object_key}"]},
+        # Normal E2E calls use the real dedicated-role policy, including its
+        # explicit denials of other AWS actions and resources. Resource-policy
+        # isolation tests separately override this with a broad test-only allow.
+        identity_policy = policy_template("swap-signer-role-policy.json", substitutions)
+        broad_identity_policy = {"Version": "2012-10-17", "Statement": [
+            {"Effect": "Allow", "Action": "*", "Resource": "*"},
         ]}
         iam.put_role_policy(RoleName="local-e2e-signer", PolicyName="FixtureIdentity", PolicyDocument=json.dumps(identity_policy))
         session = client(state, "sts", admin).assume_role(RoleArn=role_arn, RoleSessionName="local-e2e")["Credentials"]
@@ -419,6 +433,7 @@ def setup_fixture(state, values):
             "aws_tls_endpoint": f"https://127.0.0.1:{state.args.kms_port}",
             "bootstrap_pcr0": BOOTSTRAP_PCR0, "restore_pcr0": RESTORE_PCR0,
             "identity_policy": identity_policy, "key_policy": state.key_policy,
+            "broad_identity_policy": broad_identity_policy,
             "bucket_policy": state.bucket_policy,
             "bitcoin_network": values.get("bitcoin_network", "regtest"),
         }

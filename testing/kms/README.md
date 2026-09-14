@@ -12,7 +12,7 @@ the existing gas transaction path. It then repeats this across process restarts
 and replicas. No AWS account, cloud resources, LocalStack token, or Nitro device
 is needed. Docker runs the Linux-only official SDK and NSM test adapter.
 
-All 37 scenarios passed locally on 2026-09-14 with the official SDK helper,
+The previous 37-scenario baseline passed on 2026-09-14 with the official SDK helper,
 including restoration of ciphertext produced by the previous Rust KMS client.
 This includes the stricter helper IPC contract and malformed-input checks.
 The report records the source revision and hashes of the actual helper, enclave,
@@ -31,23 +31,22 @@ read or print GitHub tokens or change global Git configuration.
 From the repository root:
 
 ```sh
-docker build -t codex-swap-kms-sdk-builder:cd61b61 \
-  -f testing/kms/Dockerfile.sdk-tools .
-mkdir -p .artifacts/kms-sdk/build .artifacts/kms-sdk/prefix
-docker run --rm \
-  --mount "type=bind,source=$PWD,target=/src,readonly" \
-  --mount "type=bind,source=$PWD/.artifacts/kms-sdk/build,target=/opt/swap-kms-build" \
-  --mount "type=bind,source=$PWD/.artifacts/kms-sdk/prefix,target=/opt/swap-kms" \
-  --env SWAP_KMS_DEPENDENCIES_ONLY=1 \
-  codex-swap-kms-sdk-builder:cd61b61 sh /src/build/build-swap-kms-tool.sh
+docker build --target kms-tool-builder \
+  -t codex-swap-kms-sdk-builder:security-review \
+  -f build/Dockerfile.enclave.rgb .
+mkdir -p .artifacts/kms-sdk/prefix
+container_id=$(docker create codex-swap-kms-sdk-builder:security-review)
+docker cp "$container_id:/opt/swap-kms/." .artifacts/kms-sdk/prefix/
+docker rm "$container_id"
 python3.12 -m venv .artifacts/kms-e2e/venv
+.artifacts/kms-e2e/venv/bin/python -m pip install -r deploy/requirements-swap-kms.txt
 .artifacts/kms-e2e/venv/bin/python -m pip install \
   -r testing/kms/requirements.txt -c testing/kms/requirements.lock
 npm ci --prefix testing/kms
 .artifacts/kms-e2e/venv/bin/python testing/kms/run.py
 ```
 
-The dependency command builds the exact pinned libraries listed in
+The production Docker stage builds the exact pinned libraries listed in
 `build/swap-kms-dependencies.tsv`. The runner then compiles the production helper
 source with only the test linker wrappers and mock NSM library. It builds both
 enclave/client binaries and both parent/client binaries
@@ -87,7 +86,7 @@ The runner also builds the previous Rust KMS client from the fixed Git commit
 Keep repository history available when cloning. Its existing encrypted seed is
 then restored by the new SDK helper, comparing every public key and the verified
 signature. The original 35 scenarios, migration check, and direct helper IPC check make
-37 scenarios.
+the current expanded suite. Fresh reports identify the exact scenario count and source revision.
 
 ## What runs
 
@@ -111,6 +110,7 @@ signature. The original 35 scenarios, migration check, and direct helper IPC che
   enclave uninitialized. Clearing a transient fault allows retry in that same
   process. Recovery failures preserve the existing ciphertext and identity.
 - Swaps reject cloning and raw seed import in the tested feature set.
+- A delayed KMS response exercises the real initialization deadline, concurrent worker responsiveness, inactive failure state, and successful retry.
 - The concrete production policy templates are evaluated for bootstrap/recovery,
   wrong role/PCR/context, absent Recipient, extra context keys, prohibited key
   operations, HTTPS, conditional object creation, object scope, and deletion.
@@ -142,7 +142,10 @@ checks an incoming KMS payload hash against the body before native SigV4
 authentication; Moto otherwise trusts that header without rehashing the body.
 These are test adapter behaviors, not changes to the production KMS client.
 
-The exact checked-in KMS and S3 resource policies, with fixture substitutions,
+The exact checked-in signer-role identity policy is installed in Moto IAM for
+normal enclave and broker requests. Separate resource-policy scenarios explicitly
+supply broader identity allows to prove that resource denies remain effective.
+The checked-in signer-role, KMS and S3 policies, with fixture substitutions,
 run through [@actsecurity/iam-simulate 0.1.177](https://github.com/act-security-labs/iam-simulate)
 (AGPL-3.0-or-later) in a separate local Node process. The policy engine evaluates
 Principal, action/resource, attestation PCR, context, and explicit deny conditions

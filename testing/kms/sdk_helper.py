@@ -29,6 +29,7 @@ class SdkHelper:
         self.command = [self.docker, "--host", self.host, "--config", str(self.config)]
         self.name = "swap-kms-sdk-e2e-" + uuid.uuid4().hex[:12]
         self.running = False
+        self.image_id = None
         self.wrapper = artifacts / "sdk-helper-wrapper.py"
 
     def run(self, command, **kwargs):
@@ -39,7 +40,8 @@ class SdkHelper:
         if not (prefix / "lib/libnsm.so").is_file() or not (
                 prefix / "include/aws/nitro_enclaves/internal/cms.h").is_file():
             raise RuntimeError("Build the pinned SDK dependencies first; see testing/kms/README.md")
-        self.run(["image", "inspect", self.args.sdk_image], stdout=subprocess.DEVNULL)
+        self.image_id = subprocess.check_output([*self.command, "image", "inspect",
+            "--format", "{{.Id}}", self.args.sdk_image], env=self.env, text=True).strip()
         command = ["run", "--detach", "--rm", "--name", self.name,
             "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "256",
             "--mount", f"type=bind,source={self.root},target=/src,readonly",

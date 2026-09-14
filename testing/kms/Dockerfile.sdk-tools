@@ -1,7 +1,0 @@
-FROM rust:1.96-slim-bullseye@sha256:c593596210f729542a92aced6a8b0812bcc8d04c5f1b238e663b800d0e2e17bd
-RUN sed -i \
-      's|http://deb.debian.org/debian-security|https://snapshot.debian.org/archive/debian-security/20260623T000000Z|g; s|http://deb.debian.org/debian|https://snapshot.debian.org/archive/debian/20260623T000000Z|g' \
-      /etc/apt/sources.list \
-    && apt-get -o Acquire::Check-Valid-Until=false update \
-    && apt-get install -y cmake ninja-build git golang perl make gcc g++ ca-certificates pkg-config \
-    && rm -rf /var/lib/apt/lists/*

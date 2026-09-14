@@ -105,6 +105,8 @@ def certificates(directory):
 class Suite:
     def __init__(self, args):
         self.args = args
+        self.source_commit_at_start = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+        self.source_dirty_at_start = bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True))
         self.artifacts = args.artifacts.resolve()
         self.artifacts.mkdir(parents=True, exist_ok=True)
         self.certs = certificates(self.artifacts)
@@ -377,6 +379,39 @@ class Suite:
             self.stop(b)
         self.stop(broker)
 
+    def slow_operation(self):
+        self.fixture_reset("slow-kms")
+        broker = self.broker()
+        with self.case("slow KMS: bounded init leaves workers responsive and retry recovers") as result:
+            self.fault("kms_slow_response")
+            enclave, address = self.signer()
+            started = time.monotonic()
+            with ThreadPoolExecutor(max_workers=1) as pool:
+                pending = pool.submit(self.failed_init, address)
+                deadline = time.monotonic() + 5
+                while not self.actions("GenerateDataKey") and time.monotonic() < deadline:
+                    time.sleep(.02)
+                assert self.actions("GenerateDataKey"), "slow operation never reached KMS"
+                probe_started = time.monotonic()
+                self.call(address, "keys", False)
+                competing = self.call(address, "init", False)
+                assert "initializing" in competing["error"]["message"], competing
+                assert time.monotonic() - probe_started < 2, "custody held other request workers"
+                failure = pending.result(timeout=18)
+            elapsed = time.monotonic() - started
+            assert elapsed < 18 and "timed out" in failure["error"]["message"], failure
+            assert self.object() is None
+            self.fault("kms_slow_response", False)
+            # Docker exec bridges a separate PID namespace. Allow the already
+            # timed-out helper's injected response to finish before retrying.
+            time.sleep(max(0, 14 - elapsed))
+            self.call(address, "keys", False)
+            self.call(address, "init")
+            assert self.call(address, "sign")["verified"]
+            result["failed_init_seconds"] = round(elapsed, 3)
+            self.stop(enclave)
+        self.stop(broker)
+
     def legacy_compatibility(self):
         self.fixture_reset("legacy-client")
         broker = self.broker()
@@ -481,6 +516,43 @@ class Suite:
             for case in cases:
                 verdict = self.api("/simulate", {"action": "kms:Decrypt", "context": policy_context, **case})
                 assert verdict["result"] in ("ExplicitlyDenied", "ImplicitlyDenied"), (case, verdict)
+        with self.case("resource policies independently deny dangerous KMS and S3 changes under broad identity access"):
+            # Remove the dedicated-role restrictions only for this simulator
+            # call, proving the actual resource policy denies each operation.
+            broad = [f["broad_identity_policy"]]
+            bucket_arn = f"arn:aws:s3:::{f['bucket']}"
+            object_arn = bucket_arn + "/" + f["object_key"]
+            cases = [("kms:Encrypt", f["key_arn"], policy_context),
+                ("kms:CreateGrant", f["key_arn"], {}),
+                ("kms:PutKeyPolicy", f["key_arn"], {})]
+            for action in ("PutBucketPublicAccessBlock", "PutBucketOwnershipControls",
+                    "PutBucketAcl", "PutEncryptionConfiguration", "PutReplicationConfiguration",
+                    "PutBucketVersioning", "PutLifecycleConfiguration"):
+                cases.append(("s3:" + action, bucket_arn, {"aws:SecureTransport": "true"}))
+            for action in ("DeleteObject", "DeleteObjectVersion", "PutObjectAcl",
+                    "PutObjectVersionAcl", "UpdateObjectEncryption", "PutObjectRetention",
+                    "PutObjectLegalHold", "BypassGovernanceRetention", "PutObjectTagging",
+                    "PutObjectVersionTagging", "DeleteObjectTagging", "DeleteObjectVersionTagging"):
+                cases.append(("s3:" + action, object_arn, {"aws:SecureTransport": "true"}))
+            for action, resource, ctx in cases:
+                verdict = self.api("/simulate", {"action": action, "resource": resource,
+                    "context": ctx, "identity_policies": broad})
+                assert verdict["result"] == "ExplicitlyDenied", (action, verdict)
+        with self.case("dedicated instance-role policy blocks other resources and privilege escalation despite broad attached allow"):
+            policies = [f["identity_policy"], f["broad_identity_policy"]]
+            bucket_arn = f"arn:aws:s3:::{f['bucket']}"
+            cases = [("kms:Decrypt", f["key_arn"] + "-other", policy_context),
+                ("kms:GenerateDataKey", f["key_arn"] + "-other", policy_context),
+                ("s3:GetObject", bucket_arn + "/other-seed", {"aws:SecureTransport": "true"}),
+                ("s3:PutObject", bucket_arn + "/other-seed", {"aws:SecureTransport": "true", "s3:if-none-match": "*"}),
+                ("s3:ListBucket", bucket_arn + "-other", {"aws:SecureTransport": "true"}),
+                ("sts:AssumeRole", "arn:aws:iam::123456789012:role/admin", {}),
+                ("iam:PutRolePolicy", f["role_arn"], {}),
+                ("s3:PutAccountPublicAccessBlock", "*", {})]
+            for action, resource, ctx in cases:
+                verdict = self.api("/simulate", {"action": action, "resource": resource,
+                    "context": ctx, "identity_policies": policies})
+                assert verdict["result"] == "ExplicitlyDenied", (action, verdict)
         with self.case("local AWS API rejects a missing Recipient and invalid SigV4"):
             kms = self.aws_client("kms")
             self.denied(kms.generate_data_key, KeyId=f["key_arn"], NumberOfBytes=64, EncryptionContext=context)
@@ -589,9 +661,18 @@ class Suite:
             "failure": self.failure,
             "git_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
             "source_dirty": bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True)),
+            "source_commit_at_start": self.source_commit_at_start,
+            "source_dirty_at_start": self.source_dirty_at_start,
             "enclave_binary_sha256": binary_hash(self.enclave),
             "parent_binary_sha256": binary_hash(self.parent),
             "sdk_helper_binary_sha256": binary_hash(self.artifacts / "sdk-helper-build/bin/swap-kms-tool"),
+            "production_helper_binary_sha256": binary_hash(self.args.sdk_prefix / "bin/swap-kms-tool"),
+            "sdk_image": self.args.sdk_image,
+            "sdk_image_id": self.sdk_helper.image_id if self.sdk_helper is not None else None,
+            "dependency_manifest_sha256": binary_hash(ROOT / "build/swap-kms-dependencies.tsv"),
+            "production_helper_source_sha256": binary_hash(ROOT / "enclave/kms-tool/main.c"),
+            "python_dependencies": {name: __import__("importlib.metadata", fromlist=["version"]).version(name)
+                for name in ("boto3", "botocore", "moto", "pip")},
             "legacy_client_commit": LEGACY_COMMIT,
             "legacy_client_binary_sha256": binary_hash(self.legacy_enclave),
             "suite": "real enclave, official AWS C SDK helper, broker and parent processes with local Moto KMS/IAM/STS/S3",
@@ -631,6 +712,7 @@ class Suite:
         self.lifecycle()
         self.legacy_compatibility()
         self.concurrent_bootstrap()
+        self.slow_operation()
         self.failures()
         self.policy_checks()
 
@@ -644,7 +726,7 @@ def main():
     parser.add_argument("--control-port", type=int, default=15001)
     parser.add_argument("--kms-port", type=int, default=3445)
     parser.add_argument("--broker-port", type=int, default=3446)
-    parser.add_argument("--sdk-image", default="codex-swap-kms-sdk-builder:cd61b61")
+    parser.add_argument("--sdk-image", default="codex-swap-kms-sdk-builder:security-review")
     parser.add_argument("--sdk-prefix", type=Path, default=ROOT / ".artifacts/kms-sdk/prefix")
     args = parser.parse_args()
     suite = Suite(args)
