@@ -12,8 +12,9 @@ the existing gas transaction path. It then repeats this across process restarts
 and replicas. No AWS account, cloud resources, LocalStack token, or Nitro device
 is needed. Docker runs the Linux-only official SDK and NSM test adapter.
 
-All 36 scenarios passed locally on 2026-09-14 with the official SDK helper,
+All 37 scenarios passed locally on 2026-09-14 with the official SDK helper,
 including restoration of ciphertext produced by the previous Rust KMS client.
+This includes the stricter helper IPC contract and malformed-input checks.
 The report records the source revision and hashes of the actual helper, enclave,
 parent, and legacy client binaries. The original 35-scenario report predates
 this SDK migration and is retained only as historical evidence.
@@ -67,8 +68,9 @@ instead of stopping another service. Defaults:
 
 Use `--kms-port`, `--broker-port`, `--aws-port`, and `--control-port` for port
 overrides; `--node /path/to/node` selects a Node executable. `--sdk-image`,
-`--sdk-prefix`, and `--sdk-source` select an existing builder image, installed
-dependency prefix, and the pinned SDK source directory. `CARGO_TARGET_DIR`
+`--sdk-prefix` select an existing builder image and installed dependency prefix.
+The prefix includes the pinned upstream CMS header and its checksum; the helper
+build does not require a separate SDK source checkout. `CARGO_TARGET_DIR`
 selects the enclave build cache and `KMS_E2E_PARENT_TARGET_DIR` selects the parent
 cache. `--skip-build` reuses those binaries. The normal invocation builds the
 testing feature itself; it does not enable `dev-mode` or `allow-seed-import`.
@@ -84,9 +86,14 @@ The runner also builds the previous Rust KMS client from the fixed Git commit
 `3d5086558faba04d589ddc63abc6bfc43a8743b9` into an isolated artifact directory.
 Keep repository history available when cloning. Its existing encrypted seed is
 then restored by the new SDK helper, comparing every public key and the verified
-signature. The original 35 scenarios plus this migration check make 36 scenarios.
+signature. The original 35 scenarios, migration check, and direct helper IPC check make
+37 scenarios.
 
 ## What runs
+
+- Direct helper IPC rejects malformed, missing, unexpected and oversized input
+  before contacting KMS. Generation returns exactly ciphertext/key identity and
+  no seed; recovery returns exactly the expected 64-byte seed/key identity.
 
 - Bootstrap uses `GenerateDataKey(NumberOfBytes=64)`, attested Recipient CMS,
   conditional `PutObject`, and `Decrypt` of the committed winning ciphertext.

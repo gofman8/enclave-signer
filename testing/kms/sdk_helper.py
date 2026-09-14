@@ -35,15 +35,15 @@ class SdkHelper:
         return subprocess.run([*self.command, *command], env=self.env, check=True, **kwargs)
 
     def start(self):
-        prefix, source = self.args.sdk_prefix.resolve(), self.args.sdk_source.resolve()
-        if not (prefix / "lib/libnsm.so").is_file() or not (source / "include").is_dir():
+        prefix = self.args.sdk_prefix.resolve()
+        if not (prefix / "lib/libnsm.so").is_file() or not (
+                prefix / "include/aws/nitro_enclaves/internal/cms.h").is_file():
             raise RuntimeError("Build the pinned SDK dependencies first; see testing/kms/README.md")
         self.run(["image", "inspect", self.args.sdk_image], stdout=subprocess.DEVNULL)
         command = ["run", "--detach", "--rm", "--name", self.name,
             "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "256",
             "--mount", f"type=bind,source={self.root},target=/src,readonly",
             "--mount", f"type=bind,source={prefix},target=/opt/swap-kms,readonly",
-            "--mount", f"type=bind,source={source},target=/opt/nitro-sdk-source,readonly",
             "--mount", f"type=bind,source={self.artifacts},target=/test-artifacts"]
         if sys.platform == "linux":
             # Linux host networking reaches the loopback-only emulator. Desktop
@@ -56,7 +56,7 @@ class SdkHelper:
         with (self.artifacts / "sdk-helper-build.log").open("w") as log:
             self.run(["exec", self.name, "cmake", "-GNinja", "-S", "/src/testing/kms",
                 "-B", build, "-DCMAKE_BUILD_TYPE=Debug", "-DCMAKE_PREFIX_PATH=/opt/swap-kms",
-                "-DNITRO_SDK_SOURCE_DIR=/opt/nitro-sdk-source", "-DBUILD_SHARED_LIBS=OFF"],
+                "-DBUILD_SHARED_LIBS=OFF"],
                 stdout=log, stderr=subprocess.STDOUT)
             self.run(["exec", self.name, "cmake", "--build", build, "--parallel", "4"],
                 stdout=log, stderr=subprocess.STDOUT)

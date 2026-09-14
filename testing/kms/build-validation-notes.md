@@ -4,9 +4,10 @@ On 2026-09-14, the RGB-swap ARM64 release binary and official AWS Nitro
 Enclaves SDK helper were built and packaged into an unsigned EIF. The Rust
 binary uses `vsock,rgb-swap,evm-rpc` with default features disabled and no
 mock, seed-import or development features. Signing code is unchanged. The
-source inputs match production commit
-`12b1419d8b0998e5c67b1288380d552e2256f411`; the Rust source is identical to
-its release build at `9ec30276b138dd7b81c7f7a6620b2fc9bff757c4`.
+helper returns ciphertext only for generation; seed plaintext enters Rust
+only when decrypting the committed blob. The validation JSON records the
+exact source revision and file hashes. These inputs match production commit
+`9eae97860157e281717805f46fc124dddc0a63b8`.
 
 The SDK is pinned to `cd61b6187c8b20867ba4368d1ae62c5790c0269a`, using its
 unmodified source and the dependency revisions from its
@@ -24,10 +25,10 @@ produce an EIF for which `describe-eif` reports `CheckCRC: true`.
 
 | Current SDK artifact | SHA-256 |
 | --- | --- |
-| RGB-swap release binary | `4f1e475ce00399adf70938da2c7e063bf01c2e9ebe141f99c0130ad03eb5987f` |
-| Official SDK helper | `6a06a7670867a6bc631433acc98710cd73bf44407de54b0352582bf213d76f42` |
+| RGB-swap release binary | `9a1e34ea664e26ce37f87bce0f6ee8fa763a921a21e47da7a28b36972da05905` |
+| Official SDK helper | `e05435be1e34b9b750e7f4cb80ee7c7de3721b575e159241532f587a4864e9b1` |
 | NSM runtime library | `394b96e9f4d67ac7e38bcfe2f36363f4ae3891e724d40a61caad11491d549af3` |
-| RGB-swap validation EIF | `9ee33ead58746d2aad0caa64265d23e877d826a09ff96f402ffe3a8b9d7a1421` |
+| RGB-swap validation EIF | `47e6aedf58f3c72242a0cbdb4b233333a777b1906258a2b632e69cd029a02014` |
 
 These artifacts supersede the earlier custom-client swap EIF. The EIF uses
 a fixture KMS ARN and seed ID, and is a build-validation artifact. No Nitro

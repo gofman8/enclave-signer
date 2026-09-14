@@ -7,8 +7,10 @@ endif()
 
 # Compile exactly the production helper against the same pinned AWS libraries.
 # The executable wrappers and runtime NSM replacement exist only in this project.
-list(APPEND CMAKE_MODULE_PATH "${NITRO_SDK_SOURCE_DIR}/cmake/modules")
-find_package(LibJsonC REQUIRED)
+find_package(json-c CONFIG REQUIRED)
+if(NOT TARGET LibJsonC::Json)
+  add_library(LibJsonC::Json ALIAS json-c::json-c)
+endif()
 find_package(aws-nitro-enclaves-sdk-c CONFIG REQUIRED)
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../../enclave/kms-tool" production-helper)
 # Upstream's static export records libnsm as an absolute build-time path.

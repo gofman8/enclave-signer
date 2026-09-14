@@ -36,6 +36,7 @@ from botocore.config import Config
 from botocore.credentials import Credentials
 from botocore.exceptions import ClientError
 from sdk_helper import SdkHelper
+from helper_contract import run_helper_contract
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
@@ -626,6 +627,7 @@ class Suite:
             "--key", self.certs["server-key.pem"], "--node", self.args.node],
             port=self.args.control_port)
         self.api("/health")
+        run_helper_contract(self)
         self.lifecycle()
         self.legacy_compatibility()
         self.concurrent_bootstrap()
@@ -644,8 +646,6 @@ def main():
     parser.add_argument("--broker-port", type=int, default=3446)
     parser.add_argument("--sdk-image", default="codex-swap-kms-sdk-builder:cd61b61")
     parser.add_argument("--sdk-prefix", type=Path, default=ROOT / ".artifacts/kms-sdk/prefix")
-    parser.add_argument("--sdk-source", type=Path,
-        default=ROOT / ".artifacts/kms-sdk/build/src/aws-nitro-enclaves-sdk-c")
     args = parser.parse_args()
     suite = Suite(args)
     try:
