@@ -636,15 +636,31 @@ class Suite:
         ):
             self.fixture_reset(name.replace(" ", "-"))
             broker = self.broker()
-            with self.case(name + " fails closed"):
+            with self.case(name + " fails closed") as result:
                 enclave, address = self.signer(**overrides)
+                started = time.monotonic()
                 failure = self.failed_init(address)
                 assert self.object() is None
-                if name in {"untrusted TLS certificate", "wrong TLS hostname", "plaintext HTTP endpoint"}:
-                    # A later IAM/ARN denial must not mask a TLS validation bug.
-                    assert "AWS Nitro SDK helper rejected" in failure["error"]["message"]
+                tls_case = name in {"untrusted TLS certificate", "wrong TLS hostname", "plaintext HTTP endpoint"}
+                if tls_case:
+                    # The aggregate Rust budget can expire before the SDK's
+                    # native alarm returns a TLS acquisition failure. Both
+                    # paths must refuse before any authenticated KMS request.
+                    message = failure["error"]["message"]
+                    assert any(text in message for text in (
+                        "AWS Nitro SDK helper rejected", "AWS Nitro SDK helper timed out")), failure
+                    assert time.monotonic() - started < 18
                     assert not [event for event in self.audit() if event["service"] == "kms"]
+                    result["refusal"] = "deadline" if "timed out" in message else "helper-rejection"
                 self.stop(enclave)
+                if tls_case:
+                    # A working trusted request to this same fixture rules out
+                    # a dead endpoint or unrelated IAM failure masking TLS bugs.
+                    control, control_address = self.signer()
+                    self.call(control_address, "init")
+                    assert self.call(control_address, "sign")["verified"]
+                    result["trusted_control_passed"] = True
+                    self.stop(control)
             self.stop(broker)
 
     def write_report(self):
