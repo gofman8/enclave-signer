@@ -412,7 +412,7 @@ def serve(listener, broker, tcp=False):
             connection, peer = listener.accept()
         except OSError as error:
             if error.errno in (errno.EBADF, errno.ENOTSOCK, errno.EINVAL):
-                # A closed/broken listener needs systemd to restart the service.
+                # A closed/broken listener needs the host supervisor to restart the service.
                 raise
             # No OS/SDK exception text: it can contain request/configuration
             # data. Back off to avoid a tight loop on descriptor exhaustion.
