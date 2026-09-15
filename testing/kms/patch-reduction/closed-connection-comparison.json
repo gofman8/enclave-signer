@@ -1,0 +1,47 @@
+{
+  "scope": "Real AWS CRT SigV4 signing and HTTP transport over a loopback TCP connection that the peer closes before request activation. No link wrappers, TLS, NSM, AWS service, or real credentials. The unchanged KMS REST request path is tested with both operations; 3-second SIGALRM bounds the negative control.",
+  "sdk_source": {
+    "upstream_commit": "cd61b6187c8b20867ba4368d1ae62c5790c0269a",
+    "patch_sha256": "8364a3d98541283417d780918e00a81bae8470f32b0a9ff7037fdc8782b64260",
+    "effective_rest_c_sha256": "5f97ab62f6faf792b8db04550783899cb86936ae69e4c1c970e9dc96a577897b"
+  },
+  "source_sha256": "180fa3500d4fa142390b595ebab1274133dd5fae2b6a3aafa910c665ebb183cb",
+  "results": [
+    {
+      "sdk": "unmodified_upstream",
+      "operation": "TrentService.GenerateDataKey",
+      "exit_code": 142,
+      "expected_exit_code": 142,
+      "wall_seconds": 3.297,
+      "stdout": "peer closed; requesting TrentService.GenerateDataKey with real AWS signer and HTTP transport\n",
+      "stderr": "failed to create request."
+    },
+    {
+      "sdk": "unmodified_upstream",
+      "operation": "TrentService.Decrypt",
+      "exit_code": 142,
+      "expected_exit_code": 142,
+      "wall_seconds": 3.187,
+      "stdout": "peer closed; requesting TrentService.Decrypt with real AWS signer and HTTP transport\n",
+      "stderr": "failed to create request."
+    },
+    {
+      "sdk": "minimal_patch",
+      "operation": "TrentService.GenerateDataKey",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "wall_seconds": 0.199,
+      "stdout": "peer closed; requesting TrentService.GenerateDataKey with real AWS signer and HTTP transport\nrequest returned error=AWS_ERROR_HTTP_CONNECTION_CLOSED in 0.000214 seconds\n",
+      "stderr": "failed to create request.failed  to process request"
+    },
+    {
+      "sdk": "minimal_patch",
+      "operation": "TrentService.Decrypt",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "wall_seconds": 0.172,
+      "stdout": "peer closed; requesting TrentService.Decrypt with real AWS signer and HTTP transport\nrequest returned error=AWS_ERROR_HTTP_CONNECTION_CLOSED in 0.000282 seconds\n",
+      "stderr": "failed to create request.failed  to process request"
+    }
+  ]
+}

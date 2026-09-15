@@ -1,0 +1,46 @@
+{
+  "production_commit": "9eb759778e14b7c3e33aa1ebf73c85e0d4f20705",
+  "tested_source_commit": "309ef408723dcf45148f4624db5ac80b4768cca0",
+  "source_clean_during_e2e": true,
+  "native_test_source_commit": "5b34659b38bfca7305cde7896f8c6be8e5756575",
+  "patch_verification": {
+    "upstream_commit": "cd61b6187c8b20867ba4368d1ae62c5790c0269a",
+    "old_patch_sha256": "1f9319934ac86c11cf2b1daf5f084c16e348f323b0c208d524e518247841002a",
+    "patch_sha256": "8364a3d98541283417d780918e00a81bae8470f32b0a9ff7037fdc8782b64260",
+    "effective_rest_c_sha256": "5f97ab62f6faf792b8db04550783899cb86936ae69e4c1c970e9dc96a577897b",
+    "added_source_lines": 19,
+    "removed_source_lines": 8,
+    "changed_source_files": [
+      "source/rest.c"
+    ],
+    "canonical_diff_matches_patch": true,
+    "clean_upstream_forward_apply_check": true,
+    "reverse_apply_restores_clean_upstream": true,
+    "reapplied_source_matches_expected": true,
+    "scope": "Read-only build verification: no compile or runtime tests performed in this step."
+  },
+  "source_hashes": {
+    "enclave/kms-tool/main.c": "5c885904bc131148177e2877662905bce81b6e5b2c8cdd69b7407a49b5f1d602",
+    "enclave/kms-tool/CMakeLists.txt": "f05d08e11681ca76a9c545dc49be79cd4bf9423890238b7a1065a7dcb1a40da3",
+    "build/build-swap-kms-tool.sh": "0f003344bec79a8ae44703c027d52405e2a12a3e980b4ff3e5d0b8df4f3a4ad2",
+    "build/swap-kms-dependencies.tsv": "fef97021bfdc579d0b252b397a66a3a7fc78004948091e1a59ea8781d647d796",
+    "build/swap-kms-nsm.Cargo.lock": "02dce31c049455647f78a2315ade3d015564fce6d3ea6f03750b7c24ae4c8fc6",
+    "build/patches/nitro-sdk-cleanup.patch": "8364a3d98541283417d780918e00a81bae8470f32b0a9ff7037fdc8782b64260"
+  },
+  "native_build": "Production build/build-swap-kms-tool.sh completed in Linux ARM64 using cached pinned sources and the reduced canonical patch. Official SDK, CLI tools and production helper were rebuilt; all other dependency revisions are unchanged.",
+  "native_suites_passed": 5,
+  "native_cases": {
+    "strict_ipc": 15,
+    "response_key_output": 20,
+    "error_classification": 38,
+    "request_lifecycle": 11,
+    "real_signer_closed_connection": 2
+  },
+  "removed_test_cases": "Five forced allocation-NULL cases bypassed the pinned allocator's actual abort-on-OOM behavior. They are not representative of the production helper and were removed from the lifecycle suite.",
+  "e2e_scenarios_passed": 44,
+  "e2e_report_sha256": "74ce6c7c3ba978c8ece96bd6c2992659fb23bc6208d0bac9faf77a4b546a1cd7",
+  "production_helper_binary_sha256": "ea1c49a8aa2cab475702ce1e16fdd1e0828b531d872df3625065da138d8067b7",
+  "sdk_static_library_sha256": "a3381ebcbbf56108b910129fb7989207d39a85de602e92e81087b43e3b239b0b",
+  "rust_binaries_reused": "Unchanged enclave and parent binaries match the previous cleanup report byte-for-byte; E2E ran with --skip-build while the helper and SDK were rebuilt.",
+  "limits": "E2E uses local KMS/IAM/STS/S3 emulation, mock NSM and development TCP transport. No live AWS or Nitro hardware was used. This reduction did not rerun the full enclave Docker/EIF build; earlier image and PCR measurements describe the prior SDK patch."
+}

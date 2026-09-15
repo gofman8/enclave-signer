@@ -1,0 +1,35 @@
+[1/2] Building C object CMakeFiles/swap-kms-sdk-closed-connection-tests.dir/closed_connection.c.o
+[2/2] Linking C executable swap-kms-sdk-closed-connection-tests
+Internal ctest changing into directory: /recheck/native-tests
+Test project /recheck/native-tests
+    Start 1: credential-cleanup
+1/5 Test #1: credential-cleanup ...............   Passed    0.03 sec
+    Start 2: response-contract
+2/5 Test #2: response-contract ................   Passed    0.03 sec
+    Start 3: sdk-request-cleanup
+3/5 Test #3: sdk-request-cleanup ..............   Passed    0.01 sec
+    Start 4: sdk-closed-generate
+4/5 Test #4: sdk-closed-generate ..............   Passed    0.03 sec
+    Start 5: sdk-closed-decrypt
+5/5 Test #5: sdk-closed-decrypt ...............   Passed    0.03 sec
+
+100% tests passed, 0 tests failed out of 5
+
+Total Test time (real) =   0.12 sec
+credential cleanup, 15 strict IPC cases and optional AWS session-token checks passed
+response key/output cases: 20 PASS; safe error classifications: 38 PASS
+mutex: PASS (status=0)
+condition-variable: PASS (status=0)
+sign-start: PASS (status=0)
+failed  to process requestsign-sync: PASS (status=0)
+failed  to process requestapply-sync: PASS (status=0)
+failed to create request.failed  to process requestmake-stream: PASS (status=0)
+failed to create request.failed  to process requestactivate-stream: PASS (status=0)
+failed  to process requestsign-async: PASS (status=0)
+failed  to process requeststream-async-error: PASS (status=0)
+stream-async-success: PASS (status=0)
+spurious-wake: PASS (status=0)
+[1/4] Building C object CMakeFiles/closed-patched.dir/closed_connection.c.o
+[2/4] Building C object CMakeFiles/closed-upstream.dir/closed_connection.c.o
+[3/4] Linking C executable closed-patched
+[4/4] Linking C executable closed-upstream

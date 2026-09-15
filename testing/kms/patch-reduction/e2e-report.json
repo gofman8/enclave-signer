@@ -1,0 +1,275 @@
+{
+  "branch": "kms-testing",
+  "completed_at": "2026-09-15T14:12:39.317754+00:00",
+  "status": "passed",
+  "failure": null,
+  "git_commit": "309ef408723dcf45148f4624db5ac80b4768cca0",
+  "source_dirty": false,
+  "source_commit_at_start": "309ef408723dcf45148f4624db5ac80b4768cca0",
+  "source_dirty_at_start": false,
+  "enclave_binary_sha256": "b74bebf302ab45840ef91448d0b29a04bc5f9b4a1fb53a4fc52d90d360c66254",
+  "parent_binary_sha256": "3ee475176558b84223978438569836f2eb7d3016a484ce53c638201607fb97ca",
+  "sdk_helper_binary_sha256": "4b3d8ac5e0a012d10c97946c15b3925325c8121ed892f13970287df2cf0fac59",
+  "production_helper_binary_sha256": "ea1c49a8aa2cab475702ce1e16fdd1e0828b531d872df3625065da138d8067b7",
+  "sdk_image": "codex-swap-kms-sdk-builder:security-review-strict-input",
+  "sdk_image_id": "sha256:078b54035c74d9b8a9c38c1d8b8a59fd73725b5eed80f7960db0239174e4d20c",
+  "sdk_source_provenance": {
+    "upstream_commit": "cd61b6187c8b20867ba4368d1ae62c5790c0269a",
+    "patch_sha256": "8364a3d98541283417d780918e00a81bae8470f32b0a9ff7037fdc8782b64260",
+    "effective_rest_c_sha256": "5f97ab62f6faf792b8db04550783899cb86936ae69e4c1c970e9dc96a577897b"
+  },
+  "dependency_manifest_sha256": "fef97021bfdc579d0b252b397a66a3a7fc78004948091e1a59ea8781d647d796",
+  "production_helper_source_sha256": "5c885904bc131148177e2877662905bce81b6e5b2c8cdd69b7407a49b5f1d602",
+  "python_dependencies": {
+    "boto3": "1.43.94",
+    "botocore": "1.43.94",
+    "moto": "5.2.3",
+    "pip": "26.2.1"
+  },
+  "legacy_client_commit": "3d5086558faba04d589ddc63abc6bfc43a8743b9",
+  "legacy_client_binary_sha256": "21bc0eb36a8ebaabfc7948c9638b616f026b8e9f37b3a74ce3397f12e41eab20",
+  "suite": "real enclave, official AWS C SDK helper, broker and parent processes with local Moto KMS/IAM/STS/S3",
+  "boundary": "Official SDK uses mock libnsm, test endpoint/CA linker wrappers and simulated entropy ioctl; AWS hardware trust chain is not exercised.",
+  "results": [
+    {
+      "name": "official SDK helper IPC: strict bounds, ciphertext-only generation and recovery",
+      "status": "passed",
+      "rejected_input_cases": 13,
+      "generated_seed_returned": false,
+      "kms_generate_calls": 1,
+      "kms_decrypt_calls": 1,
+      "recovered_seed_bytes": 64,
+      "seconds": 1.828
+    },
+    {
+      "name": "bootstrap: persist encrypted seed before signing",
+      "status": "passed",
+      "ciphertext_sha256": "0fd00dd8ddcc6b8281795a09ac57b4c811e4be3372ccec0bab809dd8af5d3bdf",
+      "seconds": 0.44
+    },
+    {
+      "name": "real parent gRPC routes the same verified gas signature",
+      "status": "passed",
+      "seconds": 0.11
+    },
+    {
+      "name": "swap cloning and seed import remain disabled",
+      "status": "passed",
+      "seconds": 0.024
+    },
+    {
+      "name": "unpinned restart automatically reuses existing ciphertext and identity",
+      "status": "passed",
+      "seconds": 0.365
+    },
+    {
+      "name": "cold signer and broker restart: identical identity and signature",
+      "status": "passed",
+      "seconds": 0.416
+    },
+    {
+      "name": "second replica: identical identity and signature without cloning",
+      "status": "passed",
+      "seconds": 0.271
+    },
+    {
+      "name": "restore kms_denied: preserve ciphertext and recover after retry",
+      "status": "passed",
+      "seconds": 0.562
+    },
+    {
+      "name": "restore kms_wrong_algorithm: preserve ciphertext and recover after retry",
+      "status": "passed",
+      "seconds": 0.477
+    },
+    {
+      "name": "restore kms_plaintext: preserve ciphertext and recover after retry",
+      "status": "passed",
+      "seconds": 0.43
+    },
+    {
+      "name": "restore kms_wrong_key: preserve ciphertext and recover after retry",
+      "status": "passed",
+      "seconds": 0.467
+    },
+    {
+      "name": "restore kms_invalid_cms: preserve ciphertext and recover after retry",
+      "status": "passed",
+      "seconds": 0.473
+    },
+    {
+      "name": "restore kms_short_seed: preserve ciphertext and recover after retry",
+      "status": "passed",
+      "seconds": 0.448
+    },
+    {
+      "name": "identity pin refuses a different valid KMS ciphertext",
+      "status": "passed",
+      "seconds": 0.296
+    },
+    {
+      "name": "wrong expected identity fails closed",
+      "status": "passed",
+      "seconds": 0.268
+    },
+    {
+      "name": "ciphertext corruption fails without replacement",
+      "status": "passed",
+      "seconds": 0.372
+    },
+    {
+      "name": "unpinned corrupted object fails without generating a replacement",
+      "status": "passed",
+      "seconds": 0.236
+    },
+    {
+      "name": "missing recovery state never creates a replacement identity",
+      "status": "passed",
+      "seconds": 0.096
+    },
+    {
+      "name": "restore ciphertext created by the previous Rust KMS client",
+      "status": "passed",
+      "seconds": 0.469
+    },
+    {
+      "name": "concurrent bootstrap converges on one conditional S3 write",
+      "status": "passed",
+      "seconds": 0.551
+    },
+    {
+      "name": "slow KMS: bounded init leaves workers responsive and retry recovers",
+      "status": "passed",
+      "failed_init_seconds": 12.039,
+      "seconds": 14.499
+    },
+    {
+      "name": "s3_read_denied: initialization fails and same-process retry recovers",
+      "status": "passed",
+      "diagnostic": "access_denied",
+      "seconds": 0.433
+    },
+    {
+      "name": "s3_write_denied: initialization fails and same-process retry recovers",
+      "status": "passed",
+      "diagnostic": "access_denied",
+      "seconds": 0.636
+    },
+    {
+      "name": "kms_denied: initialization fails and same-process retry recovers",
+      "status": "passed",
+      "diagnostic": "access_denied",
+      "seconds": 0.602
+    },
+    {
+      "name": "kms_plaintext: initialization fails and same-process retry recovers",
+      "status": "passed",
+      "seconds": 0.605
+    },
+    {
+      "name": "kms_wrong_key: initialization fails and same-process retry recovers",
+      "status": "passed",
+      "seconds": 0.594
+    },
+    {
+      "name": "kms_invalid_cms: initialization fails and same-process retry recovers",
+      "status": "passed",
+      "seconds": 0.694
+    },
+    {
+      "name": "kms_short_seed: initialization fails and same-process retry recovers",
+      "status": "passed",
+      "seconds": 0.535
+    },
+    {
+      "name": "kms_http_error: initialization fails and same-process retry recovers",
+      "status": "passed",
+      "diagnostic": "unavailable",
+      "seconds": 0.585
+    },
+    {
+      "name": "missing broker credentials preserve a non-retryable configuration diagnostic",
+      "status": "passed",
+      "diagnostic": "configuration_error",
+      "seconds": 0.083
+    },
+    {
+      "name": "production broker peer quota rejects excess calls and recovers after refill",
+      "status": "passed",
+      "accepted": 8,
+      "rejected": 8,
+      "seconds": 2.572
+    },
+    {
+      "name": "production KMS usage example with manual rollout: allowed bootstrap and recovery",
+      "status": "passed",
+      "seconds": 0.004
+    },
+    {
+      "name": "KMS usage example and manual rollout: role, PCR, context and plaintext denials",
+      "status": "passed",
+      "seconds": 0.013
+    },
+    {
+      "name": "resource examples deny KMS bypasses, S3 overwrite and deletion despite a broad identity allow",
+      "status": "passed",
+      "seconds": 0.006
+    },
+    {
+      "name": "deployment fixture role is limited to the seed; additional broad grants remain an operator responsibility",
+      "status": "passed",
+      "seconds": 0.022
+    },
+    {
+      "name": "local AWS API rejects a missing Recipient and invalid SigV4",
+      "status": "passed",
+      "seconds": 0.214
+    },
+    {
+      "name": "SigV4 rejects modified body bytes and a modified body hash",
+      "status": "passed",
+      "seconds": 0.009
+    },
+    {
+      "name": "local S3 API enforces HTTPS, conditional creation and no deletion",
+      "status": "passed",
+      "seconds": 0.03
+    },
+    {
+      "name": "unapproved PCR0 fails closed",
+      "status": "passed",
+      "seconds": 0.264
+    },
+    {
+      "name": "restore PCR0 cannot generate fails closed",
+      "status": "passed",
+      "seconds": 0.256
+    },
+    {
+      "name": "encryption context mismatch fails closed",
+      "status": "passed",
+      "seconds": 0.344
+    },
+    {
+      "name": "untrusted TLS certificate fails closed",
+      "status": "passed",
+      "refusal": "unavailable",
+      "trusted_control_passed": true,
+      "seconds": 12.52
+    },
+    {
+      "name": "wrong TLS hostname fails closed",
+      "status": "passed",
+      "refusal": "unavailable",
+      "trusted_control_passed": true,
+      "seconds": 12.615
+    },
+    {
+      "name": "plaintext HTTP endpoint fails closed",
+      "status": "passed",
+      "refusal": "internal_error",
+      "trusted_control_passed": true,
+      "seconds": 0.665
+    }
+  ]
+}
