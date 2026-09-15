@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
-"""Offline checks for minimal production policies and a test-only operator role."""
+"""Offline checks for test-only KMS/S3 policies and operator role."""
 import argparse
 import hashlib
 import json
 from pathlib import Path
 import shutil
 import subprocess
-from policy_fixtures import fixture_policies
+from policy_fixtures import HERE, fixture_policies
 
 ROOT = Path(__file__).resolve().parents[2]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--node", default=shutil.which("node"))
-parser.add_argument("--repo", type=Path, default=ROOT, help="Policy source checkout (defaults to this checkout)")
 parser.add_argument("--output", type=Path, default=ROOT / ".artifacts/kms-e2e/policy-checks.json")
 args = parser.parse_args()
 if not args.node:
@@ -44,7 +43,7 @@ def check(name, allowed, action, resource, context, policy, identities, principa
 
 try:
     for phase in ("bootstrap", "transition", "restore"):
-        key, bucket, role = fixture_policies(args.repo, substitutions, bootstrap, restore, phase)
+        key, bucket, role = fixture_policies(substitutions, bootstrap, restore, phase)
         values = {"application": "utexo-enclave-signer", "flow": "rgb-swap",
                   "seed_id": "local-rgb-swap", "bitcoin_network": "regtest"}
         context = {"kms:RecipientAttestation:PCR0": bootstrap,
@@ -90,9 +89,9 @@ try:
 finally:
     process.stdin.close()
     process.wait(timeout=30)
-report = {"scope": "Offline IAM simulation of minimal production usage examples, with test-only exact-scope identity and explicit manual bootstrap/restore policy edits; no AWS calls or deployment approval gate",
+report = {"scope": "Offline IAM simulation of test-only KMS/S3 usage examples, with test-only exact-scope identity and explicit manual bootstrap/restore policy edits; no AWS calls or deployment approval gate",
     "count": len(results), "passed": sum(r["passed"] for r in results),
-    "policy_sha256": {n: hashlib.sha256((args.repo / "deploy" / n).read_bytes()).hexdigest() for n in ("swap-kms-key-policy.json", "swap-seed-bucket-policy.json")},
+    "policy_sha256": {n: hashlib.sha256((HERE / "policies" / n).read_bytes()).hexdigest() for n in ("swap-kms-key-policy.json", "swap-seed-bucket-policy.json")},
     "removed_framework_coverage": ["EIF approval validator", "systemd relay guard", "account-wide signer permissions boundary", "broad-grant bucket administration denials"], "cases": results}
 args.output.parent.mkdir(parents=True, exist_ok=True)
 args.output.write_text(json.dumps(report, indent=2) + "\n")

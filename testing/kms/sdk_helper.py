@@ -4,7 +4,6 @@ Only the test executable links the endpoint/CA wrappers and loads mock libnsm.
 The production helper source and pinned SDK libraries are compiled unchanged.
 """
 
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -14,24 +13,30 @@ import sys
 import uuid
 
 
+# This source hash is from the official SDK commit in dependencies.tsv. Updating
+# the SDK requires reviewing its pristine REST source and updating this receipt.
+UNMODIFIED_SDK_SOURCE = {
+    "upstream_commit": "cd61b6187c8b20867ba4368d1ae62c5790c0269a",
+    "rest_c_sha256": "60655b9be64b730d333238b13be7846c0a6eba00b540b3dfb9eef35aef39522c",
+    "source_modified": False,
+}
+
+
 def verify_sdk_provenance(root, prefix):
-    """Refuse stale exported libraries before building the test helper."""
+    """Refuse stale or source-modified SDK exports before building the helper."""
     installed = prefix / "share/swap-kms"
     manifest = (root / "build/swap-kms-dependencies.tsv").read_bytes()
     if (installed / "dependencies.tsv").read_bytes() != manifest:
         raise RuntimeError("SDK prefix dependency manifest differs from this checkout")
     sdk_commit = next(fields[2] for line in manifest.decode().splitlines()
         if (fields := line.split()) and fields[0] == "aws-nitro-enclaves-sdk-c")
-    patch = (root / "build/patches/nitro-sdk-cleanup.patch").read_bytes()
-    if (installed / "patches/nitro-sdk-cleanup.patch").read_bytes() != patch:
-        raise RuntimeError("SDK prefix cleanup patch differs from this checkout")
     provenance = json.loads((installed / "sdk-source.json").read_text())
-    if provenance.get("upstream_commit") != sdk_commit or provenance.get(
-            "patch_sha256") != hashlib.sha256(patch).hexdigest():
-        raise RuntimeError("SDK prefix source provenance differs from this checkout")
-    source_hash = provenance.get("effective_rest_c_sha256", "")
-    if len(source_hash) != 64 or any(c not in "0123456789abcdef" for c in source_hash):
-        raise RuntimeError("SDK prefix has no valid effective REST source hash")
+    if (sdk_commit != UNMODIFIED_SDK_SOURCE["upstream_commit"]
+            or provenance != UNMODIFIED_SDK_SOURCE
+            or provenance.get("source_modified") is not False):
+        raise RuntimeError("SDK prefix does not match the pinned unmodified source")
+    if any((installed / "patches").glob("*.patch")):
+        raise RuntimeError("SDK prefix contains a stale source patch")
     return provenance
 
 

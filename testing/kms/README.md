@@ -4,27 +4,35 @@ This tooling belongs only on `kms-testing`. The production implementation branch
 is `codex/rgb-swap-kms-persistence`. Never merge the testing feature, local CA/PCR
 hooks, emulator, or generated artifacts into that branch.
 
-The suite launches actual enclave, seed-broker, and parent-service processes,
-plus the real AWS Nitro Enclaves C SDK helper in a Linux container. The
+The suite launches the actual enclave and Rust parent-service binaries. A parent
+instance enables its optional credential/S3 broker; a separate instance checks
+the unchanged gRPC signing route. The real AWS Nitro Enclaves C SDK helper runs
+in a Linux container. The
 enclave generates its seed through a local KMS API, commits the encrypted blob to
 local S3, decrypts the committed blob, derives its normal keys, and signs through
 the existing gas transaction path. It then repeats this across process restarts
 and replicas. No AWS account, cloud resources, LocalStack token, or Nitro device
 is needed. Docker runs the Linux-only official SDK and NSM test adapter.
 
-The current minimal integration keeps the credential/S3 broker and two manually
-configured AWS usage-policy examples. The removed deployment validator, custom
-systemd relay, and broad permissions-boundary templates are not current feature
-coverage. A dedicated test-only role and explicit bootstrap/restore policy edits
-model the deployment prerequisites; they are not additional production tooling.
+The current integration uses the existing Rust parent for credentials and S3.
+Production includes no new deployment scripts, IAM templates, or SDK source
+patch. The policy examples are preserved only in `testing/kms/policies`; a
+test-only role and explicit bootstrap/restore policy edits model the deployment
+prerequisites. They are not production deployment tooling.
 
-The cleaned revision passed **44/44 scenarios** at testing `6254333`, containing
+The pinned SDK still has its upstream request-completion defect on an already
+closed connection. The helper's existing 12-second process limit bounds that
+failure; initialization fails without activating a key. Native tests retain this
+upstream behavior as a bounded-failure contract rather than claiming it repaired.
+
+The earlier cleaned revision passed **44/44 scenarios** at testing `6254333`, containing
 production `c980fda`. See [cleanup validation](pr-cleanup/README.md) for the exact
 scope, source revisions, regression results and actual Docker/EIF evidence.
 
 The subsequent [SDK patch reduction](patch-reduction/README.md) passed five
 native suites and a fresh **44/44 local E2E scenarios** with the rebuilt SDK and
-helper. It reduces the SDK change to 19 added / 8 removed source lines.
+helper. That historical revision reduced the SDK change to 19 added / 8 removed source
+lines. The current integration removes that source patch entirely.
 
 The earlier security-hardening revision passed **44/44 scenarios** on 2026-09-15
 at testing `530dc8a`, production `6cc65d6`. Its
@@ -60,7 +68,7 @@ container_id=$(docker create codex-swap-kms-sdk-builder:security-review)
 docker cp "$container_id:/opt/swap-kms/." .artifacts/kms-sdk/prefix/
 docker rm "$container_id"
 python3.12 -m venv .artifacts/kms-e2e/venv
-.artifacts/kms-e2e/venv/bin/python -m pip install -r deploy/requirements-swap-kms.txt
+.artifacts/kms-e2e/venv/bin/python -m pip install pip==26.2.1
 .artifacts/kms-e2e/venv/bin/python -m pip install \
   -r testing/kms/requirements.txt -c testing/kms/requirements.lock
 npm ci --prefix testing/kms
@@ -73,7 +81,9 @@ source with only the test linker wrappers and mock NSM library. It builds both
 enclave/client binaries and both parent/client binaries
 with locked Cargo dependencies, starts the local services, runs the assertions,
 and stops its processes even on failure. It returns nonzero on the first failure.
-The emulator, clients, and broker bind only to loopback. The container connects
+The emulator, clients, and broker bind only to loopback. The runner starts the
+parent broker with `SWAP_KMS_BROKER_TCP` and the fixture CA in `SSL_CERT_FILE`;
+production uses VSOCK. Its unused gRPC listener gets a separate ephemeral port. The container connects
 through Docker Desktop/Colima's `host.docker.internal`; native Linux uses host
 networking to reach loopback. It refuses occupied ports
 instead of stopping another service. Defaults:
@@ -89,9 +99,10 @@ instead of stopping another service. Defaults:
 Use `--kms-port`, `--broker-port`, `--aws-port`, and `--control-port` for port
 overrides; `--node /path/to/node` selects a Node executable. `--sdk-image`,
 `--sdk-prefix` select an existing builder image and installed dependency prefix.
-Preflight rejects exports whose dependency manifest, reviewed SDK cleanup patch,
-or SDK source provenance differs from this checkout. The report retains the
-upstream SDK commit, patch hash and effective REST source hash. Verify this check
+Preflight rejects exports whose dependency manifest or pristine SDK REST source
+hash differs from the pinned upstream source. The receipt must declare
+`source_modified: false`; stale patch receipts or files are rejected. The report
+retains the upstream SDK commit and unmodified REST source hash. Verify this check
 with `python -m unittest discover -s testing/kms -p 'test_sdk_provenance.py'`.
 The prefix includes the pinned upstream CMS header; the helper build does not
 require a separate SDK source checkout. `CARGO_TARGET_DIR`
@@ -147,7 +158,7 @@ the current expanded suite. Fresh reports identify the exact scenario count and 
   process. Recovery failures preserve the existing ciphertext and identity.
 - Swaps reject cloning and raw seed import in the tested feature set.
 - A delayed KMS response exercises the real initialization deadline, concurrent worker responsiveness, inactive failure state, and successful retry.
-- The concrete production policy templates are evaluated for bootstrap/recovery,
+- The test-only policy fixtures are evaluated for bootstrap/recovery,
   wrong role/PCR/context, absent Recipient, extra context keys, prohibited key
   operations, HTTPS, conditional object creation, object scope, and deletion.
 - Validly authorized requests with an incorrect SigV4 secret are rejected.
@@ -178,7 +189,8 @@ checks an incoming KMS payload hash against the body before native SigV4
 authentication; Moto otherwise trusts that header without rehashing the body.
 These are test adapter behaviors, not changes to the production KMS client.
 
-The production KMS/S3 usage-policy examples are loaded with fixture substitutions.
+The KMS/S3 examples in `testing/kms/policies` are loaded with fixture substitutions.
+They are test fixtures, not files deployed by the production branch.
 `policy_fixtures.py` models manual rollout: it authorizes bootstrap/restore PCRs
 and explicitly retires generation for the restore image. The exact-scope identity
 in `signer-role-policy.json` is **testing-only** and is installed in Moto IAM.
@@ -200,8 +212,7 @@ The pinned simulator's action metadata filter drops some valid dynamic KMS
 context keys. The adapter validates the policy, recognizes only the known AWS
 KMS context keys, and uses the same engine's public unfiltered entry point to
 retain them. Audit entries identify retained context keys. Unknown ignored keys
-or engine errors fail the test; production policies are not weakened to fit an
-emulator.
+or engine errors fail the test; the fixtures are not weakened to fit an emulator.
 
 Native processes use the gated `local-kms-e2e` feature to select the test helper
 wrapper and forward only a local CA, port, and mock PCR0
@@ -241,8 +252,9 @@ lockfile, and verified build-cache fixes are in production commit `12b1419`.
 The test-only CMS adapter now emits the streaming BER format consumed by AWS's
 SDK parser. This emulator change stays on `kms-testing`.
 
-## Earlier broker restart fix
+## Earlier Python broker restart fix (historical)
 
+The Python broker was subsequently replaced by the optional Rust parent broker.
 An immediate restart of the broker's development TCP listener failed because its
 closed connections remained in `TIME_WAIT`. Enabling `SO_REUSEADDR` on that TCP
 listener fixes the restart; the production vsock listener is unchanged.
@@ -260,8 +272,13 @@ for the pinned tools, artifact hashes, runtime compatibility checks, and limits.
 
 ## Focused testing-only checks
 
+The Rust broker tests in `parent/src/swap_persistence/tests.rs` cover the actual
+SDK client, framing, cancellation, quotas, and conditional S3 writes. They replace
+the retired Python-broker implementation tests; older reports retain those
+historical Python counts.
+
 ```sh
-.artifacts/kms-e2e/venv/bin/python -m unittest discover -s testing/kms -p test_seed_broker.py -v
+cargo test --locked --manifest-path parent/Cargo.toml swap_persistence
 .artifacts/kms-e2e/venv/bin/python testing/kms/policy-checks.py
 ```
 

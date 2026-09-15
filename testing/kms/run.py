@@ -206,10 +206,18 @@ class Suite:
             AWS_ENDPOINT_URL_S3=f["aws_tls_endpoint"], AWS_CA_BUNDLE=str(self.certs["ca.pem"]),
             SWAP_KMS_SEED_ID=f["seed_id"], SWAP_KMS_S3_BUCKET=f["bucket"],
             SWAP_KMS_S3_KEY=f["object_key"])
+        # Exercise the actual parent binary's optional Rust broker. Its gRPC
+        # listener uses a separate unused port; normal parent gRPC tests below
+        # keep all SWAP_* settings absent.
+        with socket.socket() as sock:
+            sock.bind(("127.0.0.1", 0))
+            grpc_port = sock.getsockname()[1]
+        env.update(GRPC_HOST="127.0.0.1", GRPC_PORT=str(grpc_port), USE_VSOCK="0",
+            SWAP_KMS_BROKER_TCP=f"127.0.0.1:{self.args.broker_port}",
+            SSL_CERT_FILE=str(self.certs["ca.pem"]))
         env.update(overrides)
         env = {key: value for key, value in env.items() if value is not None}
-        self.broker_process = self.start("broker", [sys.executable, ROOT / "deploy/swap-seed-broker.py",
-            "--tcp", f"127.0.0.1:{self.args.broker_port}"], env, self.args.broker_port)
+        self.broker_process = self.start("broker", [self.parent], env, self.args.broker_port)
         return self.broker_process
 
     def signer(self, restore_address=None, legacy=False, **overrides):
@@ -597,13 +605,13 @@ class Suite:
         policy_context = {"kms:RecipientAttestation:PCR0": BOOTSTRAP,
                           "kms:EncryptionContextKeys": list(context),
                           **{f"kms:EncryptionContext:{k}": v for k, v in context.items()}}
-        with self.case("production KMS usage example with manual rollout: allowed bootstrap and recovery"):
+        with self.case("test-only KMS policy with manual rollout: allowed bootstrap and recovery"):
             for action, pcr in (("kms:GenerateDataKey", BOOTSTRAP), ("kms:Decrypt", BOOTSTRAP),
                                 ("kms:Decrypt", RESTORE)):
                 verdict = self.api("/simulate", {"action": action, "context": {
                     **policy_context, "kms:RecipientAttestation:PCR0": pcr}})
                 assert verdict["result"] == "Allowed", verdict
-        with self.case("KMS usage example and manual rollout: role, PCR, context and plaintext denials"):
+        with self.case("test-only KMS policy and manual rollout: role, PCR, context and plaintext denials"):
             cases = [
                 {"context": {k: v for k, v in policy_context.items() if k != "kms:RecipientAttestation:PCR0"}},
                 {"context": {**policy_context, "kms:RecipientAttestation:PCR0": "cc" * 48}},
@@ -618,7 +626,7 @@ class Suite:
             for case in cases:
                 verdict = self.api("/simulate", {"action": "kms:Decrypt", "context": policy_context, **case})
                 assert verdict["result"] in ("ExplicitlyDenied", "ImplicitlyDenied"), (case, verdict)
-        with self.case("resource examples deny KMS bypasses, S3 overwrite and deletion despite a broad identity allow"):
+        with self.case("test-only resource policies deny KMS bypasses, S3 overwrite and deletion despite a broad identity allow"):
             broad = [f["broad_identity_policy"]]
             bucket_arn = f"arn:aws:s3:::{f['bucket']}"
             object_arn = bucket_arn + "/" + f["object_key"]
@@ -633,8 +641,8 @@ class Suite:
                 verdict = self.api("/simulate", {"action": action, "resource": resource,
                     "context": ctx, "identity_policies": broad})
                 assert verdict["result"] == "ExplicitlyDenied", (action, verdict)
-        with self.case("deployment fixture role is limited to the seed; additional broad grants remain an operator responsibility"):
-            # The minimal examples no longer install an account-wide explicit
+        with self.case("test fixture role is limited to the seed; additional broad grants remain an operator responsibility"):
+            # The test fixtures do not install an account-wide explicit
             # permissions boundary. This is a least-privilege fixture identity,
             # not a claim that another attached Allow can never expand it.
             bucket_arn = f"arn:aws:s3:::{f['bucket']}"
@@ -790,18 +798,22 @@ class Suite:
             "source_dirty_at_start": self.source_dirty_at_start,
             "enclave_binary_sha256": binary_hash(self.enclave),
             "parent_binary_sha256": binary_hash(self.parent),
+            "broker_implementation": "optional Rust broker in the parent-service binary",
+            "broker_binary_sha256": binary_hash(self.parent),
             "sdk_helper_binary_sha256": binary_hash(self.artifacts / "sdk-helper-build/bin/swap-kms-tool"),
             "production_helper_binary_sha256": binary_hash(self.args.sdk_prefix / "bin/swap-kms-tool"),
             "sdk_image": self.args.sdk_image,
             "sdk_image_id": self.sdk_helper.image_id if self.sdk_helper is not None else None,
             "sdk_source_provenance": self.sdk_helper.source_provenance if self.sdk_helper is not None else None,
             "dependency_manifest_sha256": binary_hash(ROOT / "build/swap-kms-dependencies.tsv"),
+            "policy_fixture_sha256": {name: binary_hash(HERE / "policies" / name)
+                for name in ("swap-kms-key-policy.json", "swap-seed-bucket-policy.json")},
             "production_helper_source_sha256": binary_hash(ROOT / "enclave/kms-tool/main.c"),
             "python_dependencies": {name: __import__("importlib.metadata", fromlist=["version"]).version(name)
                 for name in ("boto3", "botocore", "moto", "pip")},
             "legacy_client_commit": LEGACY_COMMIT,
             "legacy_client_binary_sha256": binary_hash(self.legacy_enclave),
-            "suite": "real enclave, official AWS C SDK helper, broker and parent processes with local Moto KMS/IAM/STS/S3",
+            "suite": "real enclave, official AWS C SDK helper and Rust parent/broker processes with local Moto KMS/IAM/STS/S3",
             "boundary": "Official SDK uses mock libnsm, test endpoint/CA linker wrappers and simulated entropy ioctl; AWS hardware trust chain is not exercised.",
             "results": self.results,
         }

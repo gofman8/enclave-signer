@@ -3,8 +3,8 @@
 
 Moto owns IAM users/roles/STS sessions, signature validation, random generation,
 KMS AES-GCM ciphertext, encryption-context authentication, and S3 objects. The
-adapter adds only missing Recipient wrapping and delegates the production policy
-templates to iam-simulate. Mock CBOR is deliberately NOT AWS attestation evidence.
+adapter adds only missing Recipient wrapping and delegates the test-only policy
+fixtures to iam-simulate. Mock CBOR is deliberately NOT AWS attestation evidence.
 Never install or run this program as part of a production deployment.
 """
 
@@ -44,7 +44,6 @@ from werkzeug.serving import make_server
 from policy_fixtures import fixture_policies
 
 HERE = Path(__file__).resolve().parent
-REPO = HERE.parent.parent
 REGION = "eu-west-1"
 ACCOUNT = "123456789012"
 BOOTSTRAP_PCR0 = "aa" * 48
@@ -389,7 +388,7 @@ def setup_fixture(state, values):
             "REPLACE_SEED_OBJECT_KEY": object_key,
         }
         state.key_policy, state.bucket_policy, identity_policy = fixture_policies(
-            REPO, substitutions, BOOTSTRAP_PCR0, RESTORE_PCR0)
+            substitutions, BOOTSTRAP_PCR0, RESTORE_PCR0)
         kms.put_key_policy(KeyId=key_arn, PolicyName="default", Policy=json.dumps(state.key_policy))
         s3 = client(state, "s3", admin)
         s3.create_bucket(Bucket=bucket, CreateBucketConfiguration={"LocationConstraint": REGION})

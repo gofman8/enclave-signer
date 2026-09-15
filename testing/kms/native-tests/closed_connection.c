@@ -1,6 +1,8 @@
 /* Exercise Nitro SDK request completion with the real CRT signer and HTTP
  * transport. The only endpoint is a loopback TCP listener that closes before
  * the request, as a KMS relay can while the helper prepares its Recipient.
+ * An isolated child uses the helper's 12-second alarm. The pinned unmodified
+ * SDK loses the error notification; the parent requires that bounded failure.
  * No wrappers, AWS calls, NSM device, or real credentials are involved. */
 #include <aws/nitro_enclaves/nitro_enclaves.h>
 #include <aws/nitro_enclaves/rest.h>
@@ -13,6 +15,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <signal.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #define CHECK(x) do { if (!(x)) { fprintf(stderr, "check failed: %s:%d: %s\n", __FILE__, __LINE__, #x); abort(); } } while (0)
@@ -39,8 +43,7 @@ static void shutdown_connection(struct aws_http_connection *conn, int error, voi
     CHECK(pthread_mutex_unlock(&lock) == 0);
 }
 
-int main(int argc, char **argv) {
-    CHECK(argc == 2);
+static int request_on_closed_connection(const char *target, int notify_fd) {
     setvbuf(stdout, NULL, _IOLBF, 0);
     alarm(5);
     int listener = socket(AF_INET, SOCK_STREAM, 0);
@@ -90,13 +93,15 @@ int main(int argc, char **argv) {
             aws_byte_cursor_from_c_str("test-only-secret"), aws_byte_cursor_from_c_str("test-only-session"), UINT64_MAX),
     };
     CHECK(client.region && client.service && client.host_name && client.credentials);
-    printf("peer closed; requesting %s with real AWS signer and HTTP transport\n", argv[1]);
+    printf("peer closed; requesting %s with real AWS signer and HTTP transport\n", target);
     struct timespec before, after;
     CHECK(clock_gettime(CLOCK_MONOTONIC, &before) == 0);
-    alarm(3);
+    alarm(12);
+    CHECK(write(notify_fd, "R", 1) == 1);
+    CHECK(close(notify_fd) == 0);
     struct aws_nitro_enclaves_rest_response *response = aws_nitro_enclaves_rest_client_request_blocking(
         &client, aws_byte_cursor_from_c_str("POST"), aws_byte_cursor_from_c_str("/"),
-        aws_byte_cursor_from_c_str(argv[1]), aws_byte_cursor_from_c_str("{}"));
+        aws_byte_cursor_from_c_str(target), aws_byte_cursor_from_c_str("{}"));
     alarm(0);
     CHECK(clock_gettime(CLOCK_MONOTONIC, &after) == 0);
     double seconds = (double)(after.tv_sec - before.tv_sec) + (double)(after.tv_nsec - before.tv_nsec) / 1e9;
@@ -113,5 +118,35 @@ int main(int argc, char **argv) {
     aws_host_resolver_release(resolver);
     aws_event_loop_group_release(group);
     aws_nitro_enclaves_library_clean_up();
+    return 0;
+}
+
+int main(int argc, char **argv) {
+    CHECK(argc == 2);
+    CHECK(!strcmp(argv[1], "TrentService.GenerateDataKey") || !strcmp(argv[1], "TrentService.Decrypt"));
+    int notice[2];
+    CHECK(pipe(notice) == 0);
+    struct timespec started, finished;
+    CHECK(clock_gettime(CLOCK_MONOTONIC, &started) == 0);
+    pid_t child = fork();
+    CHECK(child >= 0);
+    if (child == 0) {
+        CHECK(close(notice[0]) == 0);
+        exit(request_on_closed_connection(argv[1], notice[1]));
+    }
+    CHECK(close(notice[1]) == 0);
+    char stage = 0;
+    ssize_t received = read(notice[0], &stage, 1);
+    CHECK(close(notice[0]) == 0);
+    int status;
+    CHECK(waitpid(child, &status, 0) == child);
+    CHECK(clock_gettime(CLOCK_MONOTONIC, &finished) == 0);
+    double seconds = (double)(finished.tv_sec - started.tv_sec) +
+                     (double)(finished.tv_nsec - started.tv_nsec) / 1e9;
+    CHECK(received == 1 && stage == 'R'); /* Setup succeeded and the SDK request began. */
+    CHECK(WIFSIGNALED(status) && WTERMSIG(status) == SIGALRM);
+    CHECK(seconds >= 11.0 && seconds < 18.0);
+    printf("unmodified SDK %s: closed connection exhausted the 12-second child deadline (%.3fs); child reaped\n",
+           argv[1], seconds);
     return 0;
 }
