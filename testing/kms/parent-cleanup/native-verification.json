@@ -1,0 +1,112 @@
+{
+  "dependencies": [
+    {
+      "name": "aws-lc",
+      "revision": "a3d1e685552f05a9ad04a2946962c03e97bdecac",
+      "expected_revision": "a3d1e685552f05a9ad04a2946962c03e97bdecac",
+      "tracked_source_clean": true
+    },
+    {
+      "name": "s2n-tls",
+      "revision": "bce022f4195c290175b70e925e08a458221608f0",
+      "expected_revision": "bce022f4195c290175b70e925e08a458221608f0",
+      "tracked_source_clean": true
+    },
+    {
+      "name": "aws-c-common",
+      "revision": "3d274e1af954592b344a33fdf042af37b936f3d5",
+      "expected_revision": "3d274e1af954592b344a33fdf042af37b936f3d5",
+      "tracked_source_clean": true
+    },
+    {
+      "name": "aws-c-sdkutils",
+      "revision": "de0fbe807a409158c3fa285bafb88120c8989609",
+      "expected_revision": "de0fbe807a409158c3fa285bafb88120c8989609",
+      "tracked_source_clean": true
+    },
+    {
+      "name": "aws-c-cal",
+      "revision": "2441187f3bdbe0f0fe7fa5dd1736be98227ad556",
+      "expected_revision": "2441187f3bdbe0f0fe7fa5dd1736be98227ad556",
+      "tracked_source_clean": true
+    },
+    {
+      "name": "aws-c-io",
+      "revision": "1685abcd331dcced3da63b8d4cd3ced38a8bb14a",
+      "expected_revision": "1685abcd331dcced3da63b8d4cd3ced38a8bb14a",
+      "tracked_source_clean": true
+    },
+    {
+      "name": "aws-c-compression",
+      "revision": "891312c058e69a4d55f569f79dde1ee221982532",
+      "expected_revision": "891312c058e69a4d55f569f79dde1ee221982532",
+      "tracked_source_clean": true
+    },
+    {
+      "name": "aws-c-http",
+      "revision": "2b563f8a7bd67a902a8b558bb44113748045877c",
+      "expected_revision": "2b563f8a7bd67a902a8b558bb44113748045877c",
+      "tracked_source_clean": true
+    },
+    {
+      "name": "aws-c-auth",
+      "revision": "055e822f021d1cab11d608b94ac34de250986134",
+      "expected_revision": "055e822f021d1cab11d608b94ac34de250986134",
+      "tracked_source_clean": true
+    },
+    {
+      "name": "json-c",
+      "revision": "2094974201fc75b07673110cc40a3e144cbd3b0d",
+      "expected_revision": "2094974201fc75b07673110cc40a3e144cbd3b0d",
+      "tracked_source_clean": true
+    },
+    {
+      "name": "aws-nitro-enclaves-nsm-api",
+      "revision": "1993eeb0620d35f5cefc50b17638b432325328f9",
+      "expected_revision": "1993eeb0620d35f5cefc50b17638b432325328f9",
+      "tracked_source_clean": true
+    },
+    {
+      "name": "aws-nitro-enclaves-sdk-c",
+      "revision": "cd61b6187c8b20867ba4368d1ae62c5790c0269a",
+      "expected_revision": "cd61b6187c8b20867ba4368d1ae62c5790c0269a",
+      "tracked_source_clean": true
+    }
+  ],
+  "sdk_rest_matches_pristine": true,
+  "sdk_rest_sha256": "60655b9be64b730d333238b13be7846c0a6eba00b540b3dfb9eef35aef39522c",
+  "installed_provenance": {
+    "upstream_commit": "cd61b6187c8b20867ba4368d1ae62c5790c0269a",
+    "rest_c_sha256": "60655b9be64b730d333238b13be7846c0a6eba00b540b3dfb9eef35aef39522c",
+    "source_modified": false
+  },
+  "obsolete_patch_metadata_absent": true,
+  "helper_sha256": "9baddb3eddbf55d45c99750f3146fbcc4b7c70f64e4b7ddf09e6b9cb740b46c6",
+  "helper_main_sha256": "5c885904bc131148177e2877662905bce81b6e5b2c8cdd69b7407a49b5f1d602",
+  "repository_native_inputs_sha256": {
+    "build/build-swap-kms-tool.sh": "7aefedbc543d6e92054e3e0f90eb52c58400569b414830b14c65925b72ec6109",
+    "build/swap-kms-dependencies.tsv": "89fe837daba0de2a86ad691954c7ab975c1b97a2229b4270c8844bb335618dc6",
+    "build/swap-kms-nsm.Cargo.lock": "02dce31c049455647f78a2315ade3d015564fce6d3ea6f03750b7c24ae4c8fc6",
+    "build/Dockerfile.enclave": "853e8841c540453f0f0cdae00e036a31b239bffbb57776c986b8b5221853f06c",
+    "build/Dockerfile.enclave.rgb": "f2d53f025379d9cffbc2f9fcb438baa9ceb48e7dc3d244e23cb6bb4cddc1cbae",
+    "enclave/kms-tool/CMakeLists.txt": "f05d08e11681ca76a9c545dc49be79cd4bf9423890238b7a1065a7dcb1a40da3",
+    "enclave/kms-tool/main.c": "5c885904bc131148177e2877662905bce81b6e5b2c8cdd69b7407a49b5f1d602",
+    "enclave/kms-tool/README.md": "c6f298311e82a649af3cc113359f7f27bbe89c53cb7a90f93c4e1ca903196def"
+  },
+  "production_base_commit": "9eb759778e14b7c3e33aa1ebf73c85e0d4f20705",
+  "native_changes_uncommitted": true,
+  "native_image": "codex-swap-kms-sdk-builder:unmodified-official",
+  "image_id": "sha256:5db35d85e2c9ae8d585f51f39ec3a6c2198ec76d0acb3c52f2f703d7add44fb2",
+  "tests": {
+    "ctest_entries_passed": 4,
+    "strict_ipc_cases_passed": 15,
+    "response_key_output_cases_passed": 20,
+    "safe_error_classifications_passed": 38,
+    "closed_generate": "expected SIGALRM after12.027s, child reaped",
+    "closed_decrypt": "expected SIGALRM after12.026s, child reaped",
+    "installed_invalid_input": "exit64, stdout/stderr empty"
+  },
+  "upstream_warning_exception": "SDK only: -Wno-error=maybe-uninitialized; both diagnostics visibly retained in build.log. No initialization/REST/crypto replacement.",
+  "limitations": "Unmodified SDK retains lost completion notification and unsafe early cleanup paths. The child deadline/process boundary bounds failures without fixing SDK behavior. This build and local TCP test do not exercise AWS or Nitro hardware.",
+  "pass": true
+}

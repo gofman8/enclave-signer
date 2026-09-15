@@ -1,0 +1,15 @@
+{
+  "scope": "Offline IAM simulation of test-only KMS/S3 usage examples, with test-only exact-scope identity and explicit manual bootstrap/restore policy edits; no AWS calls or deployment approval gate",
+  "count": 216,
+  "passed": 216,
+  "policy_sha256": {
+    "swap-kms-key-policy.json": "c94a40f9de09d2e5eb2b66e2dbc02dd4dc97d819fd84a99f904db0c0fc085601",
+    "swap-seed-bucket-policy.json": "cb0562630d598a42e129ca633cfb06665cb3b8003f4bc406ce3030d2d9362d63"
+  },
+  "removed_framework_coverage": [
+    "EIF approval validator",
+    "systemd relay guard",
+    "account-wide signer permissions boundary",
+    "broad-grant bucket administration denials"
+  ]
+}

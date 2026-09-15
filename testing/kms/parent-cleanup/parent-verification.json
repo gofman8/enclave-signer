@@ -1,0 +1,168 @@
+{
+  "files": {
+    "parent/Cargo.lock": "96c8a0a151e439f211dc10eadb9edf7acde6f9a49aca65670bb4599c6dbd9040",
+    "parent/Cargo.toml": "b74e0e6c70d3d0997f9d6d846494f38a4a05d281627eb19666a380d786e670db",
+    "parent/src/lib.rs": "808c3f9c9a2894686b74575e342ee632e337c48bf0d097b965bff5e5d4647e92",
+    "parent/src/main.rs": "48070426383399d5af2ef83a56a0d90c34c8d3f586d498314b3f26514cf93d9d",
+    "parent/src/swap_persistence.rs": "9495eda5aab29a61945700b5edc57a3d7135375da13ec66de7474533d4c0e1c6",
+    "parent/src/swap_persistence/tests.rs": "c277b3411ff4bc4c1e455986b74cbe9a943f80759447177d88cd3f52b2f1377a"
+  },
+  "parent_lock": {
+    "before_packages": 797,
+    "after_packages": 536,
+    "added": [
+      [
+        "arc-swap",
+        "1.9.2"
+      ],
+      [
+        "aws-config",
+        "1.12.0"
+      ],
+      [
+        "aws-credential-types",
+        "1.3.0"
+      ],
+      [
+        "aws-runtime",
+        "1.9.2"
+      ],
+      [
+        "aws-sdk-s3",
+        "1.146.0"
+      ],
+      [
+        "aws-sdk-sts",
+        "1.114.0"
+      ],
+      [
+        "aws-sigv4",
+        "1.5.1"
+      ],
+      [
+        "aws-smithy-async",
+        "1.3.0"
+      ],
+      [
+        "aws-smithy-checksums",
+        "0.65.0"
+      ],
+      [
+        "aws-smithy-eventstream",
+        "0.61.2"
+      ],
+      [
+        "aws-smithy-http",
+        "0.64.0"
+      ],
+      [
+        "aws-smithy-http-client",
+        "1.4.0"
+      ],
+      [
+        "aws-smithy-json",
+        "0.63.0"
+      ],
+      [
+        "aws-smithy-observability",
+        "0.3.0"
+      ],
+      [
+        "aws-smithy-query",
+        "0.62.0"
+      ],
+      [
+        "aws-smithy-runtime",
+        "1.14.0"
+      ],
+      [
+        "aws-smithy-runtime-api",
+        "1.16.0"
+      ],
+      [
+        "aws-smithy-runtime-api-macros",
+        "1.1.0"
+      ],
+      [
+        "aws-smithy-schema",
+        "0.2.0"
+      ],
+      [
+        "aws-smithy-types",
+        "1.6.3"
+      ],
+      [
+        "aws-smithy-xml",
+        "0.62.0"
+      ],
+      [
+        "aws-types",
+        "1.6.0"
+      ],
+      [
+        "base64-simd",
+        "0.8.0"
+      ],
+      [
+        "bytes-utils",
+        "0.1.4"
+      ],
+      [
+        "cmov",
+        "0.5.4"
+      ],
+      [
+        "crc-fast",
+        "1.10.0"
+      ],
+      [
+        "ctutils",
+        "0.4.2"
+      ],
+      [
+        "hmac",
+        "0.13.0"
+      ],
+      [
+        "md-5",
+        "0.11.0"
+      ],
+      [
+        "outref",
+        "0.5.2"
+      ],
+      [
+        "regex-lite",
+        "0.1.9"
+      ],
+      [
+        "sha1",
+        "0.11.0"
+      ],
+      [
+        "spin",
+        "0.10.1"
+      ],
+      [
+        "tokio-vsock",
+        "0.7.2"
+      ],
+      [
+        "urlencoding",
+        "2.1.3"
+      ],
+      [
+        "vsimd",
+        "0.8.0"
+      ],
+      [
+        "xmlparser",
+        "0.13.6"
+      ]
+    ],
+    "stale_removed_count": 298,
+    "existing_checksum_changes": [],
+    "note": "All existing package versions/source pins preserved; authentic Cargo resolution prunes298 unreachable baseline entries. Conservative834-entry semantic superset rejected by --locked and was not retained."
+  },
+  "aws_compatibility": "Official aws-config1.12.0 requires smithy-json0.63.0, incompatible with smithy-types1.7.0 required by newly published S3 1.147.0. Use coherent official S3 1.146.0 + config1.12.0 and locked prior runtime/types release; no patches."
+}
