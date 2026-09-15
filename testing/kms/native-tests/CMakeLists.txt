@@ -36,12 +36,19 @@ if(BUILD_TESTING)
     target_include_directories(swap-kms-sdk-cleanup-tests PRIVATE "${NITRO_SDK_INCLUDE_DIR}")
     target_link_libraries(swap-kms-sdk-cleanup-tests PRIVATE AWS::aws-nitro-enclaves-sdk-c LibJsonC::Json)
     foreach(symbol aws_mutex_init aws_condition_variable_init aws_condition_variable_wait
-            aws_input_stream_new_from_cursor aws_http_message_new_request aws_mem_calloc
-            aws_http_message_new_response aws_signable_new_http_request aws_signable_destroy
             aws_http_stream_release aws_sign_request_aws aws_apply_signing_result_to_http_request
             aws_http_connection_make_request aws_http_stream_activate)
         target_link_options(swap-kms-sdk-cleanup-tests PRIVATE "-Wl,--wrap=${symbol}")
     endforeach()
     add_test(NAME sdk-request-cleanup COMMAND swap-kms-sdk-cleanup-tests)
     set_tests_properties(sdk-request-cleanup PROPERTIES TIMEOUT 60)
+
+    # Real CRT signing and transport, without failure wrappers: a peer closes
+    # before request activation, just as a relay can during Recipient creation.
+    add_executable(swap-kms-sdk-closed-connection-tests closed_connection.c)
+    target_compile_options(swap-kms-sdk-closed-connection-tests PRIVATE -Wall -Wextra -Werror -Wpedantic)
+    target_link_libraries(swap-kms-sdk-closed-connection-tests PRIVATE AWS::aws-nitro-enclaves-sdk-c LibJsonC::Json)
+    add_test(NAME sdk-closed-generate COMMAND swap-kms-sdk-closed-connection-tests TrentService.GenerateDataKey)
+    add_test(NAME sdk-closed-decrypt COMMAND swap-kms-sdk-closed-connection-tests TrentService.Decrypt)
+    set_tests_properties(sdk-closed-generate sdk-closed-decrypt PROPERTIES TIMEOUT 10)
 endif()

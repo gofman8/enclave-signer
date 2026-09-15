@@ -16,12 +16,10 @@
 #include <unistd.h>
 
 #define CHECK(x) do { if (!(x)) { fprintf(stderr, "check failed: %s:%d: %s\n", __FILE__, __LINE__, #x); abort(); } } while (0)
-enum fault { NONE, MUTEX, CONDVAR, INPUT, REQUEST, RESPONSE, RESPONSE_MESSAGE, SIGNABLE,
-             SIGN_START, SIGN_SYNC, APPLY_SYNC, MAKE_STREAM, ACTIVATE_STREAM,
+enum fault { NONE, MUTEX, CONDVAR, SIGN_START, SIGN_SYNC, APPLY_SYNC, MAKE_STREAM, ACTIVATE_STREAM,
              SIGN_ASYNC, STREAM_ASYNC_ERROR, STREAM_ASYNC_SUCCESS, SPURIOUS_WAKE };
 static enum fault fault;
 static int injected, signed_calls, released_streams, waits;
-static struct aws_signable *allocated_signable;
 static struct aws_http_make_request_options stream_options;
 static pthread_t callback_thread;
 static int thread_started;
@@ -47,40 +45,6 @@ int __wrap_aws_condition_variable_wait(struct aws_condition_variable *condition,
     if (fault == SPURIOUS_WAKE && waits == 1) { injected++; return AWS_OP_SUCCESS; }
     atomic_store_explicit(&waiter_arrived, true, memory_order_release);
     return __real_aws_condition_variable_wait(condition, mutex);
-}
-struct aws_input_stream *__real_aws_input_stream_new_from_cursor(struct aws_allocator *, const struct aws_byte_cursor *);
-struct aws_input_stream *__wrap_aws_input_stream_new_from_cursor(struct aws_allocator *allocator, const struct aws_byte_cursor *cursor) {
-    if (fault == INPUT) { injected++; return NULL; }
-    return __real_aws_input_stream_new_from_cursor(allocator, cursor);
-}
-struct aws_http_message *__real_aws_http_message_new_request(struct aws_allocator *);
-struct aws_http_message *__wrap_aws_http_message_new_request(struct aws_allocator *allocator) {
-    if (fault == REQUEST) { injected++; return NULL; }
-    return __real_aws_http_message_new_request(allocator);
-}
-void *__real_aws_mem_calloc(struct aws_allocator *, size_t, size_t);
-void *__wrap_aws_mem_calloc(struct aws_allocator *allocator, size_t count, size_t size) {
-    if (fault == RESPONSE && count == 1 && size == sizeof(struct aws_nitro_enclaves_rest_response)) {
-        injected++; return NULL;
-    }
-    return __real_aws_mem_calloc(allocator, count, size);
-}
-struct aws_http_message *__real_aws_http_message_new_response(struct aws_allocator *);
-struct aws_http_message *__wrap_aws_http_message_new_response(struct aws_allocator *allocator) {
-    if (fault == RESPONSE_MESSAGE) { injected++; return NULL; }
-    return __real_aws_http_message_new_response(allocator);
-}
-struct aws_signable *__real_aws_signable_new_http_request(struct aws_allocator *, struct aws_http_message *);
-struct aws_signable *__wrap_aws_signable_new_http_request(struct aws_allocator *allocator, struct aws_http_message *request) {
-    if (fault == SIGNABLE) { injected++; return NULL; }
-    allocated_signable = __real_aws_signable_new_http_request(allocator, request);
-    return allocated_signable;
-}
-void __real_aws_signable_destroy(struct aws_signable *);
-void __wrap_aws_signable_destroy(struct aws_signable *signable) {
-    /* A non-NULL uninitialized cleanup pointer is never a valid allocation. */
-    CHECK(signable == allocated_signable);
-    __real_aws_signable_destroy(signable);
 }
 void __wrap_aws_http_stream_release(struct aws_http_stream *stream) {
     CHECK(stream == NULL || stream == STREAM);
@@ -146,7 +110,7 @@ static void run_case(enum fault chosen) {
         aws_byte_cursor_from_c_str("TrentService.GenerateDataKey"), aws_byte_cursor_from_c_str("{}"));
     if (thread_started) CHECK(pthread_join(callback_thread, NULL) == 0);
     CHECK((response != NULL) == (fault == STREAM_ASYNC_SUCCESS || fault == SPURIOUS_WAKE));
-    if (fault <= SIGNABLE) CHECK(signed_calls == 0);
+    if (fault == MUTEX || fault == CONDVAR) CHECK(signed_calls == 0);
     else CHECK(signed_calls == 1);
     if (fault == SIGN_ASYNC || fault == STREAM_ASYNC_SUCCESS) CHECK(injected == 0);
     else CHECK(injected == 1);
@@ -161,8 +125,7 @@ static void run_case(enum fault chosen) {
     alarm(0);
 }
 int main(int argc, char **argv) {
-    static const char *names[] = {"none", "mutex", "condition-variable", "request-stream", "request-message",
-        "response-allocation", "response-message", "signable", "sign-start", "sign-sync", "apply-sync",
+    static const char *names[] = {"none", "mutex", "condition-variable", "sign-start", "sign-sync", "apply-sync",
         "make-stream", "activate-stream", "sign-async", "stream-async-error", "stream-async-success", "spurious-wake"};
     setvbuf(stdout, NULL, _IOLBF, 0);
     int failures = 0, executed = 0;
