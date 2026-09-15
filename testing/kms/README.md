@@ -89,7 +89,9 @@ The runner also builds the previous Rust KMS client from the fixed Git commit
 `3d5086558faba04d589ddc63abc6bfc43a8743b9` into an isolated artifact directory.
 Keep repository history available when cloning. Its existing encrypted seed is
 then restored by the new SDK helper, comparing every public key and the verified
-signature. The original 35 scenarios, migration check, and direct helper IPC check make
+signature. Only that frozen legacy process receives its retired creation setting;
+current-signer fixtures have no creation switch and choose from S3 state and the
+optional identity pin. The original 35 scenarios, migration check, and direct helper IPC check make
 the current expanded suite. Fresh reports identify the exact scenario count and source revision.
 
 ## What runs
@@ -101,6 +103,9 @@ the current expanded suite. Fresh reports identify the exact scenario count and 
 - Bootstrap uses `GenerateDataKey(NumberOfBytes=64)`, attested Recipient CMS,
   conditional `PutObject`, and `Decrypt` of the committed winning ciphertext.
   The parent/broker never receive the response's plaintext seed.
+- An unpinned restart loads existing ciphertext without another generation or
+  write; a corrupt existing object fails without replacement. A pinned signer
+  refuses missing ciphertext before generation or storage mutation.
 - All public-key fields and a cryptographically verified EIP-1559 gas signature
   remain identical after restarting both enclave and broker and starting another
   replica. The actual parent gRPC `EVM_GAS_TX` route produces the same signature.

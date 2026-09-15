@@ -140,7 +140,6 @@ DOCKER_BUILDKIT=0 docker build --platform linux/arm64 \
   --build-arg SWAP_KMS_KEY_ARN=arn:aws:kms:eu-west-1:123456789012:key/12345678-1234-1234-1234-123456789012 \
   --build-arg SWAP_KMS_REGION=eu-west-1 \
   --build-arg SWAP_KMS_SEED_ID=official-sdk-build-validation-only \
-  --build-arg SWAP_KMS_ALLOW_CREATE=1 \
   --build-arg SWAP_KMS_EXPECTED_EVM_ADDRESS= \
   -f "$KMS_BUILD_DIR/out/Dockerfile.swap-validation" \
   -t codex-kms-swap-build-validation:local "$KMS_BUILD_DIR/out"

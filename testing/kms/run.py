@@ -211,7 +211,7 @@ class Suite:
             port = sock.getsockname()[1]
         env = isolated_env()
         env.update(SWAP_KMS_KEY_ARN=f["key_arn"], SWAP_KMS_REGION=f["region"],
-            SWAP_KMS_SEED_ID=f["seed_id"], SWAP_KMS_ALLOW_CREATE="0" if restore_address else "1",
+            SWAP_KMS_SEED_ID=f["seed_id"],
             SWAP_KMS_E2E_HELPER=str(self.sdk_helper.wrapper),
             SWAP_KMS_E2E_CA_PEM=str(self.certs["ca.pem"]),
             SWAP_KMS_E2E_PCR0=RESTORE if restore_address else BOOTSTRAP,
@@ -222,6 +222,11 @@ class Suite:
             RGB_ASSET_ID="rgb:test", GAS_TX_ALLOWED_TO="0x" + "aa" * 20,
             GAS_TX_MAX_GAS_LIMIT="30000", GAS_TX_MAX_FEE_PER_GAS="1000",
             GAS_TX_ALLOWED_SELECTORS="deadbeef", RUST_LOG="info")
+        if legacy:
+            # Only the immutable pre-migration client reads this retired setting.
+            # Current signers always decide from S3 state and the identity pin.
+            assert restore_address is None
+            env["SWAP_KMS_ALLOW_CREATE"] = "1"
         if restore_address:
             env["SWAP_KMS_EXPECTED_EVM_ADDRESS"] = restore_address
         env.update(overrides)
@@ -301,6 +306,16 @@ class Suite:
                 self.call(address, command, False)
         self.stop(enclave)
         self.stop(broker)
+        with self.case("unpinned restart automatically reuses existing ciphertext and identity"):
+            self.api("/audit/reset", {})
+            broker = self.broker()
+            enclave, address = self.signer()
+            assert self.call(address, "init")["keys"] == first
+            assert self.call(address, "sign") == signature
+            assert not self.actions("GenerateDataKey") and not self.actions("PutObject")
+            assert self.object() == ciphertext
+            self.stop(enclave)
+            self.stop(broker)
         with self.case("cold signer and broker restart: identical identity and signature"):
             self.api("/audit/reset", {})
             broker = self.broker()
@@ -351,12 +366,20 @@ class Suite:
             self.failed_init(address)
             assert self.object() == damaged
             self.stop(enclave)
+        with self.case("unpinned corrupted object fails without generating a replacement"):
+            self.api("/audit/reset", {})
+            enclave, address = self.signer()
+            self.failed_init(address)
+            assert self.object() == damaged
+            assert not self.actions("GenerateDataKey") and not self.actions("PutObject")
+            self.stop(enclave)
         with self.case("missing recovery state never creates a replacement identity"):
             self.api("/object", {"ciphertext": None})
             self.api("/audit/reset", {})
             enclave, address = self.signer(first["evm_address"])
             self.failed_init(address)
             assert self.object() is None and not self.actions("GenerateDataKey")
+            assert not self.actions("PutObject")
             self.stop(enclave)
         self.stop(broker)
 

@@ -15,7 +15,7 @@ def measurement(label):
 
 
 def approval(phase="transition"):
-    images = [dict(eif="bootstrap.eif", pcr_file="bootstrap-PCR.json", sha256=hashlib.sha256(b"bootstrap").hexdigest(), pcr0=measurement("bootstrap"), mode="bootstrap", expected_evm_address=""), dict(eif="restore.eif", pcr_file="restore-PCR.json", sha256=hashlib.sha256(b"restore").hexdigest(), pcr0=measurement("restore"), mode="restore", expected_evm_address="0x7d024ab55b3b8a48d252fed98a48efbc559e2c31")]
+    images = [dict(eif="bootstrap.eif", pcr_file="bootstrap-PCR.json", sha256=hashlib.sha256(b"bootstrap").hexdigest(), pcr0=measurement("bootstrap"), expected_evm_address=""), dict(eif="restore.eif", pcr_file="restore-PCR.json", sha256=hashlib.sha256(b"restore").hexdigest(), pcr0=measurement("restore"), expected_evm_address="0x7d024ab55b3b8a48d252fed98a48efbc559e2c31")]
     if phase == "bootstrap":
         images = images[:1]
     elif phase == "restore":
@@ -32,7 +32,7 @@ def check(name,expected,action,resource,context,resource_policy,role_policy,prin
  results.append({'name':name,'expected_allowed':expected,'passed':passed,'verdict':verdict})
 try:
  for phase in ['bootstrap','transition','restore']:
-  a=approval(phase);policies=m.rendered_policies(a);key,bucket,role=(policies[name] for name in m.POLICIES)
+  a=approval(phase);m.validate_approval(a);policies=m.rendered_policies(a);key,bucket,role=(policies[name] for name in m.POLICIES)
   bucket_arn='arn:aws:s3:::'+a['bucket'];obj=bucket_arn+'/'+a['object_key']
   context={'application':'utexo-enclave-signer','flow':'rgb-swap','seed_id':a['seed_id'],'bitcoin_network':'bitcoin'}
   ctx={'kms:EncryptionContextKeys':list(context),**{'kms:EncryptionContext:'+k:v for k,v in context.items()}}
