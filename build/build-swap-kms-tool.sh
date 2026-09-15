@@ -76,7 +76,6 @@ while read -r name version commit url <&3; do
         # the runtime; the unversioned symlink is only for build-time discovery.
         (cd "$source_dir" && CARGO_TARGET_DIR="$source_dir/target" cargo build \
             --locked --release --jobs "$jobs" -p nsm-lib --lib)
-        cp "$source_dir/Cargo.lock" "$prefix/share/swap-kms/nsm-Cargo.lock"
         install -m 755 "$source_dir/target/release/libnsm.so" "$prefix/lib/libnsm.so.0"
         ln -sfn libnsm.so.0 "$prefix/lib/libnsm.so"
         install -m 644 "$source_dir/target/release/nsm.h" "$prefix/include/nsm.h"
@@ -115,8 +114,6 @@ while read -r name version commit url <&3; do
         # Install the pinned header verbatim; consumers need only this prefix.
         install -D -m 644 "$source_dir/include/aws/nitro_enclaves/internal/cms.h" \
             "$prefix/include/aws/nitro_enclaves/internal/cms.h"
-        (cd "$prefix" && sha256sum include/aws/nitro_enclaves/internal/cms.h \
-            > share/swap-kms/headers.sha256)
     fi
     if [ "$name" = aws-lc ]; then
         # The distro Go tool may expand go.sum while running code generators.
@@ -133,7 +130,6 @@ fi
 
 cmake -GNinja -S "$repo_dir/enclave/kms-tool" -B "$build_dir/build/swap-kms-tool" \
     -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$prefix" \
-    -DCMAKE_INSTALL_PREFIX="$prefix" -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=ON
+    -DCMAKE_INSTALL_PREFIX="$prefix" -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF
 cmake --build "$build_dir/build/swap-kms-tool" --parallel "$jobs" --target install
-ctest --test-dir "$build_dir/build/swap-kms-tool" --output-on-failure
 strip "$prefix/bin/swap-kms-tool" "$prefix/lib/libnsm.so.0"

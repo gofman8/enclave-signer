@@ -28,10 +28,6 @@ name: "Build EIF"
 #                                               artifacts are only attached to the run)
 #   vars.AWS_REGION                            AWS region for OIDC + S3 (e.g. eu-central-1)
 #   vars.EIF_S3_BUCKET                         target S3 bucket for the artifacts
-#   vars.SWAP_KMS_KEY_ARN                      swaps: full KMS key ARN (required)
-#   vars.SWAP_KMS_REGION                       swaps: commercial AWS region (required)
-#   vars.SWAP_KMS_SEED_ID                      swaps: stable seed identifier (required)
-#   vars.SWAP_KMS_EXPECTED_EVM_ADDRESS         swaps: optional existing signer identity pin
 # No infra identifiers (account id, bucket, region) are hardcoded here — this is
 # a public repo; everything environment-specific comes from repo vars/secrets.
 
@@ -143,8 +139,7 @@ jobs:
           sudo chmod 0777 /var/log/nitro_enclaves /run/nitro_enclaves
           nitro-cli --version
 
-      - name: Build RGB swap EIF + measurements
-        if: matrix.variant == 'combined' || matrix.variant == 'rgb'
+      - name: Build EIF + measurements
         env:
           PRIVATE_DEPS_DIR: ${{ runner.temp }}/private-deps
           OUT_DIR: ${{ github.workspace }}/artifacts
@@ -156,20 +151,6 @@ jobs:
           SWAP_KMS_REGION: ${{ vars.SWAP_KMS_REGION }}
           SWAP_KMS_SEED_ID: ${{ vars.SWAP_KMS_SEED_ID }}
           SWAP_KMS_EXPECTED_EVM_ADDRESS: ${{ vars.SWAP_KMS_EXPECTED_EVM_ADDRESS }}
-        run: |
-          set -euxo pipefail
-          mkdir -p "$OUT_DIR"
-          ./build/build-enclave.sh
-
-      - name: Build mint/burn or CCD EIF + measurements
-        if: matrix.variant != 'combined' && matrix.variant != 'rgb'
-        env:
-          PRIVATE_DEPS_DIR: ${{ runner.temp }}/private-deps
-          OUT_DIR: ${{ github.workspace }}/artifacts
-          NITRO_CLI_BLOBS: /home/runner/nitro-cli-dist/blobs
-          DOCKERFILE: ${{ matrix.dockerfile }}
-          EIF_NAME: ${{ matrix.eif_name }}
-          IMAGE_TAG: utexo-bridge-enclave-${{ matrix.variant }}:latest
         run: |
           set -euxo pipefail
           mkdir -p "$OUT_DIR"
@@ -216,7 +197,6 @@ jobs:
           path: |
             artifacts/${{ matrix.eif_name }}
             artifacts/PCR.json
-            artifacts/EIF-DESCRIBE.json
             artifacts/SHA256SUMS
             artifacts/metadata.json
             artifacts/utexo-bridge-parent

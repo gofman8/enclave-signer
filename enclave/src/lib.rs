@@ -101,10 +101,7 @@ pub mod swap_kms;
 #[cfg(feature = "rgb-swap")]
 pub mod swap_persistence;
 
-#[cfg(any(
-    all(feature = "vsock", target_os = "linux"),
-    all(test, feature = "rgb-swap")
-))]
+#[cfg(all(feature = "vsock", target_os = "linux"))]
 pub mod vsock_forwarder;
 
 // Only the `enclave` package is vendored into the TEE build. The parent

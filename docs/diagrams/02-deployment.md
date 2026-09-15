@@ -14,7 +14,7 @@ flowchart TB
         Parent[utexo-bridge-parent<br/>tonic gRPC, GRPC_HOST:GRPC_PORT<br/>―<br/>Default 127.0.0.1:5000.<br/>Deployed hosts: 0.0.0.0:50051-50053,<br/>one parent per enclave CID 16 / 18 / 20.<br/>30 s timeout per enclave RPC.<br/>USE_VSOCK=true in production.]
         Cli[utexo-bridge-parent-cli<br/>attest-verify CLI]
         VP[vsock-proxy port 8001<br/>―<br/>Allowlist → Electrum ssl:// or Esplora.]
-        KmsRelay["Swap KMS relay :8003<br/>CID-gated systemd socket + socat<br/>TLS terminates inside enclave"]
+        KmsRelay["Swap KMS relay :8003<br/>Standard host vsock-proxy<br/>TLS terminates inside enclave"]
         SeedBroker["Swap seed broker :8004<br/>CID quotas and bounded operations<br/>Opaque ciphertext only"]
         VPe["vsock-proxy 8002<br/>―<br/>evm-rpc builds only.<br/>8002 → EVM JSON-RPC via host nginx.<br/>Allowlisted upstream."]
 
@@ -47,7 +47,7 @@ flowchart TB
     KmsTool --> NSM
     KmsTool -->|"vsock CID 3:8003; TLS"| KmsRelay
     KmsRelay --> KMS
-    Fwd -->|"swaps: vsock CID 3:8004"| SeedBroker
+    Bin -->|"swaps: vsock CID 3:8004"| SeedBroker
     SeedBroker --> SeedObject
     Bin --> Replay
     Bin --> Headers

@@ -50,12 +50,11 @@ See the [component diagram](docs/diagrams/01-components.md) and
 
 **RGB swaps:** keys now initialize through attested AWS KMS generation/recovery,
 with the encrypted 64-byte seed persisted in S3. Configure the swap EIF and host
-broker using [the KMS persistence guide](docs/swap-kms-persistence.md). Restoration
-is the default; initial creation requires explicit bootstrap configuration.
+broker using [the KMS persistence guide](docs/swap-kms-persistence.md). Initialization
+loads existing ciphertext or creates it atomically after confirmed absence.
 Swap replicas restore the same seed instead of using peer cloning. Signing and
 HD derivation remain unchanged. RGB mint/burn and CCD-only builds retain the
 existing generation and cloning lifecycle described below.
-
 
 - Generates a BIP-39 mnemonic from OS entropy, derives the 64-byte seed and
   keeps it in a `SecretBox` (zeroize on drop). Mnemonic or raw-seed import
@@ -223,23 +222,10 @@ profile. CI asserts every guard fires.
 
 ### Enclave image (EIF)
 
-The combined and RGB-swap images require measured KMS configuration. Export
-the following public values from your deployment configuration before running
-their build commands or `make docker` / `make build_enclave_rgb`:
-
-```bash
-export SWAP_KMS_KEY_ARN="arn:aws:kms:<region>:<account-id>:key/<key-id>"
-export SWAP_KMS_REGION="<region>"
-export SWAP_KMS_SEED_ID="<stable-seed-id>"
-```
-
-Replace the placeholders. Initialization automatically loads an existing saved
-seed or creates one when storage confirms the object is missing. For an existing
-signer, also set `SWAP_KMS_EXPECTED_EVM_ADDRESS` to its verified address; this
-prevents missing or substituted storage from silently replacing that identity.
-Follow the [bootstrap and recovery
-procedure](docs/swap-kms-persistence.md) before funding the signer. These KMS
-values are not needed for mint/burn, BFA, or CCD-only builds.
+For combined and RGB-swap builds, export `SWAP_KMS_KEY_ARN`, `SWAP_KMS_REGION`
+and `SWAP_KMS_SEED_ID`. Set `SWAP_KMS_EXPECTED_EVM_ADDRESS` when restoring a
+known identity. See [KMS setup](docs/swap-kms-persistence.md) for the host broker
+and policy requirements. Other images do not require these values.
 
 ```bash
 ./build/build-enclave.sh                                  # Dockerfile.enclave (combined)
