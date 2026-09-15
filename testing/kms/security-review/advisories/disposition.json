@@ -193,7 +193,7 @@
   "original_query_snapshot_scope": "head and source_sha256 describe the saved public query; see final_source_verification for the final committed lifecycle patch",
   "final_source_verification": {
     "file": "final-source-verification.json",
-    "head": "dfb3cce0611a115c4058c706c5dce09cf2449971",
+    "head": "6cc65d635717ee6e69a0ac27c8cc78bd6f711800",
     "public_package_inputs_unchanged": true,
     "native_upstream_coordinates_unchanged": true
   }

@@ -1,0 +1,14 @@
+{
+  "head": "6cc65d635717ee6e69a0ac27c8cc78bd6f711800",
+  "baseline": "6df13456f09a4f68434b93b6daf11243a577410f",
+  "byte_identical_to_dev": {
+    "enclave/src/keys.rs": true,
+    "enclave/src/networks/rgb/signing.rs": true,
+    "enclave/src/networks/rgb/signing/psbt.rs": true,
+    "enclave/src/networks/rgb/signing/taproot.rs": true,
+    "enclave/src/networks/rgb/flow/mint_burn.rs": true,
+    "enclave/src/cloning.rs": true,
+    "build/Dockerfile.enclave.mint-burn": true
+  },
+  "no_creation_setting_in_production": true
+}

@@ -1,13 +1,11 @@
-# Native SDK validation
+# Final native adapter validation
 
-Final source: `7379c4ffbb497b2ba14971f102f4383f292fa1a3`. Image: `codex-swap-kms-sdk-builder:security-review-sdk-cleanup`. Export: `prefix-sdk-cleanup`.
+Native source commit `6daf8ab73b2a4edb4059faec1a53041ee62dd357`. Prefix `prefix-strict-input`; image `codex-swap-kms-sdk-builder:security-review-strict-input`.
 
-The official SDK and crypto stack are retained. The SDK has an explicitly maintained request-lifecycle patch; all other source dependencies are unmodified immutable upstream revisions. The installed `sdk-source.json` records base revision, patch SHA-256 and effective `rest.c` SHA-256, with the exact patch installed alongside it.
+The actual KMS response KeyId was already validated before unwrap in the prior implementation; no prior key mismatch bypass was demonstrated. Output now explicitly uses the official SDK response key_id. Stable exit codes retain safe failure categories without forwarding raw messages.
 
-- Clean Linux ARM64 native build with upstream `-Werror`, no uninitialized-variable suppression.
-- Credential cleanup CTest and all 16 deterministic SDK failure/completion tests passed; current harness uses an atomic waiter handshake. The unpatched SDK fails 10 of the same 16 cases. Both previously uninitialized SDK pointers fail GCC negative-control compilation; the patched source compiles.
-- All 45 local official SDK tests passed against the patched source; external-service `test_rest_call_blocking` is excluded. All 29 official json-c Release tests had passed against the unchanged current pin.
-- Parent ASan/UBSan/LeakSanitizer parser stress passed 14,684 cases with no errors/leaks against this patched image.
-- Exact patch cache reuse passed. Both an old patch and an unrelated tracked modification were rejected; the unrelated edit was preserved rather than reset.
+The helper now rejects duplicate flat IPC members, including escaped-equivalent names. Fifteen real stdin cases cover duplicate/nested-overwrite inputs, legal escaping, surrogates/control characters and valid requests. The previous helper fails this regression. Empty session tokens remain accepted under the official AWS optional-token API; the pinned SigV4 implementation omits an empty token. Temporary credentials still require their issued token. The pinned bootstrap release was already NULL-safe; the new explicit guard is defensive. Historical 35-second alarm claims do not apply to the existing 12-second helper cap.
 
-See `results.json` and referenced logs for hashes and evidence. Native tests do not establish live AWS policy enforcement or hardware Nitro attestation.
+All 3 CTests passed: credential cleanup and strict input; 20 response key/output cases and 38 error classifications; 16 SDK lifecycle cases. The actual invalid-input helper exits 64 with no stdout. ASan/UBSan/LeakSanitizer passed 14,684 parser stress cases and both strict-input/response contract CTests, with networking disabled.
+
+The official SDK/dependency library bytes, manifest, NSM lock and SDK patch provenance are unchanged from the build that passed 45 official SDK and 29 json-c tests. Only the application adapter changed; those unchanged-library tests are retained separately. See `results.json` and referenced logs for exact hashes and scope. Native tests do not prove live AWS enforcement or Nitro hardware attestation.

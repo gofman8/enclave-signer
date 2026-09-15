@@ -1,0 +1,24 @@
+{
+  "native_source_commit": "6daf8ab73b2a4edb4059faec1a53041ee62dd357",
+  "compared_with_tested_native_commit": "7379c4ffbb497b2ba14971f102f4383f292fa1a3",
+  "checks": {
+    "lib/libcrypto.a": true,
+    "lib/libaws-nitro-enclaves-sdk-c.a": true,
+    "lib/libaws-c-auth.a": true,
+    "lib/libaws-c-compression.a": true,
+    "lib/libjson-c.a": true,
+    "lib/libs2n.a": true,
+    "lib/libaws-c-cal.a": true,
+    "lib/libaws-c-io.a": true,
+    "lib/libssl.a": true,
+    "lib/libaws-c-sdkutils.a": true,
+    "lib/libaws-c-http.a": true,
+    "lib/libnsm.so.0": true,
+    "lib/libaws-c-common.a": true,
+    "share/swap-kms/sdk-source.json": true,
+    "share/swap-kms/dependencies.tsv": true,
+    "share/swap-kms/nsm-Cargo.lock": true,
+    "share/swap-kms/headers.sha256": true
+  },
+  "pass": true
+}

@@ -1,0 +1,16 @@
+{
+  "recorded_at": "2026-09-15T09:02:04.537320+00:00",
+  "scope": "Separate primary-source parent dependency triage, not the saved Cargo/NSM/pip OSV inventory",
+  "report": "host-dependency-disposition.md",
+  "sha256": "34a7c4e1d9b3efd7c7f260807a767942e162bea861c7b2dbf1ac28d84f3460b7",
+  "tested_versions": {
+    "systemd": "252.39-1~deb12u2",
+    "socat": "1.7.4.4-2"
+  },
+  "sources": [
+    "https://security-tracker.debian.org/tracker/source-package/socat",
+    "https://security-tracker.debian.org/tracker/CVE-2026-56123",
+    "https://security-tracker.debian.org/tracker/CVE-2024-54661",
+    "https://security-tracker.debian.org/tracker/source-package/systemd"
+  ]
+}

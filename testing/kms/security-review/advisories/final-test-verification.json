@@ -1,19 +1,17 @@
 {
-  "recorded_at": "2026-09-15T08:34:11.075792+00:00",
-  "production_head": "dfb3cce0611a115c4058c706c5dce09cf2449971",
+  "recorded_at": "2026-09-15T09:01:25.343156+00:00",
+  "production_head": "6cc65d635717ee6e69a0ac27c8cc78bd6f711800",
   "production_worktree_clean": true,
-  "testing_head": "73db4917cd0b3eecd6ff39310d1b9ac7e68191dd",
-  "testing_worktree_clean": true,
-  "testing_contains_production_head": true,
+  "policy_fixture_testing_head": "6b693c0f7b271fbb7f63562b3a577fbb9ee04dd4",
   "policy_sources_identical_between_production_and_testing": true,
   "deployment": {
-    "passed": 47,
+    "passed": 62,
     "failed": 0,
     "command": "../security-fixes/deploy-venv/bin/python -m unittest discover -s deploy/tests -v",
     "cwd": "work/enclave-signer",
     "log": "final-deployment-tests.log",
-    "log_sha256": "a9c577507c1f6a837d5de5321403e2d52779df93c5c946bcbf4818c0f79419ee",
-    "completed_at": "2026-09-15T08:31:33.709239+00:00"
+    "log_sha256": "bcc7a9b06395c700bd9a96aeeb867d8fae20aa23e0f811f01520de4aa4055bcd",
+    "completed_at": "2026-09-15T08:56:41.139480+00:00"
   },
   "policy": {
     "passed": 222,
@@ -24,8 +22,26 @@
     "log": "final-policy-tests.log",
     "report": "final-policy-tests.json",
     "report_sha256": "b5e26e2756be266a672726dc9b1d25086160139b65973cbc48bb776e3b033698",
-    "completed_at": "2026-09-15T08:31:33.881948+00:00"
+    "completed_at": "2026-09-15T08:57:53.143908+00:00"
   },
+  "rust": {
+    "source_hashes_match_current_production": true,
+    "swap_passed": 577,
+    "mint_burn_passed": 542,
+    "swap_and_mint_burn_clippy": "passed with -D warnings",
+    "format": "passed",
+    "report": "../forwarder-rust-results.json",
+    "report_sha256": "ac7e226a0a5f9fd448d3396343efbc8ebd690109d4e15a5fb9b2c82de556ae01"
+  },
+  "linux_forwarder": {
+    "passed": 8,
+    "source_hashes_match_current_production": true,
+    "production_linux_build": "passed",
+    "report": "../forwarder-linux-results.json",
+    "report_sha256": "047f649b30abf5c74fbe191bb6fdb8ae584e8cbf15bf69c23594985d4e241493",
+    "limits": "Production Linux connector compiled; relay behavior uses real loopback TCP sockets, not Nitro hardware vsock."
+  },
+  "relay_unit_verification": "../round-two/relay-systemd-verification.json",
   "production_creation_setting_absent": true,
   "production_tested_source_sha256": {
     "deploy/validate-swap-kms-deployment.py": "17c35fef5d9f5abfa7c24442dc3d8fa9812d9ce6a511f259a23acd6a988af5bd",
@@ -33,7 +49,15 @@
     "deploy/swap-seed-bucket-policy.json": "f0901272a31bc06ac72871e15f8e729cc271149bb32a396b6eaef1aa4fd0c8a5",
     "deploy/swap-signer-role-policy.json": "273a2233ac2db3cc614ff3ddf69e0f8b310bca600a26fc4a15e44132a344733e",
     "deploy/tests/test_swap_deployment.py": "05b410d818381d922126c600d87b8953335ae59dd1f1d0fb98faa38d0cb8cde9",
-    "deploy/tests/test_swap_seed_broker.py": "4c5b3c2496b8ddb4b30122807cbf35752e9e1a4802d8b5ae525c39781a21d09a"
+    "deploy/tests/test_swap_seed_broker.py": "629c44f6e14707c1ab95a9620a633f96d8dde919169d6b2c5334321959f114a3",
+    "deploy/tests/test_swap_kms_relay.py": "82e2e9ebc94af9f22c1bbb7d37af149e136172f10a9f276fb71d2024794f174a",
+    "deploy/swap-seed-broker.py": "92b67a73f7ca40e9607625d5c61b235432c0d6b9e879b0fa6d48b1cb927f59c4",
+    "deploy/swap-kms-relay-guard.py": "c3cbf4bd8670b287941e12fcddb0b98935088390a3b94f65f119f5e3a37a6c01",
+    "deploy/systemd/utexo-swap-kms-relay.socket": "9f99a636d5266b487a362d0e72147ec21f2bb995ce04f4a6f874d1c97be45590",
+    "deploy/systemd/utexo-swap-kms-relay@.service": "c3cbe3f27fdcde627c0b7844290c10029495e245244c842acd965a6abbf933d9",
+    "deploy/systemd/utexo-swap-kms-relay.slice": "712578676f4cda0272c3f829da724ea743f8d3952620ed9f2248023af1b6fa9d",
+    "deploy/systemd/utexo-swap-seed-broker.service": "495b6be65ff1f1d224d0bf39c0d2955d51086ac773901bb2e2d19bf844500fe6"
   },
-  "limits": "Local code and IAM simulation checks. Final process E2E/runtime/EIF verification is recorded separately by the coordinating workstreams; these results do not establish live AWS/Nitro enforcement."
+  "process_e2e_runtime_eif": "Current final-source runs and reports are owned by the integration/native workstreams and recorded separately; this review does not reuse the historical dfb3cce E2E pass as proof of current helper/transport bytes.",
+  "limits": "Offline code, loopback transport and IAM simulation checks do not establish live AWS/Nitro policy enforcement, actual Nitro relay activation or production backup recovery."
 }

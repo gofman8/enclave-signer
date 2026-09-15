@@ -1,12 +1,13 @@
 {
-  "production_commit": "dfb3cce0611a115c4058c706c5dce09cf2449971",
+  "production_commit": "6cc65d635717ee6e69a0ac27c8cc78bd6f711800",
   "production_dockerfile": "build/Dockerfile.enclave.rgb",
   "platform": "linux/arm64",
   "runtime": {
-    "production_commit": "dfb3cce0611a115c4058c706c5dce09cf2449971",
-    "image_id": "sha256:592df409ee04a7b602b4f09ed491c45e55502032e5fce076c37d9e3038bcccde",
-    "source_date_epoch": 1789461028,
+    "production_commit": "6cc65d635717ee6e69a0ac27c8cc78bd6f711800",
+    "image_id": "sha256:ff0c639631959cceb5563f176a5e9af7b7b6d061ed4020d8917396d4622d1d76",
+    "source_date_epoch": 1789462625,
     "checks": {
+      "removed_setting_not_in_application_binary": true,
       "removed_allow_create_build_arg_absent": true,
       "removed_allow_create_env_absent": true,
       "helper_matches_tested_native": true,
@@ -15,12 +16,11 @@
       "patch_matches_repository": true,
       "provenance_matches_tested_native": true,
       "source_files_unchanged_during_build": true,
-      "tracked_worktree_clean": true,
-      "removed_setting_not_in_application_binary": true
+      "tracked_worktree_clean": true
     },
     "binaries_sha256": {
-      "swap-kms-tool": "499386a51939a2e4eaaa493bc4c223d108f4f07d848173924fc465eb5eec35dc",
-      "utexo-bridge-enclave": "bf4c1b4b1f3dd6277a6b6b3631a883501641fb8dda18e21d8b0c475712c0d0f1",
+      "swap-kms-tool": "dfb45859c4ed82381db07df81f7cf47e431261516cca41a8a0337306d0bd64c8",
+      "utexo-bridge-enclave": "ca0365a4c95ffde228e77e6d8149f888f6bed7e38e727d283547854afeede4fd",
       "libnsm.so.0": "5a8dc2e485d05cd3be15e2b4fa6d091c20aa949f9d6aec1a9c8685efb8a82c5b"
     },
     "sdk_source": {
@@ -36,17 +36,17 @@
       true
     ],
     "pcrs": {
-      "PCR0": "bccc73d93a81eefb4d62dcc5f604a7721bfd573073124f6308b698d8a9485e49071832383b34ac9f8d2aef32116a4faf",
+      "PCR0": "d97d9316884643f9a1cb468206f9b98662c74704bf04b6187b98dcf9c1a29dabf243a8dc85134c8a2b5755efa9e973bb",
       "PCR1": "745004eab9a0fb4a67973b261c6e7fa5418dc870292927591574385649338e54686cdeb659f3c6c2e72ba11aba2158a8",
-      "PCR2": "4c3eeebe1dc50477a4141dcf405c2125a143366f59f2e9881da9b722837a1da6a93ab6ec5eb466c4d902a792d19b2547"
+      "PCR2": "4e31fd32bc26b6c50f5f94ce75eb592c77e45afb5be747d34e1c4960fc579b7e6e5b5d4f9ecc54d699f2610efec8127f"
     },
     "repeat_pcr_matches": {
       "PCR0": true,
       "PCR1": true,
       "PCR2": true
     },
-    "eif_sha256": "ddccba5d36a45413a4b1f0c8577f4be8b2cce66272e4a8f75044658220eb0184",
-    "repeat_eif_sha256": "6c53d64dc1f158291a5bc7ede94bee99c03bc4dbdd4ffd681432af64bbd9ca9f",
+    "eif_sha256": "ec0071287fa766445fd40a64899bf5351e3c8824d756c892c5da85623d33e874",
+    "repeat_eif_sha256": "cef479069cdcdbcd5ed93182bb29a74c4b1db7275f2c02f5164f20b0fbc083ba",
     "nitro_cli_sha256": "1ec399df68da6df0b54c943d0c04add712778c1db014dc3e797befc11c22226c",
     "blobs_sha256": {
       "init": "c478b57a645ec594df9c355824f571bb684ca559d35ab380bb0cda81a0dc590d",
@@ -62,11 +62,11 @@
     "pass": true
   },
   "image_secret_scan": {
-    "image_id": "sha256:592df409ee04a7b602b4f09ed491c45e55502032e5fce076c37d9e3038bcccde",
+    "image_id": "sha256:ff0c639631959cceb5563f176a5e9af7b7b6d061ed4020d8917396d4622d1d76",
     "expected_layers": 10,
     "layers_scanned": 10,
     "regular_files_scanned": 3379,
-    "uncompressed_bytes_scanned": 179446746,
+    "uncompressed_bytes_scanned": 179483687,
     "exact_build_credential_matches": 0,
     "credential_match_paths": [],
     "credential_or_temporary_askpass_paths": [],
@@ -78,8 +78,8 @@
   "deployment_validator": {
     "removed_allow_create_env_absent": true,
     "actual_eif_structural_verification": {
-      "sha256": "ddccba5d36a45413a4b1f0c8577f4be8b2cce66272e4a8f75044658220eb0184",
-      "pcr0": "bccc73d93a81eefb4d62dcc5f604a7721bfd573073124f6308b698d8a9485e49071832383b34ac9f8d2aef32116a4faf",
+      "sha256": "ec0071287fa766445fd40a64899bf5351e3c8824d756c892c5da85623d33e874",
+      "pcr0": "d97d9316884643f9a1cb468206f9b98662c74704bf04b6187b98dcf9c1a29dabf243a8dc85134c8a2b5755efa9e973bb",
       "mode": "bootstrap"
     },
     "check_crc": true,
@@ -89,22 +89,29 @@
     "note": "No approved deployment or live AWS/Nitro evidence exists for this local fixture. This exercises the image verification layer and proves the fixture cannot pass the approval gate."
   },
   "native_test_evidence": "../native/results.json",
-  "native_source_unchanged": {
-    "tested_native_source_commit": "7379c4ffbb497b2ba14971f102f4383f292fa1a3",
-    "current_production_commit": "dfb3cce0611a115c4058c706c5dce09cf2449971",
-    "native_file_hashes_unchanged": {
-      "build/build-swap-kms-tool.sh": true,
-      "build/swap-kms-dependencies.tsv": true,
-      "build/swap-kms-nsm.Cargo.lock": true,
-      "enclave/kms-tool/CMakeLists.txt": true,
-      "enclave/kms-tool/main.c": true,
-      "enclave/kms-tool/tests/input_cleanup.c": true,
-      "enclave/kms-tool/README.md": true,
-      "build/patches/nitro-sdk-cleanup.patch": true,
-      "enclave/kms-tool/tests/sdk_cleanup.c": true
+  "sdk_dependencies_unchanged": {
+    "native_source_commit": "6daf8ab73b2a4edb4059faec1a53041ee62dd357",
+    "compared_with_tested_native_commit": "7379c4ffbb497b2ba14971f102f4383f292fa1a3",
+    "checks": {
+      "lib/libcrypto.a": true,
+      "lib/libaws-nitro-enclaves-sdk-c.a": true,
+      "lib/libaws-c-auth.a": true,
+      "lib/libaws-c-compression.a": true,
+      "lib/libjson-c.a": true,
+      "lib/libs2n.a": true,
+      "lib/libaws-c-cal.a": true,
+      "lib/libaws-c-io.a": true,
+      "lib/libssl.a": true,
+      "lib/libaws-c-sdkutils.a": true,
+      "lib/libaws-c-http.a": true,
+      "lib/libnsm.so.0": true,
+      "lib/libaws-c-common.a": true,
+      "share/swap-kms/sdk-source.json": true,
+      "share/swap-kms/dependencies.tsv": true,
+      "share/swap-kms/nsm-Cargo.lock": true,
+      "share/swap-kms/headers.sha256": true
     },
-    "pass": true,
-    "note": "Docker runtime settings and Rust application code changed; native build script, manifest, NSM lock, helper, reviewed SDK patch, and native tests did not."
+    "pass": true
   },
   "old_eif_removed_setting_negative_control": {
     "old_actual_eif_rejected": true,

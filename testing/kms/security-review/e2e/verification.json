@@ -1,27 +1,34 @@
 {
-  "testing_commit": "73db4917cd0b3eecd6ff39310d1b9ac7e68191dd",
-  "production_commit": "dfb3cce0611a115c4058c706c5dce09cf2449971",
+  "testing_commit": "530dc8a2d3079c6e7c48643bf992cf5d78956d7f",
+  "production_commit": "6cc65d635717ee6e69a0ac27c8cc78bd6f711800",
   "clean_source_verified": true,
-  "production_native_build_custody_helper_and_policies_byte_identical": true,
+  "production_native_build_custody_helper_policies_and_forwarder_byte_identical": true,
   "creation_flag_absent_from_tracked_rust": true,
-  "e2e_scenarios_passed": 42,
-  "automatic_initialization_scenarios_passed": [
-    "unpinned restart automatically reuses existing ciphertext and identity",
-    "unpinned corrupted object fails without generating a replacement"
+  "e2e_scenarios_passed": 44,
+  "diagnostic_categories_verified": [
+    "access_denied",
+    "configuration_error",
+    "unavailable"
   ],
-  "slow_kms_failed_init_seconds": 12.033,
+  "broker_quota": {
+    "accepted": 8,
+    "rejected": 8,
+    "recovery_passed": true
+  },
+  "helper_invalid_input_cases_rejected": 13,
+  "slow_kms_failed_init_seconds": 12.031,
   "trusted_tls_controls_passed": 3,
   "testing_all_target_clippy_passed": true,
-  "report_sha256": "01b5343762d5ad95f0e104724fcf4316070701bebe546c27e173f890de9eba1e",
-  "sdk_image": "codex-swap-kms-sdk-builder:security-review-sdk-cleanup",
-  "sdk_image_id": "sha256:3ed7ac4c496780ac8ebf9b144767b95fa1b4acf986a1cff4216484a37ba071da",
+  "report_sha256": "83d43a4df6ea46f7d96e21bf9a0facf5f1511592918f64524ea73c84386f5efb",
+  "sdk_image": "codex-swap-kms-sdk-builder:security-review-strict-input",
+  "sdk_image_id": "sha256:078b54035c74d9b8a9c38c1d8b8a59fd73725b5eed80f7960db0239174e4d20c",
   "sdk_source_provenance": {
     "upstream_commit": "cd61b6187c8b20867ba4368d1ae62c5790c0269a",
     "patch_sha256": "1f9319934ac86c11cf2b1daf5f084c16e348f323b0c208d524e518247841002a",
     "effective_rest_c_sha256": "d50f092afa72e975c44b01c0a461a8c4f7f0f5f45de987bab8b0c9a12f18d6c9"
   },
-  "production_helper_binary_sha256": "499386a51939a2e4eaaa493bc4c223d108f4f07d848173924fc465eb5eec35dc",
-  "sdk_helper_binary_sha256": "3ca0a5c1699c2b095a4a9bb4de6490933ed28af65f05251e10d622d9a96d711e",
+  "production_helper_binary_sha256": "dfb45859c4ed82381db07df81f7cf47e431261516cca41a8a0337306d0bd64c8",
+  "sdk_helper_binary_sha256": "720571c28e63cd43033c2f030a0cc19c82275704abe6e69db03640df8d3ca3b9",
   "python_dependencies": {
     "boto3": "1.43.94",
     "botocore": "1.43.94",

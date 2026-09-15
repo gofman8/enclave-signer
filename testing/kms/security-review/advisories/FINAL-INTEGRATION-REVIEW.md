@@ -1,76 +1,85 @@
-# Independent final integration review
+# Final integration review after round-two fixes
 
-Reviewed clean production `dfb3cce0611a115c4058c706c5dce09cf2449971` on 15 September 2026 local time. This focused
-follow-up confirmed no new critical or high-severity defect and required no
-further production source changes. The exact reviewed hashes and evidence are
-recorded in `FINAL-INTEGRATION-REVIEW.json` and `final-source-verification.json`.
+Reviewed clean production `6cc65d635717ee6e69a0ac27c8cc78bd6f711800` on 15 September 2026. No additional critical
+or high defect was found in the final integration review. This is a focused code
+review and local verification, not an external security audit. This workstream
+implemented the broker/relay changes; it independently reviewed the other
+workstreams' phase, forwarder and native integration changes.
 
-## Automatic startup and identity protection
+## Custody and identity
 
-There is no production creation switch. `recover_seed` first loads S3 ciphertext
-and reuses it with or without an expected identity pin. Only an explicit missing
-object with no pin reaches KMS generation and conditional creation. Read errors,
-invalid ciphertext and decryption errors cannot fall back to generation. A pin
-blocks missing-state generation/write and rejects a different recovered identity
-before activation. The deployment gate infers image classification from the
-expected address; operational PCR rollout and retirement of generation authority
-remain required before funding. The legacy compatibility fixture alone retains
-the retired setting needed by its frozen historical binary.
+Startup loads existing ciphertext with or without a pin. Only confirmed missing
+storage with no expected identity permits generation and conditional creation.
+Pinned missing storage, load errors and invalid/decrypt-failing ciphertext never
+create replacement keys. Signing and mint-burn custody behavior remain unchanged.
+Absolute custody/helper/broker deadlines still fail closed; late PUT completion
+is recovered by a subsequent load. The phase mutex is released for external I/O,
+and swap read-only callback unwind drops its guard before resuming the panic.
 
-## Initialization and deadline review
+## Local transport and diagnostics
 
-- `state.rs`: Initial → Initializing reservation occurs under the phase mutex,
-  which is released before external I/O. Competing transitions reject
-  Initializing; keys/signing require Active. RAII restores Initial on failure or
-  unwind. The later phase guard drops before the reservation, avoiding a
-  self-deadlock. Activation requires a valid recovered manager, any configured
-  identity pin to match, and an unexpired aggregate deadline.
-- Request ingress and custody dispatch share an absolute deadline; custody is
-  capped at 25 seconds with response time reserved. Broker connect/read/write
-  operations share a shrinking sub-deadline. Partial reads cannot restart the
-  budget, and late completed derivation is rejected before activation.
-- The fixed-path helper receives an empty environment and bounded private pipes.
-  Its limit is the smaller of 12 seconds or remaining custody time. Timeout
-  kills/reaps the helper before joining pipe workers. Generation returns only
-  ciphertext; recovery decrypts the committed storage winner and validates the
-  exact 64-byte seed and KMS key identity.
-- A timed-out conditional S3 PUT can commit later, but the abandoned attempt
-  cannot activate. The next initializer loads that winner. Broker worker
-  capacity remains occupied until delayed AWS calls finish, bounding retries.
+The broker authorizes the kernel peer before request reads. Limits are 16 global
+connections, four per CID; 16 global AWS workers, two per CID; and four dispatches
+per second per CID with burst eight. Timeout does not release a still-running AWS
+worker. Create has at most one conditional PUT and one GET, with no SDK/internal
+retry. Full queues/rate buckets reject promptly; thread-start failures close the
+socket, release quotas and leave the listener running.
 
-## Native SDK integration
+The KMS relay uses guarded systemd socket activation. Actual VSOCK family, local
+CID/port and peer CID are checked before any subprocess. systemd restricts each
+source CID to two connections and all sources to 16; the connection service has
+15-second lifetime and task/memory/descriptor caps, including aggregate limits.
+The guard executes distro socat with a clean environment and one literal regional
+TCP destination; TLS terminates inside the official SDK in the enclave. Old
+unrestricted proxy units are retired in the migration instructions.
 
-The SDK is explicitly patched for request lifecycle safety. The canonical patch
-initializes both cleanup pointers, checks partial allocations, permits partial
-response destruction and publishes completion under the waiter's mutex with a
-predicate loop. Source integrity checks bind the exact upstream commit, patch
-and effective source hashes. Official TLS, SigV4, attestation and CMS code remains
-in use. Sensitive helper fields are wiped after independent AWS copies exist;
-NSM SONAME and runtime paths match the pinned library.
+Swap egress now has four workers, four copy threads and eight queued connections
+per listener. Queueing, nonblocking connect and both transfer directions share an
+absolute lifetime; timeout/error closes both directions, while half-close permits
+a complete response. Non-swap forwarder behavior stays on the prior code path.
 
-Retained native evidence covers the same final helper/patch/test source bytes:
-16 fault/completion cases and 45 official SDK tests passed; the unpatched SDK
-failed 10 cases. GCC rejected both original uninitialized cleanup pointers and
-compiled the patch with those warnings treated as errors. These are retained
-source-matched results, not a claim that native tests were rerun in this review.
-The coordinating workstreams record final process E2E/runtime/EIF results.
+Broker/native failure provenance is preserved only through fixed categories.
+Unknown failures are not optimistically retryable, and no raw provider/host text
+is forwarded. The coarse state is deliberately visible to the host/operator;
+credentials, plaintext seed and sensitive provider diagnostics are excluded.
 
-## Fresh final-revision checks
+## Native integration and source provenance
 
-All **47 deployment tests** and **222 independent IAM simulation cases** passed.
-The testing checkout `73db4917cd0b3eecd6ff39310d1b9ac7e68191dd` contains the production revision and uses
-byte-identical validator and policy sources. Counts, commands, timestamps,
-source hashes and result hashes are in `final-test-verification.json`; raw logs
-and all IAM verdicts are retained alongside it.
+The native helper checks the real KMS response KeyId before and after SDK parsing
+and emits that checked response identity. Its flat private IPC rejects duplicate
+members, while optional session-token semantics remain valid. The SDK request
+lifecycle patch and fault-test bytes remain unchanged: retained proof has 16
+passing fault/completion cases and 45 official SDK tests, with 10 unpatched
+negative-control failures. Helper main.c changed in this round; the current
+native/helper/E2E/EIF runs are recorded separately and the older helper results
+are not reused as proof of changed source.
 
-## Explicit limits
+All four Cargo/NSM/pip lock hashes and native upstream coordinates match the saved
+14 September public advisory query. `final-source-verification.json` binds the
+current sources and exact maintained SDK patch. Parent systemd/socat are distro
+packages outside that query; their separate scope is recorded in
+`../round-two/host-dependency-disposition.md`.
 
-The separate upstream connection-setup wait can still lose an early notification;
-the helper's 12-second deadline bounds that availability failure, which fails
-initialization closed and permits retry. An unpinned identity cannot establish
-that a dishonest broker supplied the intended same-context ciphertext. Pin the
-independently verified identity and complete backup/recovery validation before
-funding. Software deadlines cannot force progress under indefinite process or
-kernel descheduling. Conditional inherited webpki and optional Helios advisory
-limitations remain in `REMEDIATION.md`. Local policy simulation does not prove
-real AWS/Nitro enforcement or production backup recovery.
+## Fresh verification
+
+All **62 deployment tests** and **222 independent IAM simulation cases** passed.
+The policy fixture and production validator/policies are byte-identical. Source
+hashes also match the completed **577 swap tests**, **542 mint-burn tests**, both
+Clippy profiles, formatting, and **8 Linux forwarder tests** plus Linux build.
+Actual Linux systemd **252.39** accepted all four units without warnings; the
+verified distro socat package is **1.7.4.4-2**. Counts, commands and source/result
+hashes appear in `final-test-verification.json` and
+`../round-two/relay-systemd-verification.json`.
+
+## Limits that remain explicit
+
+The separate SDK connection-setup wait can miss an early notification; the helper
+12-second deadline bounds that availability failure. The host can stop an enclave
+or exhaust unrelated host resources. CID admission grants the full dedicated role
+and cannot establish image identity; recipient attestation and narrow IAM remain
+essential. An unpinned identity cannot authenticate a maliciously substituted
+same-context seed; pin the verified address and complete backup/recovery validation
+before funding. Inherited conditional webpki and optional Helios advisory limits
+remain in `REMEDIATION.md`. Local unit checks and policy simulation do not prove
+live AWS/Nitro enforcement, actual VSOCK socket activation/cgroup enforcement, or
+production backup recovery.

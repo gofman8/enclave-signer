@@ -2,16 +2,16 @@
   "EifVersion": 4,
   "Measurements": {
     "HashAlgorithm": "Sha384 { ... }",
-    "PCR0": "bccc73d93a81eefb4d62dcc5f604a7721bfd573073124f6308b698d8a9485e49071832383b34ac9f8d2aef32116a4faf",
+    "PCR0": "d97d9316884643f9a1cb468206f9b98662c74704bf04b6187b98dcf9c1a29dabf243a8dc85134c8a2b5755efa9e973bb",
     "PCR1": "745004eab9a0fb4a67973b261c6e7fa5418dc870292927591574385649338e54686cdeb659f3c6c2e72ba11aba2158a8",
-    "PCR2": "4c3eeebe1dc50477a4141dcf405c2125a143366f59f2e9881da9b722837a1da6a93ab6ec5eb466c4d902a792d19b2547"
+    "PCR2": "4e31fd32bc26b6c50f5f94ce75eb592c77e45afb5be747d34e1c4960fc579b7e6e5b5d4f9ecc54d699f2610efec8127f"
   },
   "IsSigned": false,
   "CheckCRC": true,
   "ImageName": "codex-kms-swap-production-validation",
-  "ImageVersion": "592df409ee04a7b602b4f09ed491c45e55502032e5fce076c37d9e3038bcccde",
+  "ImageVersion": "ff0c639631959cceb5563f176a5e9af7b7b6d061ed4020d8917396d4622d1d76",
   "Metadata": {
-    "BuildTime": "2026-09-15T08:32:35.653450848+00:00",
+    "BuildTime": "2026-09-15T08:59:34.689008033+00:00",
     "BuildTool": "nitro-cli",
     "BuildToolVersion": "1.4.5",
     "OperatingSystem": "Linux",
@@ -44,34 +44,34 @@
         ],
         "WorkingDir": "/app"
       },
-      "Created": "2026-09-15T08:30:28Z",
-      "Id": "sha256:592df409ee04a7b602b4f09ed491c45e55502032e5fce076c37d9e3038bcccde",
+      "Created": "2026-09-15T08:57:05Z",
+      "Id": "sha256:ff0c639631959cceb5563f176a5e9af7b7b6d061ed4020d8917396d4622d1d76",
       "Metadata": {
-        "LastTagTime": "2026-09-15T08:32:26.759705751Z"
+        "LastTagTime": "2026-09-15T08:59:25.61741606Z"
       },
       "Os": "linux",
       "RepoDigests": [
-        "codex-kms-swap-production-validation@sha256:592df409ee04a7b602b4f09ed491c45e55502032e5fce076c37d9e3038bcccde"
+        "codex-kms-swap-production-validation@sha256:ff0c639631959cceb5563f176a5e9af7b7b6d061ed4020d8917396d4622d1d76"
       ],
       "RepoTags": [
-        "codex-kms-swap-production-validation:security-review-automatic-create"
+        "codex-kms-swap-production-validation:security-review-final-hardening"
       ],
       "RootFS": {
         "Layers": [
           "sha256:936feb360f9881e17b1fe8b0499aec288b2870e223a0849bc148826a3ec45abf",
           "sha256:3fad4391281e3b09fadc2a83d8cceafdb21d594cdc8702f4f3af4b09038020cf",
           "sha256:1fa474277ed28c0752724ea5b77204c5aedbb2203b29d7e2b265f0f42bacef13",
-          "sha256:ceaaf56ea333aef9e8430bb0255afffe8c8f64a93cb8986ad9cc243a7b8003fb",
-          "sha256:4a139aa1c020967b05d96745891beea8c65da56ac1f0902c05d8f171e2b09b81",
-          "sha256:be40112fa132d4fa78e54247e7316989c0fde158234743563355def53332c4d9",
-          "sha256:5247665531aa65a0f5bd3cd735e39db5ac38c5881f96fbbaefcd0b67dcfffe0f",
-          "sha256:19d0a2b2f5820ab9ef69a906775bd760ddb341497fc5d9c994d149465a02d4d5",
-          "sha256:ccb22e5048abbf9175b7d131c2f6a34ba8f443ea7a9dd939f199d42471119f4d",
+          "sha256:eea6026c986b2b7beb2b96d52a3cd32fab181406c8dc439af968018f86daeba8",
+          "sha256:465ac65164dd03355d0340aff75591623d28e5ee526a3d3fa9c8eea0105f1865",
+          "sha256:2fa2d62948d1ee9b4b52c02c4bdbd141b94de02c5729fda4e8ccd081620a1bcf",
+          "sha256:b8160c947fea0811062e00b8ad8045651001a1d071bf1054b1fb28dd4df02e04",
+          "sha256:e7c1f88d8b657e19bba3e7a16f07322ce879697971f20d211515a5cd48c1b2a8",
+          "sha256:54c92cdc314ef11d3f3ee39c92074c0581f41bfb7300b190127f167684705715",
           "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
         ],
         "Type": "layers"
       },
-      "Size": 52078985
+      "Size": 52091026
     }
   }
 }

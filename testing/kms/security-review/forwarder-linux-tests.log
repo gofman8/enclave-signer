@@ -1,0 +1,15 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.79s
+     Running unittests src/lib.rs (/target/debug/deps/utexo_bridge_enclave-2a1bc7f5e227e0f0)
+
+running 8 tests
+test vsock_forwarder::bounded::tests::custody_forwarder_budget_fits_the_custody_request ... ok
+test vsock_forwarder::bounded::tests::blocked_connects_do_not_block_accept_and_overload_is_closed ... ok
+test vsock_forwarder::bounded::tests::half_close_delivers_request_eof_then_complete_response ... ok
+test vsock_forwarder::bounded::tests::error_in_one_direction_wakes_the_other_copy ... ok
+test vsock_forwarder::bounded::tests::occupied_broker_port_returns_error_before_starting_workers ... ok
+test vsock_forwarder::bounded::tests::stalled_peer_expires_and_closes_both_directions ... ok
+test vsock_forwarder::bounded::tests::ongoing_bidirectional_trickle_cannot_extend_total_deadline ... ok
+test vsock_forwarder::bounded::tests::deadline_cancels_a_backpressured_writer_and_its_active_partner ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 457 filtered out; finished in 0.20s
+

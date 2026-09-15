@@ -1,0 +1,16 @@
+Internal ctest changing into directory: /tmp/response-contract
+Test project /tmp/response-contract
+    Start 1: credential-cleanup
+1/3 Test #1: credential-cleanup ...............   Passed    0.00 sec
+    Start 2: response-contract
+2/3 Test #2: response-contract ................   Passed    0.02 sec
+    Start 3: sdk-request-cleanup
+3/3 Test #3: sdk-request-cleanup ..............   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 3
+
+Total Test time (real) =   0.03 sec
+response key/output cases: 20 PASS; safe error classifications: 38 PASS
+0464f3a0106979693bb19d4b1990449f6cb2f7d6213f0e9afd0d7e997818cba8  /opt/swap-kms/bin/swap-kms-tool
+5a8dc2e485d05cd3be15e2b4fa6d091c20aa949f9d6aec1a9c8685efb8a82c5b  /opt/swap-kms/lib/libnsm.so.0
+Invalid input exits64 with no stdout PASS

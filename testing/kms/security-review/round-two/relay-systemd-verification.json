@@ -1,0 +1,36 @@
+{
+  "recorded_at": "2026-09-15T09:01:25.301431+00:00",
+  "production_head": "6cc65d635717ee6e69a0ac27c8cc78bd6f711800",
+  "environment": "Temporary Debian bookworm-slim ARM64 container; no host services changed",
+  "image_digest": "sha256:88200866dfff7ea7f5cbcb6ec7c8a701889efe6fe859fe64d6990e4b07ea4171",
+  "systemd": "252.39-1~deb12u2",
+  "socat": "1.7.4.4-2",
+  "effective_verification_command": [
+    "systemd-analyze",
+    "verify",
+    "/etc/systemd/system/utexo-swap-kms-relay.socket",
+    "/etc/systemd/system/utexo-swap-kms-relay@.service",
+    "/etc/systemd/system/utexo-swap-kms-relay.slice",
+    "/etc/systemd/system/utexo-swap-seed-broker.service"
+  ],
+  "exit_code": 0,
+  "unit_warnings": [],
+  "source_sha256": {
+    "deploy/systemd/utexo-swap-kms-relay.socket": "9f99a636d5266b487a362d0e72147ec21f2bb995ce04f4a6f874d1c97be45590",
+    "deploy/systemd/utexo-swap-kms-relay@.service": "c3cbe3f27fdcde627c0b7844290c10029495e245244c842acd965a6abbf933d9",
+    "deploy/systemd/utexo-swap-kms-relay.slice": "712578676f4cda0272c3f829da724ea743f8d3952620ed9f2248023af1b6fa9d",
+    "deploy/systemd/utexo-swap-seed-broker.service": "495b6be65ff1f1d224d0bf39c0d2955d51086ac773901bb2e2d19bf844500fe6",
+    "deploy/swap-kms-relay-guard.py": "c3cbf4bd8670b287941e12fcddb0b98935088390a3b94f65f119f5e3a37a6c01",
+    "deploy/tests/test_swap_kms_relay.py": "82e2e9ebc94af9f22c1bbb7d37af149e136172f10a9f276fb71d2024794f174a"
+  },
+  "logs": {
+    "relay-systemd-debian-install.log": "57837b93886776a893a75b2b823710fdd743d0bc761ad40341fa92eda6717a31",
+    "relay-systemd-debian-verify.log": "051a44bd64d9643c1d3a368f85fea0ee34e034c5866c2639b7e24f17de269d10"
+  },
+  "guard_tests": "Included in 62 deployment tests: kernel peer/family/local endpoint checks, no subprocess before peer authorization, fd0/fd1 activation contract, manager-version gate, fixed diagnostics and clean socat exec environment.",
+  "limits": "Actual Linux systemd parser verification plus socket-contract unit tests. This container does not run systemd as PID1 and cannot prove actual Nitro VSOCK activation, cgroup enforcement or live CID isolation. Deployment must validate allowed/disallowed peers and second-CID progress under saturation.",
+  "primary_sources": [
+    "https://github.com/aws/aws-nitro-enclaves-cli/blob/main/vsock_proxy/README.md",
+    "https://github.com/systemd/systemd/blob/v252/src/core/socket.c"
+  ]
+}

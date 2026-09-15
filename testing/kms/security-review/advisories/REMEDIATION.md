@@ -33,7 +33,7 @@ Other inherited lock matches—derivative 2.2.0, instant 0.1.13, libsecp256k1 0.
 - `disposition.json`: source hashes, matched package scopes and graph membership.
 - `swap-runtime-tree.txt`, `parent-runtime-tree.txt`, `optional-helios-runtime-tree.txt`, `optional-helios-check.log`: graph and compile checks.
 - `native/*-advisories.json`: twelve official GitHub advisory feeds. Their 21 entries include absent Rust wrappers and server-only paths; range review is in the native workstream.
-- Broker/policy gate: 47 local tests, plus 222 independent open-source IAM simulation cases across three phases and role/session principals, including broad identity grants. These prove local behavior, not AWS enforcement.
+- Broker/policy gate: 62 local tests, plus 222 independent open-source IAM simulation cases across three phases and role/session principals, including broad identity grants. These prove local behavior, not AWS enforcement.
 
 There is no new known unremediated advisory in the introduced custody stack at this snapshot. This does not assert vulnerability-free dependencies; inherited optional/conditional limitations above remain explicit. Final native/runtime/E2E build evidence must match the final source hashes before release. Real AWS/Nitro enforcement and backup recovery remain mandatory deployment checks.
 
@@ -49,7 +49,7 @@ There is no new known unremediated advisory in the introduced custody stack at t
 
 ## Final SDK lifecycle remediation
 
-Final committed state: `dfb3cce0611a115c4058c706c5dce09cf2449971`. `final-source-verification.json` verifies that
+Final committed state: `6cc65d635717ee6e69a0ac27c8cc78bd6f711800`. `final-source-verification.json` verifies that
 all four package locks are byte-identical to the saved public-query inputs and
 all native upstream repository coordinates are unchanged. The manifest's
 comment now discloses a maintained SDK patch. The original public-query
@@ -78,6 +78,17 @@ ciphertext is always recovered; only a confirmed missing object without an
 expected identity pin permits conditional creation. A configured identity pin
 blocks missing-storage replacement. The deployment gate infers image lifecycle
 classification from that pin; operational retirement of generation authority
-remains required before funding. Fresh final-revision checks passed all 47
+remains required before funding. Fresh final-revision checks passed all 62
 deployment tests and all 222 independent IAM cases, recorded in
 `final-test-verification.json` and its referenced logs.
+
+The subsequent transport review adds per-CID broker concurrency/rate admission,
+CID-gated socket activation for the KMS relay, bounded swap forwarder workers,
+and fixed diagnostic categories. These source changes introduce no new Cargo,
+NSM or pip package coordinates. systemd and socat are distro-managed parent
+packages, outside this saved public-package query. See
+`../round-two/relay-systemd-verification.json` for exact locally verified versions
+and `../round-two/host-dependency-disposition.md` for the separate host-package
+scope. Native helper source changed in this round; the retained SDK patch proof
+applies to the unchanged upstream/patch/fault-test bytes, while the final helper,
+process E2E and EIF checks are recorded by the current native/E2E workstreams.

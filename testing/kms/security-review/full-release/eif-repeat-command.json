@@ -3,7 +3,7 @@
   "run",
   "--rm",
   "--name",
-  "codex-kms-final-automatic-create-eif-repeat",
+  "codex-kms-final-hardening-eif-repeat",
   "--platform",
   "linux/arm64",
   "-v",
@@ -21,5 +21,5 @@
   "rust:1.96.1-bookworm@sha256:a339861ae23e9abb272cea45dfafde21760d2ce6577a70f8a926153677902663",
   "sh",
   "-c",
-  "set -eu\nmkdir -p /var/log/nitro_enclaves\n/usr/local/bin/nitro-cli --version\n/usr/local/bin/nitro-cli build-enclave --docker-uri codex-kms-swap-production-validation:security-review-automatic-create --output-file /artifacts/rgb-swap-security-review-arm64-repeat.eif\n/usr/local/bin/nitro-cli describe-eif --eif-path /artifacts/rgb-swap-security-review-arm64-repeat.eif > /artifacts/rgb-swap-security-review-arm64-repeat.describe.json\n"
+  "set -eu\nmkdir -p /var/log/nitro_enclaves\n/usr/local/bin/nitro-cli --version\n/usr/local/bin/nitro-cli build-enclave --docker-uri codex-kms-swap-production-validation:security-review-final-hardening --output-file /artifacts/rgb-swap-security-review-arm64-repeat.eif\n/usr/local/bin/nitro-cli describe-eif --eif-path /artifacts/rgb-swap-security-review-arm64-repeat.eif > /artifacts/rgb-swap-security-review-arm64-repeat.describe.json\n"
 ]

@@ -1,0 +1,22 @@
+test_all_dockerfiles_mount_the_required_keys (test_private_deps.PrivateDepsTests) ... ok
+test_each_ssh_alias_selects_only_its_repo_key (test_private_deps.PrivateDepsTests) ... ok
+test_enclave_does_not_need_proto_key (test_private_deps.PrivateDepsTests) ... ok
+test_failed_command_preserves_status_and_cleans_config (test_private_deps.PrivateDepsTests) ... ok
+test_missing_or_empty_key_refuses_before_build (test_private_deps.PrivateDepsTests) ... ok
+test_prepare_keys_preserves_multiline_values_and_restricts_permissions (test_private_deps.PrivateDepsTests) ... ok
+test_token_rewrites_actual_manifest_urls_without_embedding_token (test_private_deps.PrivateDepsTests) ... ok
+test_ciphertext_and_frame_bounds_agree_across_processes (test_swap_kms_protocol.CustodyProtocolTests) ... ok
+test_inner_deadlines_fit_the_outer_request_budget (test_swap_kms_protocol.CustodyProtocolTests) ... ok
+test_ccd_make_target_does_not_gain_kms_env_or_build_arguments (test_swap_kms_wiring.SwapBuildTests) ... ok
+test_make_accepts_automatic_creation_without_an_identity_pin (test_swap_kms_wiring.SwapBuildTests) ... ok
+test_make_accepts_command_line_pins_and_exports_them_without_shell_interpolation (test_swap_kms_wiring.SwapBuildTests) ... ok
+test_make_passes_environment_pins_to_both_swap_tags (test_swap_kms_wiring.SwapBuildTests) ... ok
+test_missing_swap_pins_fail_before_docker_runs (test_swap_kms_wiring.SwapBuildTests) ... ok
+test_other_flow_scripts_neither_require_nor_pass_kms_build_arguments (test_swap_kms_wiring.SwapBuildTests) ... ok
+test_swap_script_accepts_automatic_creation_without_an_identity_pin (test_swap_kms_wiring.SwapBuildTests) ... ok
+test_swap_script_passes_all_measured_pins (test_swap_kms_wiring.SwapBuildTests) ... ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 2.729s
+
+OK

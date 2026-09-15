@@ -1,8 +1,9 @@
 {
-  "production_commit": "dfb3cce0611a115c4058c706c5dce09cf2449971",
-  "image_id": "sha256:592df409ee04a7b602b4f09ed491c45e55502032e5fce076c37d9e3038bcccde",
-  "source_date_epoch": 1789461028,
+  "production_commit": "6cc65d635717ee6e69a0ac27c8cc78bd6f711800",
+  "image_id": "sha256:ff0c639631959cceb5563f176a5e9af7b7b6d061ed4020d8917396d4622d1d76",
+  "source_date_epoch": 1789462625,
   "checks": {
+    "removed_setting_not_in_application_binary": true,
     "removed_allow_create_build_arg_absent": true,
     "removed_allow_create_env_absent": true,
     "helper_matches_tested_native": true,
@@ -11,12 +12,11 @@
     "patch_matches_repository": true,
     "provenance_matches_tested_native": true,
     "source_files_unchanged_during_build": true,
-    "tracked_worktree_clean": true,
-    "removed_setting_not_in_application_binary": true
+    "tracked_worktree_clean": true
   },
   "binaries_sha256": {
-    "swap-kms-tool": "499386a51939a2e4eaaa493bc4c223d108f4f07d848173924fc465eb5eec35dc",
-    "utexo-bridge-enclave": "bf4c1b4b1f3dd6277a6b6b3631a883501641fb8dda18e21d8b0c475712c0d0f1",
+    "swap-kms-tool": "dfb45859c4ed82381db07df81f7cf47e431261516cca41a8a0337306d0bd64c8",
+    "utexo-bridge-enclave": "ca0365a4c95ffde228e77e6d8149f888f6bed7e38e727d283547854afeede4fd",
     "libnsm.so.0": "5a8dc2e485d05cd3be15e2b4fa6d091c20aa949f9d6aec1a9c8685efb8a82c5b"
   },
   "sdk_source": {
