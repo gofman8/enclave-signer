@@ -1,0 +1,28 @@
+{
+  "production_commit": "c980fda77d7631e22879d6cc6477e97249ae65b7",
+  "image_id": "sha256:6955eb017c1880e4934f6a91d762e4984e99299625f382d47ba4f986ad601e33",
+  "source_date_epoch": 1789464814,
+  "checks": {
+    "removed_setting_not_in_application_binary": true,
+    "removed_allow_create_build_arg_absent": true,
+    "removed_allow_create_env_absent": true,
+    "helper_matches_tested_native": true,
+    "nsm_matches_tested_native": true,
+    "manifest_matches_repository": true,
+    "patch_matches_repository": true,
+    "provenance_matches_tested_native": true,
+    "source_files_unchanged_during_build": true,
+    "tracked_worktree_clean": true
+  },
+  "binaries_sha256": {
+    "swap-kms-tool": "dfb45859c4ed82381db07df81f7cf47e431261516cca41a8a0337306d0bd64c8",
+    "utexo-bridge-enclave": "ed2721e2bd4dc79a0357f4dc4a783ea5d1b09164d9c5b1175bce8a3a001ee3a3",
+    "libnsm.so.0": "5a8dc2e485d05cd3be15e2b4fa6d091c20aa949f9d6aec1a9c8685efb8a82c5b"
+  },
+  "sdk_source": {
+    "upstream_commit": "cd61b6187c8b20867ba4368d1ae62c5790c0269a",
+    "patch_sha256": "1f9319934ac86c11cf2b1daf5f084c16e348f323b0c208d524e518247841002a",
+    "effective_rest_c_sha256": "d50f092afa72e975c44b01c0a461a8c4f7f0f5f45de987bab8b0c9a12f18d6c9"
+  },
+  "pass": true
+}

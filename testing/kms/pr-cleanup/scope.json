@@ -1,0 +1,15 @@
+{
+  "production_commit": "c980fda77d7631e22879d6cc6477e97249ae65b7",
+  "base_commit": "6df13456f09a4f68434b93b6daf11243a577410f",
+  "before": {
+    "files": 56,
+    "added": 9406,
+    "deleted": 6138
+  },
+  "after": {
+    "files": 36,
+    "added": 4536,
+    "deleted": 92
+  },
+  "scope": "Final PR diff compared with dev; cleanup commit preserves published history."
+}

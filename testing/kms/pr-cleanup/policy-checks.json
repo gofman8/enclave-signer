@@ -1,0 +1,3461 @@
+{
+  "scope": "Offline IAM simulation of minimal production usage examples, with test-only exact-scope identity and explicit manual bootstrap/restore policy edits; no AWS calls or deployment approval gate",
+  "count": 216,
+  "passed": 216,
+  "policy_sha256": {
+    "swap-kms-key-policy.json": "c94a40f9de09d2e5eb2b66e2dbc02dd4dc97d819fd84a99f904db0c0fc085601",
+    "swap-seed-bucket-policy.json": "cb0562630d598a42e129ca633cfb06665cb3b8003f4bc406ce3030d2d9362d63"
+  },
+  "removed_framework_coverage": [
+    "EIF approval validator",
+    "systemd relay guard",
+    "account-wide signer permissions boundary",
+    "broad-grant bucket administration denials"
+  ],
+  "cases": [
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer PCR aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa kms:GenerateDataKey",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer PCR aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa kms:Decrypt",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer PCR bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer PCR bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer PCR cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer PCR cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer PCR 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer PCR 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer PCR None kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer PCR None kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer context application missing=False",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer context application missing=True",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer context flow missing=False",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer context flow missing=True",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer context seed_id missing=False",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer context seed_id missing=True",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer context bitcoin_network missing=False",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer context bitcoin_network missing=True",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer extra context",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer kms:Encrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer kms:ReEncryptFrom",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer kms:GenerateDataKeyWithoutPlaintext",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer kms:CreateGrant",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer kms:PutKeyPolicy",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContextKeys",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer kms:ScheduleKeyDeletion",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContextKeys",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer other KMS key has no attached fixture policy",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ImplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer read seed",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer create only",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer list for missing",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer overwrite",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenySeedWritesWithoutCreateOnlyPrecondition"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer delete",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenySeedDeletionIncludingVersionDeletion"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer delete version",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenySeedDeletionIncludingVersionDeletion"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer HTTP",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenyInsecureTransport"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer other object",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ImplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer role lacks bucket admin",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ImplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::123456789012:role/local-e2e-signer broad grants are outside minimal policy scope",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa kms:GenerateDataKey",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa kms:Decrypt",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR None kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR None kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session context application missing=False",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session context application missing=True",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session context flow missing=False",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session context flow missing=True",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session context seed_id missing=False",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session context seed_id missing=True",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session context bitcoin_network missing=False",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session context bitcoin_network missing=True",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session extra context",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session kms:Encrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session kms:ReEncryptFrom",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session kms:GenerateDataKeyWithoutPlaintext",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session kms:CreateGrant",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session kms:PutKeyPolicy",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContextKeys",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session kms:ScheduleKeyDeletion",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContextKeys",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session other KMS key has no attached fixture policy",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ImplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session read seed",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session create only",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session list for missing",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session overwrite",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenySeedWritesWithoutCreateOnlyPrecondition"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session delete",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenySeedDeletionIncludingVersionDeletion"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session delete version",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenySeedDeletionIncludingVersionDeletion"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session HTTP",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenyInsecureTransport"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session other object",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ImplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session role lacks bucket admin",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ImplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session broad grants are outside minimal policy scope",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer PCR aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa kms:GenerateDataKey",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer PCR aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa kms:Decrypt",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer PCR bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer PCR bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb kms:Decrypt",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer PCR cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer PCR cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer PCR 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer PCR 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer PCR None kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer PCR None kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer context application missing=False",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer context application missing=True",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer context flow missing=False",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer context flow missing=True",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer context seed_id missing=False",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer context seed_id missing=True",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer context bitcoin_network missing=False",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer context bitcoin_network missing=True",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer extra context",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer kms:Encrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer kms:ReEncryptFrom",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer kms:GenerateDataKeyWithoutPlaintext",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer kms:CreateGrant",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer kms:PutKeyPolicy",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContextKeys",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer kms:ScheduleKeyDeletion",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContextKeys",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer other KMS key has no attached fixture policy",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ImplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer read seed",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer create only",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer list for missing",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer overwrite",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenySeedWritesWithoutCreateOnlyPrecondition"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer delete",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenySeedDeletionIncludingVersionDeletion"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer delete version",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenySeedDeletionIncludingVersionDeletion"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer HTTP",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenyInsecureTransport"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer other object",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ImplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer role lacks bucket admin",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ImplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::123456789012:role/local-e2e-signer broad grants are outside minimal policy scope",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa kms:GenerateDataKey",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa kms:Decrypt",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb kms:Decrypt",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR None kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR None kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session context application missing=False",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session context application missing=True",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session context flow missing=False",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session context flow missing=True",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session context seed_id missing=False",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session context seed_id missing=True",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session context bitcoin_network missing=False",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session context bitcoin_network missing=True",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session extra context",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session kms:Encrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session kms:ReEncryptFrom",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session kms:GenerateDataKeyWithoutPlaintext",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session kms:CreateGrant",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session kms:PutKeyPolicy",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContextKeys",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session kms:ScheduleKeyDeletion",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContextKeys",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session other KMS key has no attached fixture policy",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ImplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session read seed",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session create only",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session list for missing",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session overwrite",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenySeedWritesWithoutCreateOnlyPrecondition"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session delete",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenySeedDeletionIncludingVersionDeletion"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session delete version",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenySeedDeletionIncludingVersionDeletion"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session HTTP",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenyInsecureTransport"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session other object",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ImplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session role lacks bucket admin",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ImplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session broad grants are outside minimal policy scope",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer PCR aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer PCR aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer PCR bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer PCR bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb kms:Decrypt",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer PCR cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer PCR cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer PCR 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer PCR 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer PCR None kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer PCR None kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer context application missing=False",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer context application missing=True",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer context flow missing=False",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer context flow missing=True",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer context seed_id missing=False",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer context seed_id missing=True",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer context bitcoin_network missing=False",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer context bitcoin_network missing=True",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer extra context",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer kms:Encrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer kms:ReEncryptFrom",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer kms:GenerateDataKeyWithoutPlaintext",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer kms:CreateGrant",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer kms:PutKeyPolicy",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContextKeys",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer kms:ScheduleKeyDeletion",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContextKeys",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer other KMS key has no attached fixture policy",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ImplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer read seed",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer create only",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer list for missing",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer overwrite",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenySeedWritesWithoutCreateOnlyPrecondition"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer delete",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenySeedDeletionIncludingVersionDeletion"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer delete version",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenySeedDeletionIncludingVersionDeletion"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer HTTP",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenyInsecureTransport"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer other object",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ImplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer role lacks bucket admin",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ImplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::123456789012:role/local-e2e-signer broad grants are outside minimal policy scope",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb kms:Decrypt",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR None kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session PCR None kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session context application missing=False",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session context application missing=True",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session context flow missing=False",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session context flow missing=True",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session context seed_id missing=False",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session context seed_id missing=True",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session context bitcoin_network missing=False",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session context bitcoin_network missing=True",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session extra context",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session kms:Encrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session kms:ReEncryptFrom",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session kms:GenerateDataKeyWithoutPlaintext",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session kms:CreateGrant",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session kms:PutKeyPolicy",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContextKeys",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session kms:ScheduleKeyDeletion",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:RecipientAttestation:PCR0",
+          "kms:EncryptionContextKeys",
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session other KMS key has no attached fixture policy",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ImplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session read seed",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session create only",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session list for missing",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session overwrite",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenySeedWritesWithoutCreateOnlyPrecondition"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session delete",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenySeedDeletionIncludingVersionDeletion"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session delete version",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenySeedDeletionIncludingVersionDeletion"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session HTTP",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenyInsecureTransport"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session other object",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ImplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session role lacks bucket admin",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ImplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::123456789012:assumed-role/local-e2e-signer/session broad grants are outside minimal policy scope",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    }
+  ]
+}

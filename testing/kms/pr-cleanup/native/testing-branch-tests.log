@@ -1,0 +1,36 @@
+-- The C compiler identification is GNU 10.2.1
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+-- Check if compiler accepts -pthread
+-- Check if compiler accepts -pthread - yes
+-- Found Threads: TRUE
+-- Found crypto: /opt/swap-kms/lib/libcrypto.a
+-- LibCrypto Include Dir: /opt/swap-kms/include
+-- LibCrypto Shared Lib:  /usr/lib/aarch64-linux-gnu/libcrypto.so
+-- LibCrypto Static Lib:  /opt/swap-kms/lib/libcrypto.a
+-- Configuring done (0.3s)
+-- Generating done (0.0s)
+-- Build files have been written to: /out/testing-branch-build
+[1/6] Building C object CMakeFiles/swap-kms-sdk-cleanup-tests.dir/sdk_cleanup.c.o
+[2/6] Building C object CMakeFiles/swap-kms-tool-input-tests.dir/input_cleanup.c.o
+[3/6] Building C object CMakeFiles/swap-kms-tool-response-tests.dir/response_contract.c.o
+[4/6] Linking C executable swap-kms-sdk-cleanup-tests
+[5/6] Linking C executable swap-kms-tool-response-tests
+[6/6] Linking C executable swap-kms-tool-input-tests
+Internal ctest changing into directory: /out/testing-branch-build
+Test project /out/testing-branch-build
+    Start 1: credential-cleanup
+1/3 Test #1: credential-cleanup ...............   Passed    0.03 sec
+    Start 2: response-contract
+2/3 Test #2: response-contract ................   Passed    0.02 sec
+    Start 3: sdk-request-cleanup
+3/3 Test #3: sdk-request-cleanup ..............   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 3
+
+Total Test time (real) =   0.06 sec

@@ -1,0 +1,24 @@
+{
+  "production_commit": "c980fda77d7631e22879d6cc6477e97249ae65b7",
+  "tested_e2e_commit": "625433349048a4e502801ebe1abc737fa13c32d1",
+  "artifact_sha256": {
+    "README.md": "c33f4f7dbd97f962d99f495a3476b3424017fd9929411d63abff917a369b552f",
+    "build-tests.log": "7e6d0d07249e8017984b5dceb07088c03f09896c48e00575d4e1afb21ab59ba4",
+    "direct-broker-linux-results.json": "49f0e313f056f2d21444093480260b859b553692cecb7591bd8d9b4e68f4315f",
+    "e2e/report.json": "b3c0acbbb68af0f149d492d4e26d997336b31665cf1cc08aa49a4075ecff0448",
+    "e2e/verification.json": "3076a17884283f991707c982d525b399cb19afe202f1f66b1f4661a12849bb67",
+    "minimal-rust-results.json": "fbcb02cf1709654c72d1431c4550074f77679bf7e29c1c9dd009d187b5006666",
+    "native/regressions.log": "5cb44ee17dd79bf83013d890fbad3fe607c932fe9c6a2d50a292b4435e96819e",
+    "native/results.json": "278c4c0f725ccd524454eae41fd07b94885f53d68ef348652a4d0c7d0a349ef5",
+    "native/testing-branch-tests.log": "790d15627a339d02f5bae358939fcbd95ce8dd2fbdfb492b0163d6a805bcd879",
+    "policy-checks.json": "983db52cbd099486af21aaf020190b000ce7fff57aeeeec413dc5cbe32e5af12",
+    "runtime/RESULTS.md": "3ace52286e7c062cb7a7bb00705ed4034fbce3c64846cb15f7d286c25f26ddc4",
+    "runtime/eif-build-command.json": "0fad99064c8bbc48b1152afb1033752acd1ee585ed602feeceb4f70b4eadcd55",
+    "runtime/results.json": "bdc9d5b737aadb3495dbf0a2e7a3ce6c2dc55f3165c9554885a3ef6ebf0137c5",
+    "runtime/rgb-swap-minimal-pr-arm64.describe.json": "accc0e5616513b2674723682c491f42fdadcf2e5175c21a9de8c75a3a9e7d891",
+    "runtime/runtime-build-command.json": "1fc1aab364bd5969cdef8b977a65253e6de839dded701fce406d7604657af7ff",
+    "runtime/runtime-secret-scan.json": "ae248921bf4e52cbf6b5521b4e3795a81bb5083dc56c599ec13f292c695e9ec5",
+    "runtime/runtime-verification.json": "bfda47cdf054c6623dfa79ae7e633d2f5099906199641ad8100ed67742b5915d",
+    "scope.json": "34b4a458eeb4379a51388dd87b46d3c4781eb3e867947fd8f6d9567f5ddd2e89"
+  }
+}

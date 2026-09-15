@@ -18,11 +18,15 @@ systemd relay, and broad permissions-boundary templates are not current feature
 coverage. A dedicated test-only role and explicit bootstrap/restore policy edits
 model the deployment prerequisites; they are not additional production tooling.
 
+The cleaned revision passed **44/44 scenarios** at testing `6254333`, containing
+production `c980fda`. See [cleanup validation](pr-cleanup/README.md) for the exact
+scope, source revisions, regression results and actual Docker/EIF evidence.
+
 The earlier security-hardening revision passed **44/44 scenarios** on 2026-09-15
 at testing `530dc8a`, production `6cc65d6`. Its
 [security review evidence](security-review/README.md) is historical and includes
 framework code removed by the subsequent scope cleanup. New cleanup validation
-belongs in a separate `.artifacts/kms-cleanup/` run; do not overwrite or relabel
+belongs in a separate `.artifacts/kms-pr-cleanup/` run; do not overwrite or relabel
 that historical report as evidence for different source or policy guarantees.
 
 The previous 37-scenario baseline passed on 2026-09-14 with the official SDK helper,

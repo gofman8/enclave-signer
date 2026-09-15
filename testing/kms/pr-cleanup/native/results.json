@@ -1,0 +1,27 @@
+{
+  "production_commit": "a3841bd4e8136603463a88d7cce5aa63ecb91469",
+  "helper_sha256": "dfb45859c4ed82381db07df81f7cf47e431261516cca41a8a0337306d0bd64c8",
+  "prior_tested_helper_sha256": "dfb45859c4ed82381db07df81f7cf47e431261516cca41a8a0337306d0bd64c8",
+  "helper_identical": true,
+  "sdk_image": "codex-swap-kms-sdk-builder:security-review-strict-input",
+  "production_cmake_test_targets_removed": true,
+  "regression_location": "testing/kms/native-tests",
+  "tests": {
+    "ctest_suites": 3,
+    "strict_input_cases": 15,
+    "response_key_output_cases": 20,
+    "error_classification_cases": 38,
+    "sdk_lifecycle_cases": 16,
+    "credential_cleanup_and_optional_token": "pass",
+    "installed_invalid_input_exit": 64
+  },
+  "source_hashes": {
+    "enclave/kms-tool/main.c": "5c885904bc131148177e2877662905bce81b6e5b2c8cdd69b7407a49b5f1d602",
+    "enclave/kms-tool/CMakeLists.txt": "f05d08e11681ca76a9c545dc49be79cd4bf9423890238b7a1065a7dcb1a40da3",
+    "build/build-swap-kms-tool.sh": "0f003344bec79a8ae44703c027d52405e2a12a3e980b4ff3e5d0b8df4f3a4ad2",
+    "build/swap-kms-dependencies.tsv": "fef97021bfdc579d0b252b397a66a3a7fc78004948091e1a59ea8781d647d796",
+    "build/swap-kms-nsm.Cargo.lock": "02dce31c049455647f78a2315ade3d015564fce6d3ea6f03750b7c24ae4c8fc6",
+    "build/patches/nitro-sdk-cleanup.patch": "1f9319934ac86c11cf2b1daf5f084c16e348f323b0c208d524e518247841002a"
+  },
+  "scope": "Helper rebuilt on Linux ARM64 against the previously validated immutable SDK prefix. Tests separately compiled from preserved sources and from new testing-only CMake location. No AWS or Nitro hardware used."
+}

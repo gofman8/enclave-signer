@@ -1,0 +1,82 @@
+-- The C compiler identification is GNU 10.2.1
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+-- Check if compiler accepts -pthread
+-- Check if compiler accepts -pthread - yes
+-- Found Threads: TRUE
+-- Found crypto: /opt/swap-kms/lib/libcrypto.a
+-- LibCrypto Include Dir: /opt/swap-kms/include
+-- LibCrypto Shared Lib:  /usr/lib/aarch64-linux-gnu/libcrypto.so
+-- LibCrypto Static Lib:  /opt/swap-kms/lib/libcrypto.a
+-- Configuring done (0.2s)
+-- Generating done (0.0s)
+-- Build files have been written to: /out/regression-build
+[1/8] Building C object CMakeFiles/swap-kms-sdk-cleanup-tests.dir/tests/sdk_cleanup.c.o
+[2/8] Building C object CMakeFiles/swap-kms-tool.dir/main.c.o
+[3/8] Building C object CMakeFiles/swap-kms-tool-input-tests.dir/tests/input_cleanup.c.o
+[4/8] Building C object CMakeFiles/swap-kms-tool-response-tests.dir/tests/response_contract.c.o
+[5/8] Linking C executable swap-kms-sdk-cleanup-tests
+[6/8] Linking C executable swap-kms-tool
+[7/8] Linking C executable swap-kms-tool-input-tests
+[8/8] Linking C executable swap-kms-tool-response-tests
+Internal ctest changing into directory: /out/regression-build
+UpdateCTestConfiguration  from :/out/regression-build/DartConfiguration.tcl
+Parse Config file:/out/regression-build/DartConfiguration.tcl
+UpdateCTestConfiguration  from :/out/regression-build/DartConfiguration.tcl
+Parse Config file:/out/regression-build/DartConfiguration.tcl
+Test project /out/regression-build
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 1
+    Start 1: credential-cleanup
+
+1: Test command: /out/regression-build/swap-kms-tool-input-tests
+1: Working Directory: /out/regression-build
+1: Test timeout computed to be: 1500
+1: credential cleanup, 15 strict IPC cases and optional AWS session-token checks passed
+1/3 Test #1: credential-cleanup ...............   Passed    0.03 sec
+test 2
+    Start 2: response-contract
+
+2: Test command: /out/regression-build/swap-kms-tool-response-tests
+2: Working Directory: /out/regression-build
+2: Test timeout computed to be: 1500
+2: response key/output cases: 20 PASS; safe error classifications: 38 PASS
+2/3 Test #2: response-contract ................   Passed    0.02 sec
+test 3
+    Start 3: sdk-request-cleanup
+
+3: Test command: /out/regression-build/swap-kms-sdk-cleanup-tests
+3: Working Directory: /out/regression-build
+3: Test timeout computed to be: 60
+3: mutex: PASS (status=0)
+3: condition-variable: PASS (status=0)
+3: request-stream: PASS (status=0)
+3: request-message: PASS (status=0)
+3: response-allocation: PASS (status=0)
+3: response-message: PASS (status=0)
+3: signable: PASS (status=0)
+3: sign-start: PASS (status=0)
+3: failed  to process requestsign-sync: PASS (status=0)
+3: failed  to process requestapply-sync: PASS (status=0)
+3: failed to create request.failed  to process requestmake-stream: PASS (status=0)
+3: failed to create request.failed  to process requestactivate-stream: PASS (status=0)
+3: failed  to process requestsign-async: PASS (status=0)
+3: failed  to process requeststream-async-error: PASS (status=0)
+3: stream-async-success: PASS (status=0)
+3: spurious-wake: PASS (status=0)
+3/3 Test #3: sdk-request-cleanup ..............   Passed    0.01 sec
+
+100% tests passed, 0 tests failed out of 3
+
+Total Test time (real) =   0.06 sec
+Installed helper invalid-input exit 64; no output
