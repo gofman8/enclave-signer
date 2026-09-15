@@ -597,13 +597,13 @@ class Suite:
         policy_context = {"kms:RecipientAttestation:PCR0": BOOTSTRAP,
                           "kms:EncryptionContextKeys": list(context),
                           **{f"kms:EncryptionContext:{k}": v for k, v in context.items()}}
-        with self.case("exact production KMS policy: allowed bootstrap and recovery"):
+        with self.case("production KMS usage example with manual rollout: allowed bootstrap and recovery"):
             for action, pcr in (("kms:GenerateDataKey", BOOTSTRAP), ("kms:Decrypt", BOOTSTRAP),
                                 ("kms:Decrypt", RESTORE)):
                 verdict = self.api("/simulate", {"action": action, "context": {
                     **policy_context, "kms:RecipientAttestation:PCR0": pcr}})
                 assert verdict["result"] == "Allowed", verdict
-        with self.case("exact production KMS policy: role, PCR, context and plaintext denials"):
+        with self.case("KMS usage example and manual rollout: role, PCR, context and plaintext denials"):
             cases = [
                 {"context": {k: v for k, v in policy_context.items() if k != "kms:RecipientAttestation:PCR0"}},
                 {"context": {**policy_context, "kms:RecipientAttestation:PCR0": "cc" * 48}},
@@ -611,37 +611,32 @@ class Suite:
                 {"context": {**policy_context, "kms:EncryptionContext:seed_id": "another-seed"}},
                 {"context": {**policy_context, "kms:EncryptionContext:bitcoin_network": "bitcoin"}},
                 {"context": {**policy_context, "kms:EncryptionContextKeys": [*context, "extra"]}},
-                {"principal": "arn:aws:iam::123456789012:role/wrong-role"},
+                {"principal": "arn:aws:iam::123456789012:role/wrong-role", "identity_policies": []},
                 {"action": "kms:GenerateDataKey", "context": {**policy_context, "kms:RecipientAttestation:PCR0": RESTORE}},
                 {"action": "kms:Encrypt"}, {"action": "kms:GenerateDataKeyWithoutPlaintext"},
             ]
             for case in cases:
                 verdict = self.api("/simulate", {"action": "kms:Decrypt", "context": policy_context, **case})
                 assert verdict["result"] in ("ExplicitlyDenied", "ImplicitlyDenied"), (case, verdict)
-        with self.case("resource policies independently deny dangerous KMS and S3 changes under broad identity access"):
-            # Remove the dedicated-role restrictions only for this simulator
-            # call, proving the actual resource policy denies each operation.
+        with self.case("resource examples deny KMS bypasses, S3 overwrite and deletion despite a broad identity allow"):
             broad = [f["broad_identity_policy"]]
             bucket_arn = f"arn:aws:s3:::{f['bucket']}"
             object_arn = bucket_arn + "/" + f["object_key"]
             cases = [("kms:Encrypt", f["key_arn"], policy_context),
                 ("kms:CreateGrant", f["key_arn"], {}),
-                ("kms:PutKeyPolicy", f["key_arn"], {})]
-            for action in ("PutBucketPublicAccessBlock", "PutBucketOwnershipControls",
-                    "PutBucketAcl", "PutEncryptionConfiguration", "PutReplicationConfiguration",
-                    "PutBucketVersioning", "PutLifecycleConfiguration"):
-                cases.append(("s3:" + action, bucket_arn, {"aws:SecureTransport": "true"}))
-            for action in ("DeleteObject", "DeleteObjectVersion", "PutObjectAcl",
-                    "PutObjectVersionAcl", "UpdateObjectEncryption", "PutObjectRetention",
-                    "PutObjectLegalHold", "BypassGovernanceRetention", "PutObjectTagging",
-                    "PutObjectVersionTagging", "DeleteObjectTagging", "DeleteObjectVersionTagging"):
-                cases.append(("s3:" + action, object_arn, {"aws:SecureTransport": "true"}))
+                ("kms:PutKeyPolicy", f["key_arn"], {}),
+                ("s3:PutObject", object_arn, {"aws:SecureTransport": "true"}),
+                ("s3:DeleteObject", object_arn, {"aws:SecureTransport": "true"}),
+                ("s3:DeleteObjectVersion", object_arn, {"aws:SecureTransport": "true"}),
+                ("s3:GetObject", object_arn, {"aws:SecureTransport": "false"})]
             for action, resource, ctx in cases:
                 verdict = self.api("/simulate", {"action": action, "resource": resource,
                     "context": ctx, "identity_policies": broad})
                 assert verdict["result"] == "ExplicitlyDenied", (action, verdict)
-        with self.case("dedicated instance-role policy blocks other resources and privilege escalation despite broad attached allow"):
-            policies = [f["identity_policy"], f["broad_identity_policy"]]
+        with self.case("deployment fixture role is limited to the seed; additional broad grants remain an operator responsibility"):
+            # The minimal examples no longer install an account-wide explicit
+            # permissions boundary. This is a least-privilege fixture identity,
+            # not a claim that another attached Allow can never expand it.
             bucket_arn = f"arn:aws:s3:::{f['bucket']}"
             cases = [("kms:Decrypt", f["key_arn"] + "-other", policy_context),
                 ("kms:GenerateDataKey", f["key_arn"] + "-other", policy_context),
@@ -651,10 +646,21 @@ class Suite:
                 ("sts:AssumeRole", "arn:aws:iam::123456789012:role/admin", {}),
                 ("iam:PutRolePolicy", f["role_arn"], {}),
                 ("s3:PutAccountPublicAccessBlock", "*", {})]
+            for action in ("PutBucketPublicAccessBlock", "PutBucketOwnershipControls",
+                    "PutBucketAcl", "PutEncryptionConfiguration", "PutReplicationConfiguration",
+                    "PutBucketVersioning", "PutLifecycleConfiguration"):
+                cases.append(("s3:" + action, bucket_arn, {"aws:SecureTransport": "true"}))
+            for action in ("PutObjectAcl", "PutObjectVersionAcl", "UpdateObjectEncryption",
+                    "PutObjectRetention", "PutObjectLegalHold", "BypassGovernanceRetention",
+                    "PutObjectTagging", "PutObjectVersionTagging", "DeleteObjectTagging", "DeleteObjectVersionTagging"):
+                cases.append(("s3:" + action, bucket_arn + "/" + f["object_key"], {"aws:SecureTransport": "true"}))
             for action, resource, ctx in cases:
                 verdict = self.api("/simulate", {"action": action, "resource": resource,
-                    "context": ctx, "identity_policies": policies})
-                assert verdict["result"] == "ExplicitlyDenied", (action, verdict)
+                    "context": ctx, "identity_policies": [f["identity_policy"]]})
+                assert verdict["result"] in ("ExplicitlyDenied", "ImplicitlyDenied"), (action, verdict)
+            verdict = self.api("/simulate", {"action": "s3:PutBucketVersioning", "resource": bucket_arn,
+                "context": {"aws:SecureTransport": "true"}, "identity_policies": [f["broad_identity_policy"]]})
+            assert verdict["result"] == "Allowed", verdict
         with self.case("local AWS API rejects a missing Recipient and invalid SigV4"):
             kms = self.aws_client("kms")
             self.denied(kms.generate_data_key, KeyId=f["key_arn"], NumberOfBytes=64, EncryptionContext=context)

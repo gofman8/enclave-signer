@@ -41,6 +41,7 @@ from moto.s3.models import FakeBucket, s3_backends
 from moto.s3.responses import S3Response
 from moto.server import DomainDispatcherApplication, create_backend_app
 from werkzeug.serving import make_server
+from policy_fixtures import fixture_policies
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent.parent
@@ -354,16 +355,6 @@ def client(state, service, credentials=None, secure=False):
     )
 
 
-def policy_template(name, substitutions):
-    raw = (REPO / "deploy" / name).read_text()
-    for old, new in substitutions.items():
-        raw = raw.replace(old, new)
-    policy = json.loads(raw)
-    if "REPLACE_" in raw:
-        raise ValueError(f"unresolved policy template placeholder in {name}")
-    return policy
-
-
 def setup_fixture(state, values):
     with state.lock:
         state.enabled = False
@@ -390,18 +381,15 @@ def setup_fixture(state, values):
         key_arn = kms.create_key(KeySpec="SYMMETRIC_DEFAULT", KeyUsage="ENCRYPT_DECRYPT")["KeyMetadata"]["Arn"]
         substitutions = {
             "REPLACE_ACCOUNT_ID": ACCOUNT,
-            "REPLACE_KEY_ADMIN_ROLE": "local-e2e-key-admin",
             "REPLACE_SIGNER_ROLE": "local-e2e-signer",
             "REPLACE_KMS_KEY_ARN": key_arn,
-            "REPLACE_BOOTSTRAP_PCR0": BOOTSTRAP_PCR0,
-            "REPLACE_RESTORE_PCR0": RESTORE_PCR0,
             "REPLACE_SEED_ID": seed_id,
             "REPLACE_BITCOIN_NETWORK": values.get("bitcoin_network", "regtest"),
             "REPLACE_SEED_BUCKET": bucket,
             "REPLACE_SEED_OBJECT_KEY": object_key,
         }
-        state.key_policy = policy_template("swap-kms-key-policy.json", substitutions)
-        state.bucket_policy = policy_template("swap-seed-bucket-policy.json", substitutions)
+        state.key_policy, state.bucket_policy, identity_policy = fixture_policies(
+            REPO, substitutions, BOOTSTRAP_PCR0, RESTORE_PCR0)
         kms.put_key_policy(KeyId=key_arn, PolicyName="default", Policy=json.dumps(state.key_policy))
         s3 = client(state, "s3", admin)
         s3.create_bucket(Bucket=bucket, CreateBucketConfiguration={"LocationConstraint": REGION})
@@ -414,10 +402,9 @@ def setup_fixture(state, values):
             "Rules": [{"ObjectOwnership": "BucketOwnerEnforced"}],
         })
         s3.put_bucket_policy(Bucket=bucket, Policy=json.dumps(state.bucket_policy))
-        # Normal E2E calls use the real dedicated-role policy, including its
-        # explicit denials of other AWS actions and resources. Resource-policy
-        # isolation tests separately override this with a broad test-only allow.
-        identity_policy = policy_template("swap-signer-role-policy.json", substitutions)
+        # The deployment supplies a dedicated role. This exact-scope identity
+        # is a testing fixture, not a generated production permissions boundary.
+        # Resource-policy tests may override it with a broad test-only allow.
         broad_identity_policy = {"Version": "2012-10-17", "Statement": [
             {"Effect": "Allow", "Action": "*", "Resource": "*"},
         ]}
@@ -433,6 +420,7 @@ def setup_fixture(state, values):
             "aws_tls_endpoint": f"https://127.0.0.1:{state.args.kms_port}",
             "bootstrap_pcr0": BOOTSTRAP_PCR0, "restore_pcr0": RESTORE_PCR0,
             "identity_policy": identity_policy, "key_policy": state.key_policy,
+            "policy_scope": "Minimal key/bucket usage examples plus test-only identity and manual transition grant restrictions",
             "broad_identity_policy": broad_identity_policy,
             "bucket_policy": state.bucket_policy,
             "bitcoin_network": values.get("bitcoin_network", "regtest"),
@@ -526,8 +514,11 @@ def control_app(state):
         """Independent policy verdicts for negative cases, without API mutation."""
         data = request.get_json(force=True)
         service = data["action"].split(":", 1)[0]
-        policy = state.key_policy if service == "kms" else state.bucket_policy
         resource = data.get("resource", state.fixture["key_arn"] if service == "kms" else f"arn:aws:s3:::{state.fixture['bucket']}/{state.fixture['object_key']}")
+        # A KMS key policy's Resource="*" means only the key it is attached to;
+        # it must not accidentally grant access to a different simulated key.
+        policy = (state.key_policy if resource == state.fixture["key_arn"] else
+                  {"Version": "2012-10-17", "Statement": []}) if service == "kms" else state.bucket_policy
         result = state.simulator.evaluate(
             data.get("principal", state.fixture["role_arn"]), data["action"], resource,
             [json.dumps(p) for p in data.get("identity_policies", [state.fixture["identity_policy"]])],

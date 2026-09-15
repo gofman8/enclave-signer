@@ -12,13 +12,18 @@ the existing gas transaction path. It then repeats this across process restarts
 and replicas. No AWS account, cloud resources, LocalStack token, or Nitro device
 is needed. Docker runs the Linux-only official SDK and NSM test adapter.
 
-The final security-hardening revision passed **44/44 scenarios** on
-2026-09-15 from clean testing commit `530dc8a`, containing production `6cc65d6`.
-The [security review evidence](security-review/README.md) includes exact revisions,
-restart/corruption controls, Rust regression results, policy checks and actual
-production Docker/EIF validation. Creation no longer requires a mode setting.
-The final run also verifies diagnostic categories, duplicate-input rejection and
-production broker quota rejection followed by recovery after refill.
+The current minimal integration keeps the credential/S3 broker and two manually
+configured AWS usage-policy examples. The removed deployment validator, custom
+systemd relay, and broad permissions-boundary templates are not current feature
+coverage. A dedicated test-only role and explicit bootstrap/restore policy edits
+model the deployment prerequisites; they are not additional production tooling.
+
+The earlier security-hardening revision passed **44/44 scenarios** on 2026-09-15
+at testing `530dc8a`, production `6cc65d6`. Its
+[security review evidence](security-review/README.md) is historical and includes
+framework code removed by the subsequent scope cleanup. New cleanup validation
+belongs in a separate `.artifacts/kms-cleanup/` run; do not overwrite or relabel
+that historical report as evidence for different source or policy guarantees.
 
 The previous 37-scenario baseline passed on 2026-09-14 with the official SDK helper,
 including restoration of ciphertext produced by the previous Rust KMS client.
@@ -80,8 +85,8 @@ Preflight rejects exports whose dependency manifest, reviewed SDK cleanup patch,
 or SDK source provenance differs from this checkout. The report retains the
 upstream SDK commit, patch hash and effective REST source hash. Verify this check
 with `python -m unittest discover -s testing/kms -p 'test_sdk_provenance.py'`.
-The prefix includes the pinned upstream CMS header and its checksum; the helper
-build does not require a separate SDK source checkout. `CARGO_TARGET_DIR`
+The prefix includes the pinned upstream CMS header; the helper build does not
+require a separate SDK source checkout. `CARGO_TARGET_DIR`
 selects the enclave build cache and `KMS_E2E_PARENT_TARGET_DIR` selects the parent
 cache. `--skip-build` reuses those binaries. The normal invocation builds the
 testing feature itself; it does not enable `dev-mode` or `allow-seed-import`.
@@ -165,15 +170,23 @@ checks an incoming KMS payload hash against the body before native SigV4
 authentication; Moto otherwise trusts that header without rehashing the body.
 These are test adapter behaviors, not changes to the production KMS client.
 
-The exact checked-in signer-role identity policy is installed in Moto IAM for
-normal enclave and broker requests. Separate resource-policy scenarios explicitly
-supply broader identity allows to prove that resource denies remain effective.
-The checked-in signer-role, KMS and S3 policies, with fixture substitutions,
-run through [@actsecurity/iam-simulate 0.1.177](https://github.com/act-security-labs/iam-simulate)
-(AGPL-3.0-or-later) in a separate local Node process. The policy engine evaluates
-Principal, action/resource, attestation PCR, context, and explicit deny conditions
-in Strict mode after Moto's native signature/identity checks. Policy validation
-errors abort the suite.
+The production KMS/S3 usage-policy examples are loaded with fixture substitutions.
+`policy_fixtures.py` models manual rollout: it authorizes bootstrap/restore PCRs
+and explicitly retires generation for the restore image. The exact-scope identity
+in `signer-role-policy.json` is **testing-only** and is installed in Moto IAM.
+It has no account-wide permissions boundary; adding another broad Allow can
+expand its privileges. The minimal deployment requires an appropriately scoped
+role, and the tests no longer claim that production templates prevent all
+bucket-administration changes despite arbitrary attached permissions.
+
+Separate scenarios add broad identity access to verify the key policy's explicit
+recipient/context/API denies and the bucket policy's overwrite/deletion/HTTPS
+denies. Policies run through
+[@actsecurity/iam-simulate 0.1.177](https://github.com/act-security-labs/iam-simulate)
+(AGPL-3.0-or-later) after Moto's signature/identity checks. The engine evaluates
+Principal, action/resource, PCR, context and explicit denies in Strict mode;
+validation errors abort the suite. These are local checks, not proof of AWS
+hardware attestation or service-policy enforcement.
 
 The pinned simulator's action metadata filter drops some valid dynamic KMS
 context keys. The adapter validates the policy, recognizes only the known AWS
@@ -236,3 +249,18 @@ unchanged.
 Linux release binaries for both flows and a real ARM64 validation EIF were also
 built successfully. See [build evidence and reproduction commands](build-validation-notes.md)
 for the pinned tools, artifact hashes, runtime compatibility checks, and limits.
+
+## Focused testing-only checks
+
+```sh
+.artifacts/kms-e2e/venv/bin/python -m unittest discover -s testing/kms -p test_seed_broker.py -v
+.artifacts/kms-e2e/venv/bin/python testing/kms/policy-checks.py
+```
+
+The migrated broker suite retains conditional-write races, framing/trickle,
+per-CID concurrency/rate quotas, late completion, and fixed-error regressions.
+The independent policy report records removed framework-only coverage separately
+from the usage-policy cases. `--repo PATH` can validate policy examples from a
+separate production checkout without copying them into the testing branch.
+The preserved C fault/input/response suites run through the standalone
+[native harness](native-tests/README.md); they are no longer production build targets.
