@@ -16,7 +16,7 @@ use bitcoin::Network;
 use serde::{Deserialize, Serialize};
 use zeroize::Zeroizing;
 
-use crate::error::{EnclaveError, Result};
+use crate::error::{CustodyFailure, EnclaveError, Result};
 
 const HELPER_PATH: &str = "/usr/local/bin/swap-kms-tool";
 const HELPER_TIMEOUT: Duration = Duration::from_secs(12);
@@ -320,7 +320,7 @@ fn run_helper(
         // subprocess output into application logs or wire error messages.
         .stderr(Stdio::null())
         .spawn()
-        .map_err(|_| fail("cannot start the AWS Nitro SDK helper"))?;
+        .map_err(|_| helper_failure(CustodyFailure::Configuration))?;
     let mut input = child.stdin.take().expect("piped helper stdin");
     let output = child.stdout.take().expect("piped helper stdout");
     std::thread::scope(|scope| {
@@ -336,7 +336,7 @@ fn run_helper(
         });
         let status = loop {
             if Instant::now() >= deadline {
-                break Err(fail("AWS Nitro SDK helper timed out"));
+                break Err(helper_failure(CustodyFailure::Unavailable));
             }
             match child.try_wait() {
                 Ok(Some(status)) => break Ok(status),
@@ -360,8 +360,9 @@ fn run_helper(
         let received = reader
             .join()
             .map_err(|_| fail("SDK helper output thread failed"))?;
-        if !status?.success() {
-            return Err(fail("AWS Nitro SDK helper rejected the KMS operation"));
+        let status = status?;
+        if !status.success() {
+            return Err(helper_status_failure(status));
         }
         written.map_err(|_| fail("failed to write SDK helper request"))?;
         let bytes = received.map_err(|_| fail("failed to read SDK helper response"))?;
@@ -370,6 +371,41 @@ fn run_helper(
         }
         Ok(bytes)
     })
+}
+
+fn helper_failure(failure: CustodyFailure) -> EnclaveError {
+    EnclaveError::Custody {
+        service: "KMS helper",
+        failure,
+    }
+}
+
+fn helper_status_failure(status: std::process::ExitStatus) -> EnclaveError {
+    #[cfg(unix)]
+    {
+        use std::os::unix::process::ExitStatusExt;
+        // The helper's independent alarm is also a timeout, even if it wins
+        // the race against the enclosing Rust deadline.
+        // SIGALRM is 14 on the Linux helper target and macOS test host.
+        if status.signal() == Some(14) {
+            return helper_failure(CustodyFailure::Unavailable);
+        }
+    }
+    helper_exit_failure(status.code())
+}
+
+fn helper_exit_failure(code: Option<i32>) -> EnclaveError {
+    // The measured helper emits only these fixed categories, never AWS text.
+    // Unknown exit codes and signal termination are not assumed retryable.
+    let failure = match code {
+        Some(64) => CustodyFailure::Configuration,
+        Some(78) => CustodyFailure::KeyOrCiphertext,
+        Some(65) => CustodyFailure::InvalidResponse,
+        Some(69 | 75) => CustodyFailure::Unavailable,
+        Some(77) => CustodyFailure::AccessDenied,
+        _ => CustodyFailure::Internal,
+    };
+    helper_failure(failure)
 }
 
 fn parse_generate_response(bytes: &[u8], key_arn: &str) -> Result<Vec<u8>> {
@@ -465,6 +501,62 @@ mod tests {
         assert!(
             matches!(error, EnclaveError::Io(ref e) if e.kind() == std::io::ErrorKind::TimedOut)
         );
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn helper_exit_diagnostics_are_fixed_and_do_not_expose_output() {
+        for (code, expected) in [
+            (64, CustodyFailure::Configuration),
+            (65, CustodyFailure::InvalidResponse),
+            (69, CustodyFailure::Unavailable),
+            (70, CustodyFailure::Internal),
+            (75, CustodyFailure::Unavailable),
+            (77, CustodyFailure::AccessDenied),
+            (78, CustodyFailure::KeyOrCiphertext),
+            (1, CustodyFailure::Internal),
+        ] {
+            let mut command = Command::new("/bin/sh");
+            command.args([
+                "-c",
+                &format!("printf sensitive-output; printf sensitive-error >&2; exit {code}"),
+            ]);
+            let error =
+                run_helper(command, b"{}", Instant::now() + Duration::from_secs(2)).unwrap_err();
+            assert!(matches!(error, EnclaveError::Custody { failure, .. } if failure == expected));
+            assert!(!error.to_string().contains("sensitive"));
+            assert_eq!(
+                error.error_code(),
+                if expected == CustodyFailure::Unavailable {
+                    2
+                } else {
+                    1
+                }
+            );
+        }
+        assert!(matches!(
+            helper_exit_failure(None),
+            EnclaveError::Custody {
+                failure: CustodyFailure::Internal,
+                ..
+            }
+        ));
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn helper_alarm_is_reported_as_retryable_timeout() {
+        let mut command = Command::new("/bin/sh");
+        command.args(["-c", "kill -ALRM $$"]);
+        let error =
+            run_helper(command, b"{}", Instant::now() + Duration::from_secs(2)).unwrap_err();
+        assert!(matches!(
+            error,
+            EnclaveError::Custody {
+                failure: CustodyFailure::Unavailable,
+                ..
+            }
+        ));
     }
 
     #[test]
@@ -577,7 +669,13 @@ mod tests {
             Instant::now() + Duration::from_millis(50),
         )
         .unwrap_err();
-        assert!(error.to_string().contains("timed out"));
+        assert!(matches!(
+            error,
+            EnclaveError::Custody {
+                failure: CustodyFailure::Unavailable,
+                ..
+            }
+        ));
         assert!(started.elapsed() < Duration::from_secs(2));
     }
 
