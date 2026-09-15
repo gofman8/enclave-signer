@@ -1,5 +1,5 @@
 diff --git a/source/rest.c b/source/rest.c
-index 508686859ce8bd7df9db7afa7be1cbddfa368ce3..87d5547b71432619857272b8e265326c8ef21fce 100644
+index 508686859ce8bd7df9db7afa7be1cbddfa368ce3..cdc78450bb910213515fb60c16ed511774f97111 100644
 --- a/source/rest.c
 +++ b/source/rest.c
 @@ -290,6 +290,7 @@ struct request_ctx {
@@ -44,17 +44,7 @@ index 508686859ce8bd7df9db7afa7be1cbddfa368ce3..87d5547b71432619857272b8e265326c
  }
  
  static int s_on_incoming_body_fn(struct aws_http_stream *stream, const struct aws_byte_cursor *data, void *user_data) {
-@@ -370,6 +378,9 @@ static struct aws_http_message *s_make_request(
-     struct aws_input_stream *request_data_stream) {
- 
-     struct aws_http_message *request = aws_http_message_new_request(rest_client->allocator);
-+    if (request == NULL) {
-+        return NULL;
-+    }
- 
-     struct aws_http_header host_header = {
-         .name = aws_byte_cursor_from_c_str("host"), .value = aws_byte_cursor_from_string(rest_client->host_name)};
-@@ -410,6 +421,7 @@ static struct aws_http_message *s_make_request(
+@@ -410,6 +418,7 @@ static struct aws_http_message *s_make_request(
  
  static void s_on_sign_complete(struct aws_signing_result *signing_result, int error_code, void *userdata) {
      struct request_ctx *ctx = userdata;
@@ -62,7 +52,7 @@ index 508686859ce8bd7df9db7afa7be1cbddfa368ce3..87d5547b71432619857272b8e265326c
  
      if (error_code != AWS_OP_SUCCESS) {
          goto err_clean;
-@@ -430,7 +442,7 @@ static void s_on_sign_complete(struct aws_signing_result *signing_result, int er
+@@ -430,7 +439,7 @@ static void s_on_sign_complete(struct aws_signing_result *signing_result, int er
          .on_complete = s_on_stream_complete_fn,
      };
  
@@ -71,7 +61,7 @@ index 508686859ce8bd7df9db7afa7be1cbddfa368ce3..87d5547b71432619857272b8e265326c
  
      if (stream == NULL || aws_http_stream_activate(stream) != AWS_OP_SUCCESS) {
          fprintf(stderr, "failed to create request.");
-@@ -439,9 +451,8 @@ static void s_on_sign_complete(struct aws_signing_result *signing_result, int er
+@@ -439,9 +448,8 @@ static void s_on_sign_complete(struct aws_signing_result *signing_result, int er
  
      return;
  err_clean:
@@ -82,7 +72,7 @@ index 508686859ce8bd7df9db7afa7be1cbddfa368ce3..87d5547b71432619857272b8e265326c
  }
  
  struct aws_nitro_enclaves_rest_response *aws_nitro_enclaves_rest_client_request_blocking(
-@@ -453,6 +464,7 @@ struct aws_nitro_enclaves_rest_response *aws_nitro_enclaves_rest_client_request_
+@@ -453,6 +461,7 @@ struct aws_nitro_enclaves_rest_response *aws_nitro_enclaves_rest_client_request_
      AWS_PRECONDITION(rest_client);
      AWS_PRECONDITION(rest_client->connection);
  
@@ -90,34 +80,16 @@ index 508686859ce8bd7df9db7afa7be1cbddfa368ce3..87d5547b71432619857272b8e265326c
      struct request_ctx ctx;
      AWS_ZERO_STRUCT(ctx);
  
-@@ -461,8 +473,14 @@ struct aws_nitro_enclaves_rest_response *aws_nitro_enclaves_rest_client_request_
-     }
- 
-     ctx.request_data_stream = aws_input_stream_new_from_cursor(rest_client->allocator, &data);
-+    if (ctx.request_data_stream == NULL) {
-+        goto err_clean;
-+    }
- 
-     ctx.request = s_make_request(rest_client, method, path, target, ctx.request_data_stream);
-+    if (ctx.request == NULL) {
-+        goto err_clean;
-+    }
-     ctx.rest_client = rest_client;
- 
-     ctx.response = aws_mem_calloc(rest_client->allocator, 1, sizeof(struct aws_nitro_enclaves_rest_response));
-@@ -476,7 +494,10 @@ struct aws_nitro_enclaves_rest_response *aws_nitro_enclaves_rest_client_request_
+@@ -476,7 +485,7 @@ struct aws_nitro_enclaves_rest_response *aws_nitro_enclaves_rest_client_request_
      }
      aws_byte_buf_init(&ctx.response->__data, rest_client->allocator, 0);
  
 -    struct aws_signable *sign_request = aws_signable_new_http_request(rest_client->allocator, ctx.request);
 +    sign_request = aws_signable_new_http_request(rest_client->allocator, ctx.request);
-+    if (sign_request == NULL) {
-+        goto err_clean;
-+    }
  
      struct aws_signing_config_aws signing_config = {
          .config_type = AWS_SIGNING_CONFIG_AWS,
-@@ -501,7 +522,9 @@ struct aws_nitro_enclaves_rest_response *aws_nitro_enclaves_rest_client_request_
+@@ -501,7 +510,9 @@ struct aws_nitro_enclaves_rest_response *aws_nitro_enclaves_rest_client_request_
      }
  
      aws_mutex_lock(&ctx.mutex);
@@ -128,41 +100,3 @@ index 508686859ce8bd7df9db7afa7be1cbddfa368ce3..87d5547b71432619857272b8e265326c
      aws_mutex_unlock(&ctx.mutex);
  
      if (ctx.error_code != AWS_OP_SUCCESS) {
-@@ -512,6 +535,8 @@ struct aws_nitro_enclaves_rest_response *aws_nitro_enclaves_rest_client_request_
-     aws_http_message_destroy(ctx.request);
-     aws_input_stream_destroy(ctx.request_data_stream);
-     aws_signable_destroy(sign_request);
-+    aws_condition_variable_clean_up(&ctx.c_var);
-+    aws_mutex_clean_up(&ctx.mutex);
- 
-     return ctx.response;
- err_clean:
-@@ -520,6 +545,8 @@ err_clean:
-     aws_signable_destroy(sign_request);
- 
-     aws_nitro_enclaves_rest_response_destroy(ctx.response);
-+    aws_condition_variable_clean_up(&ctx.c_var);
-+    aws_mutex_clean_up(&ctx.mutex);
-     return NULL;
- }
- 
-@@ -529,13 +556,13 @@ void aws_nitro_enclaves_rest_response_destroy(struct aws_nitro_enclaves_rest_res
-     }
- 
-     AWS_PRECONDITION(aws_byte_buf_is_valid(&response->__data));
--    AWS_PRECONDITION(aws_http_message_is_response(response->response));
--
--    struct aws_input_stream *stream = aws_http_message_get_body_stream(response->response);
--
--    aws_http_message_release(response->response);
-+    if (response->response != NULL) {
-+        AWS_PRECONDITION(aws_http_message_is_response(response->response));
-+        struct aws_input_stream *stream = aws_http_message_get_body_stream(response->response);
-+        aws_http_message_release(response->response);
-+        aws_input_stream_destroy(stream);
-+    }
-     aws_byte_buf_clean_up_secure(&response->__data);
--    aws_input_stream_destroy(stream);
- 
-     aws_mem_release(response->allocator, response);
- }
