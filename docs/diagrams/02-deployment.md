@@ -15,7 +15,6 @@ flowchart TB
         Cli[utexo-bridge-parent-cli<br/>attest-verify CLI]
         VP[vsock-proxy port 8001<br/>―<br/>Allowlist → Electrum ssl:// or Esplora.]
         KmsRelay["Swap KMS relay :8003<br/>Standard host vsock-proxy<br/>TLS terminates inside enclave"]
-        SeedBroker["Swap seed broker :8004<br/>CID quotas and bounded operations<br/>Opaque ciphertext only"]
         VPe["vsock-proxy 8002<br/>―<br/>evm-rpc builds only.<br/>8002 → EVM JSON-RPC via host nginx.<br/>Allowlisted upstream."]
 
         subgraph ENCL [AWS Nitro Enclave — TRUSTED, PCR-pinned]
@@ -47,8 +46,8 @@ flowchart TB
     KmsTool --> NSM
     KmsTool -->|"vsock CID 3:8003; TLS"| KmsRelay
     KmsRelay --> KMS
-    Bin -->|"swaps: vsock CID 3:8004"| SeedBroker
-    SeedBroker --> SeedObject
+    Bin -->|"swaps: vsock CID 3:8004<br/>credentials and encrypted seed"| Parent
+    Parent -->|"swaps: conditional ciphertext storage"| SeedObject
     Bin --> Replay
     Bin --> Headers
     Bin --> RgbVal

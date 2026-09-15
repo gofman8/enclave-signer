@@ -1,5 +1,5 @@
 #!/bin/sh
-# Build the official kmstool SDK with its checked cleanup fix and pinned CRT.
+# Build the unmodified official kmstool SDK and pinned CRT dependencies.
 # Requires Linux, C/C++ compilers, CMake, Ninja, Git, Go, Perl and Rust/Cargo.
 set -eu
 
@@ -14,8 +14,9 @@ build_dir=${SWAP_KMS_BUILD_DIR:-/opt/swap-kms-build}
 prefix=${SWAP_KMS_INSTALL_PREFIX:-/opt/swap-kms}
 jobs=${SWAP_KMS_BUILD_JOBS:-4}
 manifest="$script_dir/swap-kms-dependencies.tsv"
-sdk_patch="$script_dir/patches/nitro-sdk-cleanup.patch"
 mkdir -p "$build_dir/src" "$prefix/lib" "$prefix/include" "$prefix/share/swap-kms/licenses"
+# Remove obsolete generated metadata when reusing an older install prefix.
+rm -rf "$prefix/share/swap-kms/patches"
 
 # AWS libraries are static; only libnsm and platform libc libraries are shared.
 # Pin build paths in Cargo output as well as the enclave's release binary.
@@ -37,29 +38,12 @@ while read -r name version commit url <&3; do
         git -C "$source_dir" checkout -q --detach FETCH_HEAD
     fi
     test "$(git -C "$source_dir" rev-parse HEAD)" = "$commit"
+    git -C "$source_dir" diff --exit-code HEAD -- >/dev/null
     if [ "$name" = aws-nitro-enclaves-sdk-c ]; then
-        # Only this reviewed patch is permitted over the immutable SDK base.
-        # Reused caches must match its complete canonical diff: never reset or
-        # silently accept unrelated tracked edits in an existing checkout.
-        if git -C "$source_dir" diff --quiet HEAD --; then
-            git -C "$source_dir" apply --check "$sdk_patch"
-            git -C "$source_dir" apply "$sdk_patch"
-        fi
-        git -C "$source_dir" diff --binary --full-index --no-ext-diff --no-color \
-            --src-prefix=a/ --dst-prefix=b/ HEAD -- | cmp -s - "$sdk_patch" || {
-            echo "SDK source differs from the exact reviewed cleanup patch" >&2
-            exit 1
-        }
-        patch_sha=$(sha256sum "$sdk_patch")
-        patch_sha=${patch_sha%% *}
         rest_sha=$(sha256sum "$source_dir/source/rest.c")
         rest_sha=${rest_sha%% *}
-        mkdir -p "$prefix/share/swap-kms/patches"
-        cp "$sdk_patch" "$prefix/share/swap-kms/patches/nitro-sdk-cleanup.patch"
-        printf '{"upstream_commit":"%s","patch_sha256":"%s","effective_rest_c_sha256":"%s"}\n' \
-            "$commit" "$patch_sha" "$rest_sha" > "$prefix/share/swap-kms/sdk-source.json"
-    else
-        git -C "$source_dir" diff --exit-code HEAD -- >/dev/null
+        printf '{"upstream_commit":"%s","rest_c_sha256":"%s","source_modified":false}\n' \
+            "$commit" "$rest_sha" > "$prefix/share/swap-kms/sdk-source.json"
     fi
 
     # Include upstream licensing and the exact provenance with the runtime.
@@ -103,7 +87,10 @@ while read -r name version commit url <&3; do
         # global module path. The SDK still includes those official modules.
         # Its example also relied on a removed transitive hash-table
         # include. Use the official header explicitly without patching source.
-        set -- "$@" "-DCMAKE_C_FLAGS=-I$prefix/include -include aws/common/hash_table.h" \
+        # Upstream rest.c has cleanup-pointer warnings. Keep them visible while
+        # building its exact source; this exception applies only to the SDK.
+        # The one-request helper bounds upstream failures, not repairs them.
+        set -- "$@" "-DCMAKE_C_FLAGS=-I$prefix/include -include aws/common/hash_table.h -Wno-error=maybe-uninitialized" \
             "-DCMAKE_MODULE_PATH=$prefix/lib/cmake/aws-c-common/modules" \
             "-DLIBRARY_DIRECTORY=$prefix/lib"
     fi
