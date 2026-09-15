@@ -307,8 +307,7 @@ For swaps, follow the [KMS setup guide](docs/swap-kms-persistence.md) and use
 
 `Dockerfile.enclave-dev` uses the same development import-only mode: initialize
 it with `init-mnemonic` using a public test mnemonic. It intentionally has no
-KMS helper or persisted production seed, and empty `init` fails closed. Use the
-isolated `kms-testing` branch for local KMS persistence integration tests.
+KMS helper or persisted production seed, and empty `init` fails closed.
 
 Initialize once: use `cli init --cloning-secret <secret>` instead of `cli init`
 to configure a donor. Use a fresh requester for `cli clone`; initialization

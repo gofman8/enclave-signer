@@ -143,6 +143,6 @@ poisoned, quarantine it and provision a new signer namespace; do not reuse any
 identity from that failed attempt. Shared ciphertext preserves keys but does
 not coordinate replicas or authorize concurrent application-level signing.
 
-Local emulator tests remain on `kms-testing`. Before production use, test real
-AWS recipient-attestation denials, conditional-write races and restart/backup
+Before production use, test real AWS recipient-attestation denials,
+conditional-write races and restart/backup
 recovery on Nitro hardware; local builds do not prove those service boundaries.
