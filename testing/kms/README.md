@@ -91,6 +91,12 @@ only in process memory/environment. Inherited AWS credentials, profiles, proxy
 settings, and external indexer settings are removed or replaced for the suite.
 The JSON report is `.artifacts/kms-e2e/report.json`.
 
+The current suite also checks fixed configuration/authorization/transient error
+categories, duplicate-key IPC rejection, and the production broker peer quota.
+It refills the unchanged 4/sec, burst-8 quota between deliberate fault cases so
+rate limiting cannot mask the intended failure. A separate burst scenario
+requires overload rejection and successful initialization after refill.
+
 The runner also builds the previous Rust KMS client from the fixed Git commit
 `3d5086558faba04d589ddc63abc6bfc43a8743b9` into an isolated artifact directory.
 Keep repository history available when cloning. Its existing encrypted seed is

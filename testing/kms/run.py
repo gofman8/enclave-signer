@@ -124,6 +124,7 @@ class Suite:
         self.counter = 0
         self.fixture = None
         self.sdk_helper = None
+        self.broker_process = None
         self.legacy_enclave = self.artifacts / "legacy-target/debug/utexo-bridge-enclave"
         self.failure = None
 
@@ -171,6 +172,10 @@ class Suite:
 
     @contextmanager
     def case(self, name):
+        # Retain the production 4/sec, burst-8 peer quota. Refill between
+        # deliberate fault cases so overload cannot mask the intended failure.
+        if self.broker_process is not None and self.broker_process.poll() is None:
+            time.sleep(2.05)
         started = time.monotonic()
         print(f"RUN  {name}", flush=True)
         item = {"name": name, "status": "failed"}
@@ -191,7 +196,7 @@ class Suite:
             "bucket": "local-swap-kms-e2e", "object_key": f"seeds/{suffix}.kms"})
         return self.fixture
 
-    def broker(self):
+    def broker(self, **overrides):
         f = self.fixture
         env = isolated_env()
         creds = f["credentials"]
@@ -201,8 +206,11 @@ class Suite:
             AWS_ENDPOINT_URL_S3=f["aws_tls_endpoint"], AWS_CA_BUNDLE=str(self.certs["ca.pem"]),
             SWAP_KMS_SEED_ID=f["seed_id"], SWAP_KMS_S3_BUCKET=f["bucket"],
             SWAP_KMS_S3_KEY=f["object_key"])
-        return self.start("broker", [sys.executable, ROOT / "deploy/swap-seed-broker.py",
+        env.update(overrides)
+        env = {key: value for key, value in env.items() if value is not None}
+        self.broker_process = self.start("broker", [sys.executable, ROOT / "deploy/swap-seed-broker.py",
             "--tcp", f"127.0.0.1:{self.args.broker_port}"], env, self.args.broker_port)
+        return self.broker_process
 
     def signer(self, restore_address=None, legacy=False, **overrides):
         f = self.fixture
@@ -252,6 +260,69 @@ class Suite:
         self.call(address, "keys", False)
         self.call(address, "sign", False)
         return result
+
+    def assert_diagnostic(self, failure, service, category):
+        messages = {
+            "configuration_error": "configuration_error; verify custody configuration",
+            "access_denied": "access_denied; verify credentials and custody policies",
+            "unavailable": "unavailable; retry the operation",
+            "invalid_response": "invalid_response; custody response was rejected",
+            "internal_error": "internal_error; verify the enclave SDK and NSM runtime",
+        }
+        assert failure["error"] == {
+            "code": 2 if category == "unavailable" else 1,
+            "message": f"swap custody {service}: {messages[category]}",
+        }, "custody diagnostic lost its fixed category or retryability"
+
+    def broker_request(self, request):
+        body = json.dumps(request, separators=(",", ":")).encode()
+        with socket.create_connection(("127.0.0.1", self.args.broker_port), timeout=3) as connection:
+            connection.settimeout(3)
+            connection.sendall(len(body).to_bytes(4, "big") + body)
+            def read_exact(size):
+                data = bytearray()
+                while len(data) < size:
+                    chunk = connection.recv(size - len(data))
+                    assert chunk, "broker closed an incomplete response"
+                    data.extend(chunk)
+                return data
+            size = int.from_bytes(read_exact(4), "big")
+            assert 0 < size <= 65536, "broker exceeded its response bound"
+            return json.loads(read_exact(size))
+
+    def broker_diagnostics(self):
+        self.fixture_reset("broker-configuration")
+        broker = self.broker(AWS_ACCESS_KEY_ID=None, AWS_SECRET_ACCESS_KEY=None, AWS_SESSION_TOKEN=None)
+        with self.case("missing broker credentials preserve a non-retryable configuration diagnostic") as result:
+            enclave, address = self.signer()
+            self.assert_diagnostic(self.failed_init(address), "seed broker", "configuration_error")
+            assert self.object() is None and not self.actions("GenerateDataKey")
+            assert not self.actions("PutObject")
+            result["diagnostic"] = "configuration_error"
+            self.stop(enclave)
+        self.stop(broker)
+        self.fixture_reset("broker-quota")
+        broker = self.broker()
+        with self.case("production broker peer quota rejects excess calls and recovers after refill") as result:
+            accepted = denied = 0
+            for _ in range(16):
+                response = self.broker_request({"op": "credentials"})
+                if response.get("error") == "broker_busy":
+                    denied += 1
+                else:
+                    assert set(response) == {"access_key_id", "secret_access_key", "session_token"}, "unexpected broker quota response"
+                    accepted += 1
+                response.clear()
+            assert denied > 0 and accepted >= 8, "production peer quota was not exercised"
+            assert self.object() is None and not self.actions("GenerateDataKey")
+            time.sleep(2.05)
+            enclave, address = self.signer()
+            self.call(address, "init")
+            assert self.call(address, "sign")["verified"]
+            assert len(self.actions("GenerateDataKey")) == 1
+            result.update(accepted=accepted, rejected=denied)
+            self.stop(enclave)
+        self.stop(broker)
 
     def parent_signature(self, address, expected):
         with socket.socket() as sock:
@@ -422,7 +493,8 @@ class Suite:
                 assert time.monotonic() - probe_started < 2, "custody held other request workers"
                 failure = pending.result(timeout=18)
             elapsed = time.monotonic() - started
-            assert elapsed < 18 and "timed out" in failure["error"]["message"], failure
+            assert elapsed < 18
+            self.assert_diagnostic(failure, "KMS helper", "unavailable")
             assert self.object() is None
             self.fault("kms_slow_response", False)
             # Docker exec bridges a separate PID namespace. Allow the already
@@ -474,10 +546,17 @@ class Suite:
                       "kms_wrong_key", "kms_invalid_cms", "kms_short_seed", "kms_http_error"):
             self.fixture_reset(fault.replace("_", "-"))
             broker = self.broker()
-            with self.case(f"{fault}: initialization fails and same-process retry recovers"):
+            with self.case(f"{fault}: initialization fails and same-process retry recovers") as result:
                 self.fault(fault)
                 enclave, address = self.signer()
-                self.failed_init(address)
+                failure = self.failed_init(address)
+                if fault in ("s3_read_denied", "s3_write_denied", "kms_denied"):
+                    self.assert_diagnostic(failure,
+                        "seed broker" if fault.startswith("s3_") else "KMS helper", "access_denied")
+                    result["diagnostic"] = "access_denied"
+                elif fault == "kms_http_error":
+                    self.assert_diagnostic(failure, "KMS helper", "unavailable")
+                    result["diagnostic"] = "unavailable"
                 assert self.object() is None
                 if fault == "s3_read_denied":
                     assert not self.actions("GenerateDataKey")
@@ -670,11 +749,12 @@ class Suite:
                     # native alarm returns a TLS acquisition failure. Both
                     # paths must refuse before any authenticated KMS request.
                     message = failure["error"]["message"]
-                    assert any(text in message for text in (
-                        "AWS Nitro SDK helper rejected", "AWS Nitro SDK helper timed out")), failure
+                    category = message.split(": ", 1)[-1].split(";", 1)[0]
+                    assert category in ("unavailable", "invalid_response", "internal_error"), "unexpected TLS refusal category"
+                    self.assert_diagnostic(failure, "KMS helper", category)
                     assert time.monotonic() - started < 18
                     assert not [event for event in self.audit() if event["service"] == "kms"]
-                    result["refusal"] = "deadline" if "timed out" in message else "helper-rejection"
+                    result["refusal"] = category
                 self.stop(enclave)
                 if tls_case:
                     # A working trusted request to this same fixture rules out
@@ -754,6 +834,7 @@ class Suite:
         self.concurrent_bootstrap()
         self.slow_operation()
         self.failures()
+        self.broker_diagnostics()
         self.policy_checks()
 
 

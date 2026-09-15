@@ -64,10 +64,12 @@ def run_helper_contract(suite):
         actual = [(event["service"], event["action"], event["allowed"]) for event in events]
         assert actual == [("kms", action, True) for action in expected], "unexpected helper AWS call count or authorization"
 
-    missing_field = {key: value for key, value in request.items() if key != "session_token"}
+    missing_field = {key: value for key, value in request.items() if key != "access_key_id"}
     invalid = [
         ("malformed JSON", b'{"operation":'),
         ("trailing JSON", encode(request) + b" {}"),
+        ("duplicate field", encode(request)[:-1] + b',"region":"eu-west-1"}'),
+        ("escaped duplicate field", encode(request)[:-1] + b',"\\u0072egion":"eu-west-1"}'),
         ("embedded NUL", encode({**request, "secret_access_key": "invalid\u0000credential"})),
         ("wrong operation", encode({**request, "operation": "encrypt"})),
         ("missing required field", encode(missing_field)),
