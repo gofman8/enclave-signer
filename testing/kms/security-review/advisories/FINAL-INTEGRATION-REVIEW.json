@@ -1,0 +1,57 @@
+{
+  "reviewed_at": "2026-09-15T08:34:11.076806+00:00",
+  "production_head": "dfb3cce0611a115c4058c706c5dce09cf2449971",
+  "worktree_clean": true,
+  "scope": "Focused final review of automatic seed startup, identity protection, initialization deadlines, SDK request lifecycle patch and deployment metadata/policies.",
+  "new_critical_or_high_findings": [],
+  "further_production_edits_from_this_review": false,
+  "source_sha256": {
+    "deploy/validate-swap-kms-deployment.py": "17c35fef5d9f5abfa7c24442dc3d8fa9812d9ce6a511f259a23acd6a988af5bd",
+    "deploy/swap-kms-key-policy.json": "47a7d212381482c028d35d48210c7fa608a50096798a914d1f0108d7908e6231",
+    "deploy/swap-seed-bucket-policy.json": "f0901272a31bc06ac72871e15f8e729cc271149bb32a396b6eaef1aa4fd0c8a5",
+    "deploy/swap-signer-role-policy.json": "273a2233ac2db3cc614ff3ddf69e0f8b310bca600a26fc4a15e44132a344733e",
+    "enclave/src/state.rs": "38aab2d6a9e9f0df6bd1ef2b0c97bf264016ff5699fdc68d6194a6e0efb3f45f",
+    "enclave/src/main.rs": "09eeb23de5eecb7bc0491f46f0a7929f6be6b409893ba9d185ac78459dafba3f",
+    "enclave/src/server.rs": "a4259316f5875fbed55354fc88eafaf95afb25afea5b5abd0bbed10b9d6c82a9",
+    "enclave/src/conn.rs": "c4b9b5d82f59bd5ff7b6a65b808d3c5f880bb7b1744cd58dbbd83f1aeb32d9e3",
+    "enclave/src/swap_persistence.rs": "4c16f9f7667af10854a6fbff370c8de2ae5b7f824db2670ac29979a6e6770783",
+    "enclave/src/swap_kms.rs": "c9f347f6bed43feb8248b31d595a768dda37d0a16982f3054b2790146d9697b8",
+    "enclave/kms-tool/main.c": "d89d0c8f0e967acdc5f2dc5350b7b68b930a611cb21247ce12e08af5df54d3e5",
+    "enclave/kms-tool/tests/sdk_cleanup.c": "cb08bcf4b4f317cc3b50e2f207a5a501d433173dc124878957431e713a3422e4",
+    "build/patches/nitro-sdk-cleanup.patch": "1f9319934ac86c11cf2b1daf5f084c16e348f323b0c208d524e518247841002a",
+    "build/build-swap-kms-tool.sh": "78b8f2ea9acbeeda41ba968fd55073b68571262f72c262c16f9b5d3f873c6bfd",
+    "build/Dockerfile.enclave": "a446551538e7d11a5555b66b93e40a6aa8a1102c8f178d671f26ee61a678d093",
+    "build/Dockerfile.enclave.rgb": "74cfedac70eba07d6e2587ce0dbd8e575adc698726c3236c3fddb6e4c0c2ba3b",
+    "deploy/swap-seed-broker.py": "2f15bcb01ad0e20ed35c03ed411bf96e7125ae535ce65f29ed29f3732d948bfb",
+    "docs/swap-kms-persistence.md": "6598a4ac2395025e6e4ab10c8fbabc65ba1b462ef06ab5ae8753a49b66562dd7"
+  },
+  "verified_behaviors": [
+    "Initial to Initializing reservation is held briefly; broker/KMS I/O occurs outside the phase lock. Failed/expired recovery returns to Initial and cannot sign.",
+    "Existing S3 ciphertext is reused regardless of whether the optional expected identity pin is configured. Only explicit absence without a pin reaches GenerateDataKey and conditional create; read/decrypt failures never enter replacement generation.",
+    "A configured identity pin blocks missing-state generation/write and rejects a different recovered identity before Active. First startup has no creation setting or replacement setting.",
+    "Ingress, custody, broker and helper deadlines shrink from absolute limits. Late completed recovery cannot activate; a late S3 conditional PUT is recovered by the next load.",
+    "The exact maintained SDK source patch initializes cleanup pointers, checks partial allocations and uses a mutex-protected completion predicate. TLS, SigV4, attestation and CMS remain official implementations.",
+    "The release gate verifies actual EIF measurements and measured public configuration, infers image classification from the identity pin, and preserves operational retirement of generation authority before funding."
+  ],
+  "retained_native_evidence": {
+    "source_unchanged_from": "7379c4f",
+    "fault_cases_passed": 16,
+    "unpatched_negative_control_failures": 10,
+    "official_sdk_tests_passed": 45,
+    "notes": "Native helper, patch and regression source bytes match the earlier tested revision. Final configuration/runtime/EIF evidence remains separate.",
+    "files": [
+      "../native/sdk-cleanup-final-harness.log",
+      "../native/sdk-cleanup-negative-test.log",
+      "../native/sdk-cleanup-compiler-control.log",
+      "../native/upstream-tests-sdk-cleanup.log"
+    ]
+  },
+  "fresh_local_tests": "final-test-verification.json",
+  "residuals": [
+    "The separate upstream connection-setup unconditional wait can lose an early notification; the helper12-second deadline bounds this availability failure and initialization fails closed.",
+    "An unpinned identity cannot authenticate an existing same-context seed against a dishonest broker. Pin the independently verified identity and retire generation authority before funding; backup/restore validation remains required.",
+    "Inherited conditional webpki and optional Helios dependency matches remain documented in REMEDIATION.md; no package inputs or upstream native coordinates changed.",
+    "No real AWS/Nitro policy enforcement or production backup recovery was performed by this offline review."
+  ],
+  "provenance": "final-source-verification.json"
+}

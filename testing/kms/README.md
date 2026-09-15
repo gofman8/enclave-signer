@@ -12,6 +12,12 @@ the existing gas transaction path. It then repeats this across process restarts
 and replicas. No AWS account, cloud resources, LocalStack token, or Nitro device
 is needed. Docker runs the Linux-only official SDK and NSM test adapter.
 
+The final automatic-initialization revision passed **42/42 scenarios** on
+2026-09-15 from clean testing commit `73db491`, containing production `dfb3cce`.
+The [security review evidence](security-review/README.md) includes exact revisions,
+restart/corruption controls, Rust regression results, policy checks and actual
+production Docker/EIF validation. Creation no longer requires a mode setting.
+
 The previous 37-scenario baseline passed on 2026-09-14 with the official SDK helper,
 including restoration of ciphertext produced by the previous Rust KMS client.
 This includes the stricter helper IPC contract and malformed-input checks.

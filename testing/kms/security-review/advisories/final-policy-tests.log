@@ -1,0 +1,1 @@
+{"scope": "Offline Cloud Copilot IAM simulator; actual rendered policies with broad identity allow plus dedicated role deny; no AWS calls", "count": 222, "passed": 222}

@@ -1,0 +1,77 @@
+{
+  "EifVersion": 4,
+  "Measurements": {
+    "HashAlgorithm": "Sha384 { ... }",
+    "PCR0": "bccc73d93a81eefb4d62dcc5f604a7721bfd573073124f6308b698d8a9485e49071832383b34ac9f8d2aef32116a4faf",
+    "PCR1": "745004eab9a0fb4a67973b261c6e7fa5418dc870292927591574385649338e54686cdeb659f3c6c2e72ba11aba2158a8",
+    "PCR2": "4c3eeebe1dc50477a4141dcf405c2125a143366f59f2e9881da9b722837a1da6a93ab6ec5eb466c4d902a792d19b2547"
+  },
+  "IsSigned": false,
+  "CheckCRC": true,
+  "ImageName": "codex-kms-swap-production-validation",
+  "ImageVersion": "592df409ee04a7b602b4f09ed491c45e55502032e5fce076c37d9e3038bcccde",
+  "Metadata": {
+    "BuildTime": "2026-09-15T08:32:35.653450848+00:00",
+    "BuildTool": "nitro-cli",
+    "BuildToolVersion": "1.4.5",
+    "OperatingSystem": "Linux",
+    "KernelVersion": "4.14.256",
+    "DockerInfo": {
+      "Architecture": "arm64",
+      "Comment": "buildkit.dockerfile.v0",
+      "Config": {
+        "ArgsEscaped": true,
+        "Entrypoint": [
+          "/app/entrypoint.sh"
+        ],
+        "Env": [
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "EVM_CHAIN_ID=42161",
+          "EVM_PROXY_CONTRACT_ADDRESS=0xC985c12bbCECe96A13A72A62FD75d8aB9381ef5A",
+          "RGB_ASSET_ID=rgb:lJFja2kw-h_azlEd-7CNPxwf-UsvIDhH-UD0Y1f9-8f26jLk",
+          "BITCOIN_NETWORK=bitcoin",
+          "ELECTRUM_URL=ssl://electrs-mainnet.utexo.com:50002",
+          "EVM_RPC_URL=http://127.0.0.1:3444",
+          "EVM_MIN_CONFIRMATIONS=12",
+          "FUNDS_IN_CONTRACT=0x6711f1a319B37847fa0234181C34D883774c4951",
+          "GAS_TX_ALLOWED_TO=0x6711f1a319B37847fa0234181C34D883774c4951",
+          "BTC_MAX_TOTAL_SATS=1000000",
+          "SWAP_KMS_KEY_ARN=arn:aws:kms:eu-west-1:123456789012:key/12345678-1234-1234-1234-123456789012",
+          "SWAP_KMS_REGION=eu-west-1",
+          "SWAP_KMS_SEED_ID=security-review-validation-only",
+          "SWAP_KMS_EXPECTED_EVM_ADDRESS=",
+          "RUST_LOG=info"
+        ],
+        "WorkingDir": "/app"
+      },
+      "Created": "2026-09-15T08:30:28Z",
+      "Id": "sha256:592df409ee04a7b602b4f09ed491c45e55502032e5fce076c37d9e3038bcccde",
+      "Metadata": {
+        "LastTagTime": "2026-09-15T08:32:26.759705751Z"
+      },
+      "Os": "linux",
+      "RepoDigests": [
+        "codex-kms-swap-production-validation@sha256:592df409ee04a7b602b4f09ed491c45e55502032e5fce076c37d9e3038bcccde"
+      ],
+      "RepoTags": [
+        "codex-kms-swap-production-validation:security-review-automatic-create"
+      ],
+      "RootFS": {
+        "Layers": [
+          "sha256:936feb360f9881e17b1fe8b0499aec288b2870e223a0849bc148826a3ec45abf",
+          "sha256:3fad4391281e3b09fadc2a83d8cceafdb21d594cdc8702f4f3af4b09038020cf",
+          "sha256:1fa474277ed28c0752724ea5b77204c5aedbb2203b29d7e2b265f0f42bacef13",
+          "sha256:ceaaf56ea333aef9e8430bb0255afffe8c8f64a93cb8986ad9cc243a7b8003fb",
+          "sha256:4a139aa1c020967b05d96745891beea8c65da56ac1f0902c05d8f171e2b09b81",
+          "sha256:be40112fa132d4fa78e54247e7316989c0fde158234743563355def53332c4d9",
+          "sha256:5247665531aa65a0f5bd3cd735e39db5ac38c5881f96fbbaefcd0b67dcfffe0f",
+          "sha256:19d0a2b2f5820ab9ef69a906775bd760ddb341497fc5d9c994d149465a02d4d5",
+          "sha256:ccb22e5048abbf9175b7d131c2f6a34ba8f443ea7a9dd939f199d42471119f4d",
+          "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
+        ],
+        "Type": "layers"
+      },
+      "Size": 52078985
+    }
+  }
+}

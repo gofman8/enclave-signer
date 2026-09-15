@@ -1,0 +1,257 @@
+-- The C compiler identification is GNU 10.2.1
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+-- Check if compiler accepts -pthread
+-- Check if compiler accepts -pthread - yes
+-- Found Threads: TRUE
+-- Found crypto: /opt/swap-kms/lib/libcrypto.a
+-- LibCrypto Include Dir: /opt/swap-kms/include
+-- LibCrypto Shared Lib:  /usr/lib/aarch64-linux-gnu/libcrypto.so
+-- LibCrypto Static Lib:  /opt/swap-kms/lib/libcrypto.a
+-- Configuring done (0.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: /tmp/current-helper-tests
+[1/6] Building C object CMakeFiles/swap-kms-sdk-cleanup-tests.dir/tests/sdk_cleanup.c.o
+[2/6] Building C object CMakeFiles/swap-kms-tool.dir/main.c.o
+[3/6] Building C object CMakeFiles/swap-kms-tool-input-tests.dir/tests/input_cleanup.c.o
+[4/6] Linking C executable swap-kms-tool
+[5/6] Linking C executable swap-kms-sdk-cleanup-tests
+[6/6] Linking C executable swap-kms-tool-input-tests
+Internal ctest changing into directory: /tmp/current-helper-tests
+Test project /tmp/current-helper-tests
+    Start 1: credential-cleanup
+1/2 Test #1: credential-cleanup ...............   Passed    0.00 sec
+    Start 2: sdk-request-cleanup
+2/2 Test #2: sdk-request-cleanup ..............   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =   0.00 sec
+CMake Deprecation Warning at CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+-- The C compiler identification is GNU 10.2.1
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+fatal: No names found, cannot describe anything.
+-- Version=v0.2.1-unknown
+-- Found LibJsonC: /opt/swap-kms/lib/libjson-c.a
+-- LibJsonC Include Dir: /opt/swap-kms/include
+-- LibJsonC Shared Lib:  LibJsonC_SHARED_LIBRARY-NOTFOUND
+-- LibJsonC Static Lib:  /opt/swap-kms/lib/libjson-c.a
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+-- Check if compiler accepts -pthread
+-- Check if compiler accepts -pthread - yes
+-- Found Threads: TRUE
+-- Found crypto: /opt/swap-kms/lib/libcrypto.a
+-- LibCrypto Include Dir: /opt/swap-kms/include
+-- LibCrypto Shared Lib:  /usr/lib/aarch64-linux-gnu/libcrypto.so
+-- LibCrypto Static Lib:  /opt/swap-kms/lib/libcrypto.a
+-- S2N found target: AWS::crypto
+-- crypto Include Dir: /opt/swap-kms/include
+-- aws-c-cal found target: AWS::crypto
+-- crypto Include Dir: /opt/swap-kms/include
+-- Performing Test HAS_FPIC_FLAG
+-- Performing Test HAS_FPIC_FLAG - Success
+-- Performing Test HAS_64BIT_FILE_OFFSET_BY_DEFAULT
+-- Performing Test HAS_64BIT_FILE_OFFSET_BY_DEFAULT - Success
+-- Looking for fseeko
+-- Looking for fseeko - found
+-- Looking for stdint.h
+-- Looking for stdint.h - found
+-- Looking for stdbool.h
+-- Looking for stdbool.h - found
+-- Performing Test HAS_WGNU
+-- Performing Test HAS_WGNU - Failed
+-- Performing Test HAVE_SYSCONF
+-- Performing Test HAVE_SYSCONF - Success
+-- Performing Test HAS_WNO_STRINGOP_OVERFLOW
+-- Performing Test HAS_WNO_STRINGOP_OVERFLOW - Success
+-- Could NOT find Doxygen (missing: DOXYGEN_EXECUTABLE) 
+-- Configuring done (0.3s)
+CMake Warning (dev) at CMakeLists.txt:83 (add_library):
+  Policy CMP0063 is not set: Honor visibility properties for all target
+  types.  Run "cmake --help-policy CMP0063" for policy details.  Use the
+  cmake_policy command to set the policy and suppress this warning.
+
+  Target "aws-nitro-enclaves-sdk-c" of type "STATIC_LIBRARY" has the
+  following visibility properties set for C:
+
+    C_VISIBILITY_PRESET
+
+  For compatibility CMake is not honoring them for this target.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at bin/kmstool-instance/CMakeLists.txt:6 (add_executable):
+  Policy CMP0063 is not set: Honor visibility properties for all target
+  types.  Run "cmake --help-policy CMP0063" for policy details.  Use the
+  cmake_policy command to set the policy and suppress this warning.
+
+  Target "kmstool_instance" of type "EXECUTABLE" has the following visibility
+  properties set for C:
+
+    C_VISIBILITY_PRESET
+
+  For compatibility CMake is not honoring them for this target.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at bin/kmstool-enclave/CMakeLists.txt:6 (add_executable):
+  Policy CMP0063 is not set: Honor visibility properties for all target
+  types.  Run "cmake --help-policy CMP0063" for policy details.  Use the
+  cmake_policy command to set the policy and suppress this warning.
+
+  Target "kmstool_enclave" of type "EXECUTABLE" has the following visibility
+  properties set for C:
+
+    C_VISIBILITY_PRESET
+
+  For compatibility CMake is not honoring them for this target.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at bin/kmstool-enclave-cli/CMakeLists.txt:6 (add_executable):
+  Policy CMP0063 is not set: Honor visibility properties for all target
+  types.  Run "cmake --help-policy CMP0063" for policy details.  Use the
+  cmake_policy command to set the policy and suppress this warning.
+
+  Target "kmstool_enclave_cli" of type "EXECUTABLE" has the following
+  visibility properties set for C:
+
+    C_VISIBILITY_PRESET
+
+  For compatibility CMake is not honoring them for this target.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Generating done (0.0s)
+-- Build files have been written to: /tmp/patched-sdk-tests
+[1/17] Building C object CMakeFiles/aws-nitro-enclaves-sdk-c.dir/source/nitro_enclaves.c.o
+[2/17] Building C object CMakeFiles/aws-nitro-enclaves-sdk-c.dir/source/attestation.c.o
+[3/17] Building C object CMakeFiles/aws-nitro-enclaves-sdk-c.dir/source/cms.c.o
+[4/17] Building C object tests/kmstool-enclaves/CMakeFiles/aws-nitro-enclaves-sdk-c-tests.dir/test_runner.c.o
+[5/17] Building C object CMakeFiles/aws-nitro-enclaves-sdk-c.dir/source/rest.c.o
+[6/17] Building C object bin/kmstool-instance/CMakeFiles/kmstool_instance.dir/main.c.o
+[7/17] Building C object tests/kmstool-enclaves/CMakeFiles/aws-nitro-enclaves-sdk-c-tests.dir/cms_test.c.o
+[8/17] Building C object tests/kmstool-enclaves/CMakeFiles/aws-nitro-enclaves-sdk-c-tests.dir/test.c.o
+[9/17] Building C object CMakeFiles/aws-nitro-enclaves-sdk-c.dir/source/kms.c.o
+[10/17] Linking C static library libaws-nitro-enclaves-sdk-c.a
+[11/17] Linking C executable bin/kmstool-instance/kmstool_instance
+[12/17] Building C object bin/kmstool-enclave/CMakeFiles/kmstool_enclave.dir/main.c.o
+[13/17] Building C object bin/kmstool-enclave-cli/CMakeFiles/kmstool_enclave_cli.dir/main.c.o
+/opt/swap-kms-build/src/aws-nitro-enclaves-sdk-c/bin/kmstool-enclave-cli/main.c: In function ‘s_parse_options’:
+/opt/swap-kms-build/src/aws-nitro-enclaves-sdk-c/bin/kmstool-enclave-cli/main.c:288:25: warning: comparison of integer expressions of different signedness: ‘uint32_t’ {aka ‘unsigned int’} and ‘int’ [-Wsign-compare]
+  288 |         if (ctx->length == -1) {
+      |                         ^~
+[14/17] Linking C executable bin/kmstool-enclave/kmstool_enclave
+[15/17] Linking C executable bin/kmstool-enclave-cli/kmstool_enclave_cli
+[16/17] Building C object tests/kmstool-enclaves/CMakeFiles/aws-nitro-enclaves-sdk-c-tests.dir/kms_test.c.o
+[17/17] Linking C executable tests/kmstool-enclaves/aws-nitro-enclaves-sdk-c-tests
+Internal ctest changing into directory: /tmp/patched-sdk-tests
+Test project /tmp/patched-sdk-tests
+      Start  1: test_kms_encrypt_request_cipher_to_json
+ 1/45 Test  #1: test_kms_encrypt_request_cipher_to_json ......................   Passed    0.00 sec
+      Start  2: test_kms_encrypt_request_ea_to_json
+ 2/45 Test  #2: test_kms_encrypt_request_ea_to_json ..........................   Passed    0.00 sec
+      Start  3: test_kms_encrypt_request_context_to_json
+ 3/45 Test  #3: test_kms_encrypt_request_context_to_json .....................   Passed    0.00 sec
+      Start  4: test_kms_encrypt_request_tokens_to_json
+ 4/45 Test  #4: test_kms_encrypt_request_tokens_to_json ......................   Passed    0.00 sec
+      Start  5: test_kms_encrypt_request_to_json
+ 5/45 Test  #5: test_kms_encrypt_request_to_json .............................   Passed    0.00 sec
+      Start  6: test_kms_encrypt_request_cipher_from_json
+ 6/45 Test  #6: test_kms_encrypt_request_cipher_from_json ....................   Passed    0.00 sec
+      Start  7: test_kms_encrypt_request_ea_from_json
+ 7/45 Test  #7: test_kms_encrypt_request_ea_from_json ........................   Passed    0.00 sec
+      Start  8: test_kms_encrypt_request_context_from_json
+ 8/45 Test  #8: test_kms_encrypt_request_context_from_json ...................   Passed    0.00 sec
+      Start  9: test_kms_encrypt_request_tokens_from_json
+ 9/45 Test  #9: test_kms_encrypt_request_tokens_from_json ....................   Passed    0.00 sec
+      Start 10: test_kms_encrypt_request_from_json
+10/45 Test #10: test_kms_encrypt_request_from_json ...........................   Passed    0.00 sec
+      Start 11: test_kms_decrypt_request_cipher_to_json
+11/45 Test #11: test_kms_decrypt_request_cipher_to_json ......................   Passed    0.00 sec
+      Start 12: test_kms_decrypt_request_ea_to_json
+12/45 Test #12: test_kms_decrypt_request_ea_to_json ..........................   Passed    0.00 sec
+      Start 13: test_kms_decrypt_request_context_to_json
+13/45 Test #13: test_kms_decrypt_request_context_to_json .....................   Passed    0.00 sec
+      Start 14: test_kms_decrypt_request_tokens_to_json
+14/45 Test #14: test_kms_decrypt_request_tokens_to_json ......................   Passed    0.00 sec
+      Start 15: test_kms_decrypt_request_to_json
+15/45 Test #15: test_kms_decrypt_request_to_json .............................   Passed    0.00 sec
+      Start 16: test_kms_decrypt_request_cipher_from_json
+16/45 Test #16: test_kms_decrypt_request_cipher_from_json ....................   Passed    0.00 sec
+      Start 17: test_kms_decrypt_request_ea_from_json
+17/45 Test #17: test_kms_decrypt_request_ea_from_json ........................   Passed    0.00 sec
+      Start 18: test_kms_decrypt_request_context_from_json
+18/45 Test #18: test_kms_decrypt_request_context_from_json ...................   Passed    0.00 sec
+      Start 19: test_kms_decrypt_request_tokens_from_json
+19/45 Test #19: test_kms_decrypt_request_tokens_from_json ....................   Passed    0.00 sec
+      Start 20: test_kms_decrypt_request_from_json
+20/45 Test #20: test_kms_decrypt_request_from_json ...........................   Passed    0.00 sec
+      Start 21: test_recipient_kea_to_json
+21/45 Test #21: test_recipient_kea_to_json ...................................   Passed    0.00 sec
+      Start 22: test_recipient_to_json
+22/45 Test #22: test_recipient_to_json .......................................   Passed    0.00 sec
+      Start 23: test_recipient_kea_from_json
+23/45 Test #23: test_recipient_kea_from_json .................................   Passed    0.00 sec
+      Start 24: test_recipient_from_json
+24/45 Test #24: test_recipient_from_json .....................................   Passed    0.00 sec
+      Start 25: test_kms_decrypt_response_to_json
+25/45 Test #25: test_kms_decrypt_response_to_json ............................   Passed    0.00 sec
+      Start 26: test_kms_decrypt_response_from_json
+26/45 Test #26: test_kms_decrypt_response_from_json ..........................   Passed    0.00 sec
+      Start 27: test_kms_decrypt_response_from_json_with_unknown
+27/45 Test #27: test_kms_decrypt_response_from_json_with_unknown .............   Passed    0.00 sec
+      Start 28: test_kms_encrypt_response_to_json
+28/45 Test #28: test_kms_encrypt_response_to_json ............................   Passed    0.00 sec
+      Start 29: test_kms_encrypt_response_from_json
+29/45 Test #29: test_kms_encrypt_response_from_json ..........................   Passed    0.00 sec
+      Start 30: test_kms_encrypt_response_from_json_with_unknown
+30/45 Test #30: test_kms_encrypt_response_from_json_with_unknown .............   Passed    0.00 sec
+      Start 31: test_kms_generate_data_key_request_to_json
+31/45 Test #31: test_kms_generate_data_key_request_to_json ...................   Passed    0.00 sec
+      Start 32: test_kms_generate_data_key_request_from_json
+32/45 Test #32: test_kms_generate_data_key_request_from_json .................   Passed    0.00 sec
+      Start 33: test_kms_generate_data_key_response_to_json
+33/45 Test #33: test_kms_generate_data_key_response_to_json ..................   Passed    0.00 sec
+      Start 34: test_kms_generate_data_key_response_from_json
+34/45 Test #34: test_kms_generate_data_key_response_from_json ................   Passed    0.00 sec
+      Start 35: test_kms_generate_data_key_response_from_json_with_unknown
+35/45 Test #35: test_kms_generate_data_key_response_from_json_with_unknown ...   Passed    0.00 sec
+      Start 36: test_kms_generate_random_request_to_json
+36/45 Test #36: test_kms_generate_random_request_to_json .....................   Passed    0.00 sec
+      Start 37: test_kms_generate_random_request_from_json
+37/45 Test #37: test_kms_generate_random_request_from_json ...................   Passed    0.00 sec
+      Start 38: test_kms_generate_random_response_to_json
+38/45 Test #38: test_kms_generate_random_response_to_json ....................   Passed    0.00 sec
+      Start 39: test_kms_generate_random_response_from_json
+39/45 Test #39: test_kms_generate_random_response_from_json ..................   Passed    0.00 sec
+      Start 40: test_kms_generate_random_response_from_json_with_unknown
+40/45 Test #40: test_kms_generate_random_response_from_json_with_unknown .....   Passed    0.00 sec
+      Start 41: test_basic_rest_client
+41/45 Test #41: test_basic_rest_client .......................................   Passed    0.28 sec
+      Start 42: test_cms_parsing_correctness
+42/45 Test #42: test_cms_parsing_correctness .................................   Passed    0.05 sec
+      Start 43: test_cms_envelope_ctx_specific
+43/45 Test #43: test_cms_envelope_ctx_specific ...............................   Passed    0.03 sec
+      Start 44: test_cms_large_ciphertext
+44/45 Test #44: test_cms_large_ciphertext ....................................   Passed    0.03 sec
+      Start 45: test_cms_cipher_decrypt_rejects_short_iv
+45/45 Test #45: test_cms_cipher_decrypt_rejects_short_iv .....................   Passed    0.02 sec
+
+100% tests passed, 0 tests failed out of 45
+
+Total Test time (real) =   0.43 sec

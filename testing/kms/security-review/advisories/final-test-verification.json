@@ -1,0 +1,39 @@
+{
+  "recorded_at": "2026-09-15T08:34:11.075792+00:00",
+  "production_head": "dfb3cce0611a115c4058c706c5dce09cf2449971",
+  "production_worktree_clean": true,
+  "testing_head": "73db4917cd0b3eecd6ff39310d1b9ac7e68191dd",
+  "testing_worktree_clean": true,
+  "testing_contains_production_head": true,
+  "policy_sources_identical_between_production_and_testing": true,
+  "deployment": {
+    "passed": 47,
+    "failed": 0,
+    "command": "../security-fixes/deploy-venv/bin/python -m unittest discover -s deploy/tests -v",
+    "cwd": "work/enclave-signer",
+    "log": "final-deployment-tests.log",
+    "log_sha256": "a9c577507c1f6a837d5de5321403e2d52779df93c5c946bcbf4818c0f79419ee",
+    "completed_at": "2026-09-15T08:31:33.709239+00:00"
+  },
+  "policy": {
+    "passed": 222,
+    "failed": 0,
+    "command": "../security-fixes/deploy-venv/bin/python testing/kms/deployment-policy-checks.py --node /Users/gofman/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node --output ../kms-review-fixes/advisories/final-policy-tests.json",
+    "cwd": "work/enclave-signer-kms-testing",
+    "script_sha256": "5e553d3cb3b5cef907cd18d52d793fe24c8df63ff4279f36c82c0e40d59bb863",
+    "log": "final-policy-tests.log",
+    "report": "final-policy-tests.json",
+    "report_sha256": "b5e26e2756be266a672726dc9b1d25086160139b65973cbc48bb776e3b033698",
+    "completed_at": "2026-09-15T08:31:33.881948+00:00"
+  },
+  "production_creation_setting_absent": true,
+  "production_tested_source_sha256": {
+    "deploy/validate-swap-kms-deployment.py": "17c35fef5d9f5abfa7c24442dc3d8fa9812d9ce6a511f259a23acd6a988af5bd",
+    "deploy/swap-kms-key-policy.json": "47a7d212381482c028d35d48210c7fa608a50096798a914d1f0108d7908e6231",
+    "deploy/swap-seed-bucket-policy.json": "f0901272a31bc06ac72871e15f8e729cc271149bb32a396b6eaef1aa4fd0c8a5",
+    "deploy/swap-signer-role-policy.json": "273a2233ac2db3cc614ff3ddf69e0f8b310bca600a26fc4a15e44132a344733e",
+    "deploy/tests/test_swap_deployment.py": "05b410d818381d922126c600d87b8953335ae59dd1f1d0fb98faa38d0cb8cde9",
+    "deploy/tests/test_swap_seed_broker.py": "4c5b3c2496b8ddb4b30122807cbf35752e9e1a4802d8b5ae525c39781a21d09a"
+  },
+  "limits": "Local code and IAM simulation checks. Final process E2E/runtime/EIF verification is recorded separately by the coordinating workstreams; these results do not establish live AWS/Nitro enforcement."
+}

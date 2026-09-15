@@ -1,0 +1,5 @@
+{
+  "old_actual_eif_rejected": true,
+  "reason": "unexpected swap KMS setting in approved EIF",
+  "scope": "Fresh validator invokes actual Nitro CLI on historical actual EIF containing removed environment setting."
+}

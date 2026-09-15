@@ -1,0 +1,3481 @@
+{
+  "scope": "Offline Cloud Copilot IAM simulator; actual rendered policies with broad identity allow plus dedicated role deny; no AWS calls",
+  "count": 222,
+  "passed": 222,
+  "cases": [
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer bootstrap kms:GenerateDataKey",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer bootstrap kms:Decrypt",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer restore kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer restore kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer unapproved kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer unapproved kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer debug kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer debug kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer missing kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer missing kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer s3:PutBucketPublicAccessBlock",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer s3:PutBucketAcl",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer s3:PutBucketOwnershipControls",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer s3:PutEncryptionConfiguration",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer s3:PutReplicationConfiguration",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer s3:PutLifecycleConfiguration",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer s3:PutBucketVersioning",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer s3:DeleteObject",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySeedDeletionIncludingVersionDeletion"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer s3:DeleteObjectVersion",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySeedDeletionIncludingVersionDeletion"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer s3:PutObjectAcl",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer s3:PutObjectVersionAcl",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer s3:UpdateObjectEncryption",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer s3:PutObjectRetention",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer s3:PutObjectLegalHold",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer s3:BypassGovernanceRetention",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer s3:PutObjectTagging",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer s3:DeleteObjectVersionTagging",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer read own blob",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer conditional create",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer unconditional overwrite",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenySeedWritesWithoutCreateOnlyPrecondition"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer list dedicated bucket",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer read other object",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyOtherObjects"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer read other bucket",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyOtherBucketListing"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer decrypt other KMS key",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer assume administrator",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer change role policy",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:iam::947263850162:role/swap-signer change account public access",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session bootstrap kms:GenerateDataKey",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session bootstrap kms:Decrypt",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session restore kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session restore kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session unapproved kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session unapproved kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session debug kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session debug kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session missing kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session missing kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutBucketPublicAccessBlock",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutBucketAcl",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutBucketOwnershipControls",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutEncryptionConfiguration",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutReplicationConfiguration",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutLifecycleConfiguration",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutBucketVersioning",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:DeleteObject",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySeedDeletionIncludingVersionDeletion"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:DeleteObjectVersion",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySeedDeletionIncludingVersionDeletion"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutObjectAcl",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutObjectVersionAcl",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:UpdateObjectEncryption",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutObjectRetention",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutObjectLegalHold",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:BypassGovernanceRetention",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutObjectTagging",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:DeleteObjectVersionTagging",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session read own blob",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session conditional create",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session unconditional overwrite",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenySeedWritesWithoutCreateOnlyPrecondition"
+        ]
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session list dedicated bucket",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session read other object",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyOtherObjects"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session read other bucket",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyOtherBucketListing"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session decrypt other KMS key",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session assume administrator",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session change role policy",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "bootstrap arn:aws:sts::947263850162:assumed-role/swap-signer/session change account public access",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer bootstrap kms:GenerateDataKey",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer bootstrap kms:Decrypt",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer restore kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer restore kms:Decrypt",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer unapproved kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer unapproved kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer debug kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer debug kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer missing kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer missing kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer s3:PutBucketPublicAccessBlock",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer s3:PutBucketAcl",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer s3:PutBucketOwnershipControls",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer s3:PutEncryptionConfiguration",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer s3:PutReplicationConfiguration",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer s3:PutLifecycleConfiguration",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer s3:PutBucketVersioning",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer s3:DeleteObject",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySeedDeletionIncludingVersionDeletion"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer s3:DeleteObjectVersion",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySeedDeletionIncludingVersionDeletion"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer s3:PutObjectAcl",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer s3:PutObjectVersionAcl",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer s3:UpdateObjectEncryption",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer s3:PutObjectRetention",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer s3:PutObjectLegalHold",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer s3:BypassGovernanceRetention",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer s3:PutObjectTagging",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer s3:DeleteObjectVersionTagging",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer read own blob",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer conditional create",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer unconditional overwrite",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenySeedWritesWithoutCreateOnlyPrecondition"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer list dedicated bucket",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer read other object",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyOtherObjects"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer read other bucket",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyOtherBucketListing"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer decrypt other KMS key",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer assume administrator",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer change role policy",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:iam::947263850162:role/swap-signer change account public access",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session bootstrap kms:GenerateDataKey",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session bootstrap kms:Decrypt",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session restore kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session restore kms:Decrypt",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session unapproved kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session unapproved kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session debug kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session debug kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session missing kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session missing kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutBucketPublicAccessBlock",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutBucketAcl",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutBucketOwnershipControls",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutEncryptionConfiguration",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutReplicationConfiguration",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutLifecycleConfiguration",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutBucketVersioning",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:DeleteObject",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySeedDeletionIncludingVersionDeletion"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:DeleteObjectVersion",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySeedDeletionIncludingVersionDeletion"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutObjectAcl",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutObjectVersionAcl",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:UpdateObjectEncryption",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutObjectRetention",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutObjectLegalHold",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:BypassGovernanceRetention",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutObjectTagging",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:DeleteObjectVersionTagging",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session read own blob",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session conditional create",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session unconditional overwrite",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenySeedWritesWithoutCreateOnlyPrecondition"
+        ]
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session list dedicated bucket",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session read other object",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyOtherObjects"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session read other bucket",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyOtherBucketListing"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session decrypt other KMS key",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session assume administrator",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session change role policy",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "transition arn:aws:sts::947263850162:assumed-role/swap-signer/session change account public access",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer bootstrap kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer bootstrap kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer restore kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer restore kms:Decrypt",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer unapproved kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer unapproved kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer debug kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer debug kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer missing kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer missing kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer s3:PutBucketPublicAccessBlock",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer s3:PutBucketAcl",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer s3:PutBucketOwnershipControls",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer s3:PutEncryptionConfiguration",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer s3:PutReplicationConfiguration",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer s3:PutLifecycleConfiguration",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer s3:PutBucketVersioning",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer s3:DeleteObject",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySeedDeletionIncludingVersionDeletion"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer s3:DeleteObjectVersion",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySeedDeletionIncludingVersionDeletion"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer s3:PutObjectAcl",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer s3:PutObjectVersionAcl",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer s3:UpdateObjectEncryption",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer s3:PutObjectRetention",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer s3:PutObjectLegalHold",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer s3:BypassGovernanceRetention",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer s3:PutObjectTagging",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer s3:DeleteObjectVersionTagging",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer read own blob",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer conditional create",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer unconditional overwrite",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenySeedWritesWithoutCreateOnlyPrecondition"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer list dedicated bucket",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer read other object",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyOtherObjects"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer read other bucket",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyOtherBucketListing"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer decrypt other KMS key",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer assume administrator",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer change role policy",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:iam::947263850162:role/swap-signer change account public access",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session bootstrap kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session bootstrap kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session restore kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session restore kms:Decrypt",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session unapproved kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session unapproved kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session debug kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session debug kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session missing kms:GenerateDataKey",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session missing kms:Decrypt",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutBucketPublicAccessBlock",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutBucketAcl",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutBucketOwnershipControls",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutEncryptionConfiguration",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutReplicationConfiguration",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutLifecycleConfiguration",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutBucketVersioning",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerStoragePolicyAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:DeleteObject",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySeedDeletionIncludingVersionDeletion"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:DeleteObjectVersion",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySeedDeletionIncludingVersionDeletion"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutObjectAcl",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutObjectVersionAcl",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:UpdateObjectEncryption",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutObjectRetention",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutObjectLegalHold",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:BypassGovernanceRetention",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:PutObjectTagging",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session s3:DeleteObjectVersionTagging",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": [
+          "DenySignerObjectAccessAndRetentionChanges"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session read own blob",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session conditional create",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session unconditional overwrite",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": [
+          "DenySeedWritesWithoutCreateOnlyPrecondition"
+        ]
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session list dedicated bucket",
+      "expected_allowed": true,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "Allowed",
+        "retainedContextKeys": [],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session read other object",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyOtherObjects"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session read other bucket",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyOtherBucketListing"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session decrypt other KMS key",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [
+          "kms:EncryptionContext:application",
+          "kms:EncryptionContext:flow",
+          "kms:EncryptionContext:seed_id",
+          "kms:EncryptionContext:bitcoin_network"
+        ],
+        "identityDeny": [],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session assume administrator",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session change role policy",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": []
+      }
+    },
+    {
+      "name": "restore arn:aws:sts::947263850162:assumed-role/swap-signer/session change account public access",
+      "expected_allowed": false,
+      "passed": true,
+      "verdict": {
+        "resultType": "single",
+        "result": "ExplicitlyDenied",
+        "retainedContextKeys": [],
+        "identityDeny": [
+          "DenyActionsOutsideDedicatedSeedRole"
+        ],
+        "resourceDeny": []
+      }
+    }
+  ]
+}

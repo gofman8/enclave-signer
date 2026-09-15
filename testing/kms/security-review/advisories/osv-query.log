@@ -1,0 +1,20 @@
+Queried 150/873 public package versions
+Queried 300/873 public package versions
+Queried 450/873 public package versions
+Queried 600/873 public package versions
+Queried 750/873 public package versions
+Queried 873/873 public package versions
+derivative 2.2.0 head:Cargo.lock,dev:Cargo.lock,head:parent/Cargo.lock,dev:parent/Cargo.lock RUSTSEC-2024-0388
+h2 0.3.27 head:Cargo.lock,dev:Cargo.lock,dev:parent/Cargo.lock RUSTSEC-2026-0258
+h2 0.4.15 dev:Cargo.lock,dev:parent/Cargo.lock RUSTSEC-2026-0258
+hickory-proto 0.25.2 head:Cargo.lock,dev:Cargo.lock,dev:parent/Cargo.lock GHSA-3v94-mw7p-v465,GHSA-q2qq-hmj6-3wpp,RUSTSEC-2026-0118,RUSTSEC-2026-0119
+instant 0.1.13 head:Cargo.lock,dev:Cargo.lock,dev:parent/Cargo.lock RUSTSEC-2024-0384
+libsecp256k1 0.7.2 head:Cargo.lock,dev:Cargo.lock,dev:parent/Cargo.lock RUSTSEC-2025-0161
+lru 0.16.4 head:Cargo.lock,dev:Cargo.lock,dev:parent/Cargo.lock RUSTSEC-2026-0253
+paste 1.0.15 head:Cargo.lock,dev:Cargo.lock,head:parent/Cargo.lock,dev:parent/Cargo.lock RUSTSEC-2024-0436
+rustls 0.23.43 dev:Cargo.lock,dev:parent/Cargo.lock RUSTSEC-2026-0285
+rustls-pemfile 1.0.4 head:Cargo.lock,dev:Cargo.lock,dev:parent/Cargo.lock RUSTSEC-2025-0134
+rustls-webpki 0.101.7 head:Cargo.lock,dev:Cargo.lock,head:parent/Cargo.lock,dev:parent/Cargo.lock GHSA-82j2-j2ch-gfr8,GHSA-965h-392x-2mh5,GHSA-xgp8-3hg3-c2mh,RUSTSEC-2026-0098,RUSTSEC-2026-0099,RUSTSEC-2026-0104
+serde_cbor 0.11.2 head:Cargo.lock,dev:Cargo.lock,head:parent/Cargo.lock,dev:parent/Cargo.lock,head:nsm RUSTSEC-2021-0127
+tracing-subscriber 0.2.25 head:Cargo.lock,dev:Cargo.lock,dev:parent/Cargo.lock GHSA-xwfj-jgwm-7wp5,RUSTSEC-2025-0055
+Complete: 873 package versions, 21 advisory records

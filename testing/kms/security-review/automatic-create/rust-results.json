@@ -1,0 +1,33 @@
+{
+  "rust_change_commit": "b2766139c652da55086823882d0c635c9e92f5bc",
+  "source_sha256": {
+    "enclave/src/swap_persistence.rs": "4c16f9f7667af10854a6fbff370c8de2ae5b7f824db2670ac29979a6e6770783",
+    "enclave/src/main.rs": "09eeb23de5eecb7bc0491f46f0a7929f6be6b409893ba9d185ac78459dafba3f",
+    "Cargo.lock": "1d88084e16fe0407c17d0e6765a422a07f1a8b14fe0e2ee4a2ea1345a3560696"
+  },
+  "results": [
+    {
+      "command": "cargo test --locked --offline -p utexo-bridge-enclave --no-default-features --features rgb,rgb-swap,evm-rpc,mock-attestation,allow-seed-import",
+      "exit_code": 0,
+      "passed_tests": 566,
+      "log": "rust-swap-tests.log",
+      "log_sha256": "918d207fe002320f899ca3103fd31aee6efdc3ca6c1a4f4bba1e86d9a3f9d113"
+    },
+    {
+      "command": "cargo clippy --locked --offline -p utexo-bridge-enclave --no-default-features --features vsock,rgb,rgb-swap,evm-rpc --all-targets -- -D warnings",
+      "exit_code": 0,
+      "passed_tests": 0,
+      "log": "rust-swap-clippy.log",
+      "log_sha256": "52c026990d659a85bf201c4ceb5f5b66657572115d36dfe00ffd2caf2c9dc0d7"
+    },
+    {
+      "command": "cargo test --locked --offline -p utexo-bridge-enclave --no-default-features --features rgb,rgb-mint-burn,evm-rpc,mock-attestation,allow-seed-import",
+      "exit_code": 0,
+      "passed_tests": 542,
+      "log": "rust-mint-burn-tests.log",
+      "log_sha256": "d75ec34c5f8deb1b7fbf0494858e9a41c3ea436df9af9fb5d2b8d5eacec776cc"
+    }
+  ],
+  "format_passed": true,
+  "creation_flag_absent_from_rust": true
+}

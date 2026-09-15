@@ -1,0 +1,197 @@
+{
+  "positive_matrix_complete": true,
+  "positive_commands_passed": true,
+  "positive_command_count": 27,
+  "passing_test_executions": 3968,
+  "failing_test_executions": 0,
+  "ignored_test_executions": 0,
+  "negative_guards_complete": true,
+  "negative_guards_passed": true,
+  "negative_guard_count": 6,
+  "legacy_clone_tests_expected": 10,
+  "legacy_clone_tests_passed": 10,
+  "legacy_clone_missing": [],
+  "initial_lockfiles": {
+    "Cargo.lock": "fdfa2cdc2659f70af72ef95236f29db646247c6a017f0561b9eaa8d7a1ef3a77",
+    "parent/Cargo.lock": "f8ee32187adcbad78675e418101e8240767050bc149ca2c50c07f0fad2f16330"
+  },
+  "lockfiles_unchanged": {
+    "Cargo.lock": true,
+    "parent/Cargo.lock": true
+  },
+  "source_manifest": "d0aa78521ea69ce7ffe99f6991761c3a60777869aec67c6636ad8a4d765d7822",
+  "current_sources_differing_from_tested_manifest": [],
+  "evidence_checks": [
+    {
+      "name": "workspace-format",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "parent-format",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "workspace-build",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "workspace-clippy",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "workspace-test",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "parent-build",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "parent-clippy",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "parent-test",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "production-combo-build",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "production-combo-clippy",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "spv-swap-test",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "rgb-swap-build",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "rgb-swap-clippy",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "rgb-swap-test",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "rgb-mint-burn-build",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "rgb-mint-burn-clippy",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "bfa-mint-build",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "bfa-mint-clippy",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "bfa-mint-test",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "ccd-build",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "ccd-clippy",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "ccd-test",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "minimal-build",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "minimal-clippy",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "minimal-test",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "evm-rpc-test",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "default-mock-test",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "release-guard-allow-seed-import",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "release-guard-mock-attestation",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "release-guard-dev-mode",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "feature-guard-missing-spv",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "feature-guard-both-flows",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    },
+    {
+      "name": "feature-guard-missing-flow",
+      "log_hash_matches": true,
+      "sources_unchanged_during_run": true
+    }
+  ],
+  "limitations": [
+    "macOS host testing does not execute Linux-only vsock or NSM paths.",
+    "Repeated feature lanes include overlapping tests; passing_test_executions is not a unique-test count.",
+    "Prior mint/burn542-test run is separately recorded in work/security-remediation/rust-deadlines/mint-burn-tests.log and is not included in this matrix count."
+  ],
+  "verified_success": true
+}

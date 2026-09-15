@@ -1,0 +1,15 @@
+{
+  "production_commit": "dfb3cce0611a115c4058c706c5dce09cf2449971",
+  "command": "python3 -m unittest discover -s build/tests -v",
+  "tests_passed": 17,
+  "tests_failed": 0,
+  "exit_code": 0,
+  "source_sha256": {
+    "build/tests/test_swap_kms_wiring.py": "58998644aab7fb4b9ea8adce7af93f4ea0d839e001f5107a286c463ba5072289",
+    "build/tests/test_swap_kms_protocol.py": "76b789f5cfd1e0099542b696e08d80056198a244e1e99d41e7b20d86daa407e2",
+    "build/tests/test_private_deps.py": "6983adb6966235a1bdbe32fcdd7367f3b95dfed0d0e2df628920d939b46f6c47",
+    "Makefile": "da1ed894f7104670a2a69eeb2a0af7562b7670bd049dff3f2fd7abae3d87655f",
+    "build/build-enclave.sh": "3b74d3581fd26ac04e4ec94117b78918a6225f670d89071dd43b0aacc8e66ed3"
+  },
+  "scope": "Build script and real make invocations against stub binaries, private dependency credential handling and cross-language protocol/deadline bounds; final Docker build recorded separately."
+}

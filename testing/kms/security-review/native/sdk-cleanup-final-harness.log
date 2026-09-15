@@ -1,0 +1,50 @@
+-- The C compiler identification is GNU 10.2.1
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+-- Check if compiler accepts -pthread
+-- Check if compiler accepts -pthread - yes
+-- Found Threads: TRUE
+-- Found crypto: /native/prefix-sdk-cleanup/lib/libcrypto.a
+-- LibCrypto Include Dir: /native/prefix-sdk-cleanup/include
+-- LibCrypto Shared Lib:  /usr/lib/aarch64-linux-gnu/libcrypto.so
+-- LibCrypto Static Lib:  /native/prefix-sdk-cleanup/lib/libcrypto.a
+-- Configuring done (0.2s)
+-- Generating done (0.0s)
+-- Build files have been written to: /native/sdk-cleanup-final-tests
+[1/4] Building C object CMakeFiles/swap-kms-sdk-cleanup-tests.dir/tests/sdk_cleanup.c.o
+[2/4] Building C object CMakeFiles/swap-kms-tool-input-tests.dir/tests/input_cleanup.c.o
+[3/4] Linking C executable swap-kms-sdk-cleanup-tests
+[4/4] Linking C executable swap-kms-tool-input-tests
+Internal ctest changing into directory: /native/sdk-cleanup-final-tests
+Test project /native/sdk-cleanup-final-tests
+    Start 1: credential-cleanup
+1/2 Test #1: credential-cleanup ...............   Passed    0.00 sec
+    Start 2: sdk-request-cleanup
+2/2 Test #2: sdk-request-cleanup ..............   Passed    0.01 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =   0.02 sec
+mutex: PASS (status=0)
+condition-variable: PASS (status=0)
+request-stream: PASS (status=0)
+request-message: PASS (status=0)
+response-allocation: PASS (status=0)
+response-message: PASS (status=0)
+signable: PASS (status=0)
+sign-start: PASS (status=0)
+failed  to process requestsign-sync: PASS (status=0)
+failed  to process requestapply-sync: PASS (status=0)
+failed to create request.failed  to process requestmake-stream: PASS (status=0)
+failed to create request.failed  to process requestactivate-stream: PASS (status=0)
+failed  to process requestsign-async: PASS (status=0)
+failed  to process requeststream-async-error: PASS (status=0)
+stream-async-success: PASS (status=0)
+spurious-wake: PASS (status=0)
+unknown fault case
+unknown_case_exit_status=1

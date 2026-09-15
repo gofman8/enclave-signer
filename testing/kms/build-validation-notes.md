@@ -1,4 +1,10 @@
-# Local Linux release and EIF build validation
+# Historical Linux release and EIF build validation
+
+This records the earlier `9eae978` build, including its then-unmodified SDK and
+older dependencies. It is superseded by the [final production Docker/EIF
+validation](security-review/full-release/RESULTS.md). The historical commands
+below describe that revision; use the current [test instructions](README.md)
+and production build scripts for the maintained dependency stack.
 
 On 2026-09-14, the RGB-swap ARM64 release binary and official AWS Nitro
 Enclaves SDK helper were built and packaged into an unsigned EIF. The Rust
@@ -23,7 +29,7 @@ package supplies `/etc/pki/tls/certs/ca-bundle.crt`, one of the official CRT's
 runtime-detected trust-store paths. Nitro CLI 1.4.5 and its ARM64 blobs
 produce an EIF for which `describe-eif` reports `CheckCRC: true`.
 
-| Current SDK artifact | SHA-256 |
+| Historical SDK artifact | SHA-256 |
 | --- | --- |
 | RGB-swap release binary | `9a1e34ea664e26ce37f87bce0f6ee8fa763a921a21e47da7a28b36972da05905` |
 | Official SDK helper | `e05435be1e34b9b750e7f4cb80ee7c7de3721b575e159241532f587a4864e9b1` |

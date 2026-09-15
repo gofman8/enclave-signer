@@ -1,0 +1,260 @@
+{
+  "results": [
+    {
+      "name": "release-guard-allow-seed-import",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--release",
+        "--features",
+        "allow-seed-import"
+      ],
+      "required_error": "must not be enabled in a release build",
+      "returncode": 101,
+      "expected_failure_confirmed": true,
+      "seconds": 48.567,
+      "log": "/Users/gofman/Documents/Codex/2026-09-13/https-github-com-utexo-protocol-enclave/work/kms-review-fixes/rust-regression/release-guard-allow-seed-import.log",
+      "log_sha256": "624c37d6f4c6cfdf47fa6d61e4fd98afed8f8e34ea207a568d8bdc3b15a4be1e",
+      "source_manifest_before": "d0aa78521ea69ce7ffe99f6991761c3a60777869aec67c6636ad8a4d765d7822",
+      "source_manifest_after": "d0aa78521ea69ce7ffe99f6991761c3a60777869aec67c6636ad8a4d765d7822",
+      "sources_changed_during_run": [],
+      "lockfiles_unchanged": {
+        "Cargo.lock": true,
+        "parent/Cargo.lock": true
+      }
+    },
+    {
+      "name": "release-guard-mock-attestation",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--release",
+        "--features",
+        "mock-attestation"
+      ],
+      "required_error": "must not be enabled in a release build",
+      "returncode": 101,
+      "expected_failure_confirmed": true,
+      "seconds": 1.096,
+      "log": "/Users/gofman/Documents/Codex/2026-09-13/https-github-com-utexo-protocol-enclave/work/kms-review-fixes/rust-regression/release-guard-mock-attestation.log",
+      "log_sha256": "932c8dbf1dd869a265c68db2f523abd7e06080b8fd76c9d0f4dc5a0fbb329af4",
+      "source_manifest_before": "d0aa78521ea69ce7ffe99f6991761c3a60777869aec67c6636ad8a4d765d7822",
+      "source_manifest_after": "d0aa78521ea69ce7ffe99f6991761c3a60777869aec67c6636ad8a4d765d7822",
+      "sources_changed_during_run": [],
+      "lockfiles_unchanged": {
+        "Cargo.lock": true,
+        "parent/Cargo.lock": true
+      }
+    },
+    {
+      "name": "release-guard-dev-mode",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--release",
+        "--features",
+        "dev-mode"
+      ],
+      "required_error": "must not be enabled in a release build",
+      "returncode": 101,
+      "expected_failure_confirmed": true,
+      "seconds": 0.644,
+      "log": "/Users/gofman/Documents/Codex/2026-09-13/https-github-com-utexo-protocol-enclave/work/kms-review-fixes/rust-regression/release-guard-dev-mode.log",
+      "log_sha256": "7319de59d50e13df0989e7fb21d2e3149709f644debe0110be6155c9ba45c3ca",
+      "source_manifest_before": "d0aa78521ea69ce7ffe99f6991761c3a60777869aec67c6636ad8a4d765d7822",
+      "source_manifest_after": "d0aa78521ea69ce7ffe99f6991761c3a60777869aec67c6636ad8a4d765d7822",
+      "sources_changed_during_run": [],
+      "lockfiles_unchanged": {
+        "Cargo.lock": true,
+        "parent/Cargo.lock": true
+      }
+    },
+    {
+      "name": "feature-guard-missing-spv",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--no-default-features",
+        "--features",
+        "rgb-validation"
+      ],
+      "required_error": "rgb-validation requires spv",
+      "returncode": 101,
+      "expected_failure_confirmed": true,
+      "seconds": 0.963,
+      "log": "/Users/gofman/Documents/Codex/2026-09-13/https-github-com-utexo-protocol-enclave/work/kms-review-fixes/rust-regression/feature-guard-missing-spv.log",
+      "log_sha256": "87189c1acf1b2cb3d73bc64ff9528deb486b0e524e4566d62759c2d9fdc8b31b",
+      "source_manifest_before": "d0aa78521ea69ce7ffe99f6991761c3a60777869aec67c6636ad8a4d765d7822",
+      "source_manifest_after": "d0aa78521ea69ce7ffe99f6991761c3a60777869aec67c6636ad8a4d765d7822",
+      "sources_changed_during_run": [],
+      "lockfiles_unchanged": {
+        "Cargo.lock": true,
+        "parent/Cargo.lock": true
+      }
+    },
+    {
+      "name": "feature-guard-both-flows",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--no-default-features",
+        "--features",
+        "spv,rgb-swap,rgb-mint-burn"
+      ],
+      "required_error": "mutually exclusive",
+      "returncode": 101,
+      "expected_failure_confirmed": true,
+      "seconds": 0.774,
+      "log": "/Users/gofman/Documents/Codex/2026-09-13/https-github-com-utexo-protocol-enclave/work/kms-review-fixes/rust-regression/feature-guard-both-flows.log",
+      "log_sha256": "e67ce7683413a90a94c9f334b5cbd7727ebbd81da9bd1040e7af9e9c962e6a60",
+      "source_manifest_before": "d0aa78521ea69ce7ffe99f6991761c3a60777869aec67c6636ad8a4d765d7822",
+      "source_manifest_after": "d0aa78521ea69ce7ffe99f6991761c3a60777869aec67c6636ad8a4d765d7822",
+      "sources_changed_during_run": [],
+      "lockfiles_unchanged": {
+        "Cargo.lock": true,
+        "parent/Cargo.lock": true
+      }
+    },
+    {
+      "name": "feature-guard-missing-flow",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--no-default-features",
+        "--features",
+        "spv"
+      ],
+      "required_error": "rgb-validation requires a flow",
+      "returncode": 101,
+      "expected_failure_confirmed": true,
+      "seconds": 0.725,
+      "log": "/Users/gofman/Documents/Codex/2026-09-13/https-github-com-utexo-protocol-enclave/work/kms-review-fixes/rust-regression/feature-guard-missing-flow.log",
+      "log_sha256": "a395de4daffd09c22f167b90eaf2aa86e3a13b1c5e404ec26e286f78e9762b7a",
+      "source_manifest_before": "d0aa78521ea69ce7ffe99f6991761c3a60777869aec67c6636ad8a4d765d7822",
+      "source_manifest_after": "d0aa78521ea69ce7ffe99f6991761c3a60777869aec67c6636ad8a4d765d7822",
+      "sources_changed_during_run": [],
+      "lockfiles_unchanged": {
+        "Cargo.lock": true,
+        "parent/Cargo.lock": true
+      }
+    }
+  ],
+  "planned_lanes": [
+    {
+      "name": "release-guard-allow-seed-import",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--release",
+        "--features",
+        "allow-seed-import"
+      ],
+      "required_error": "must not be enabled in a release build"
+    },
+    {
+      "name": "release-guard-mock-attestation",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--release",
+        "--features",
+        "mock-attestation"
+      ],
+      "required_error": "must not be enabled in a release build"
+    },
+    {
+      "name": "release-guard-dev-mode",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--release",
+        "--features",
+        "dev-mode"
+      ],
+      "required_error": "must not be enabled in a release build"
+    },
+    {
+      "name": "feature-guard-missing-spv",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--no-default-features",
+        "--features",
+        "rgb-validation"
+      ],
+      "required_error": "rgb-validation requires spv"
+    },
+    {
+      "name": "feature-guard-both-flows",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--no-default-features",
+        "--features",
+        "spv,rgb-swap,rgb-mint-burn"
+      ],
+      "required_error": "mutually exclusive"
+    },
+    {
+      "name": "feature-guard-missing-flow",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--no-default-features",
+        "--features",
+        "spv"
+      ],
+      "required_error": "rgb-validation requires a flow"
+    }
+  ],
+  "complete": true,
+  "all_guards_passed": true
+}

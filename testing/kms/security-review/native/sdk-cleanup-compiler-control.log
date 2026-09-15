@@ -1,0 +1,10 @@
+/sdk/source/rest.c: In function 's_on_sign_complete':
+/sdk/source/rest.c:443:5: error: 'stream' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+  443 |     aws_http_stream_release(stream);
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/sdk/source/rest.c: In function 'aws_nitro_enclaves_rest_client_request_blocking':
+/sdk/source/rest.c:520:5: error: 'sign_request' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+  520 |     aws_signable_destroy(sign_request);
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cc1: some warnings being treated as errors
+original_status=1 patched_status=0

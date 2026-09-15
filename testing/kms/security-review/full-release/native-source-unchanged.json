@@ -1,0 +1,17 @@
+{
+  "tested_native_source_commit": "7379c4ffbb497b2ba14971f102f4383f292fa1a3",
+  "current_production_commit": "dfb3cce0611a115c4058c706c5dce09cf2449971",
+  "native_file_hashes_unchanged": {
+    "build/build-swap-kms-tool.sh": true,
+    "build/swap-kms-dependencies.tsv": true,
+    "build/swap-kms-nsm.Cargo.lock": true,
+    "enclave/kms-tool/CMakeLists.txt": true,
+    "enclave/kms-tool/main.c": true,
+    "enclave/kms-tool/tests/input_cleanup.c": true,
+    "enclave/kms-tool/README.md": true,
+    "build/patches/nitro-sdk-cleanup.patch": true,
+    "enclave/kms-tool/tests/sdk_cleanup.c": true
+  },
+  "pass": true,
+  "note": "Docker runtime settings and Rust application code changed; native build script, manifest, NSM lock, helper, reviewed SDK patch, and native tests did not."
+}

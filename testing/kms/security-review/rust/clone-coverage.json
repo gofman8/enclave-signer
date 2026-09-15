@@ -1,0 +1,29 @@
+{
+  "lane": "ccd-test",
+  "expected_legacy_clone_tests": [
+    "clone_happy_path_copies_donor_identity_to_requester",
+    "clone_rejects_wrong_cloning_secret",
+    "clone_rejects_wrong_cluster_public_key",
+    "clone_rejects_tampered_ciphertext",
+    "clone_set_failed_completion_leaves_state_and_nonce_unconsumed",
+    "clone_rejects_duplicate_requester_attestation_nonce_on_donor",
+    "clone_rejected_handshake_does_not_consume_replay_nonce",
+    "cannot_initialize_after_entering_cloning",
+    "clone_donor_rejects_wire_pubkey_not_matching_attestation",
+    "clone_donor_refuses_pcr_mismatched_peer_but_accepts_matching_peer"
+  ],
+  "passed_legacy_clone_tests": [
+    "clone_happy_path_copies_donor_identity_to_requester",
+    "clone_rejects_wrong_cloning_secret",
+    "clone_rejects_wrong_cluster_public_key",
+    "clone_rejects_tampered_ciphertext",
+    "clone_set_failed_completion_leaves_state_and_nonce_unconsumed",
+    "clone_rejects_duplicate_requester_attestation_nonce_on_donor",
+    "clone_rejected_handshake_does_not_consume_replay_nonce",
+    "cannot_initialize_after_entering_cloning",
+    "clone_donor_rejects_wire_pubkey_not_matching_attestation",
+    "clone_donor_refuses_pcr_mismatched_peer_but_accepts_matching_peer"
+  ],
+  "missing": [],
+  "log_sha256": "598820254e015685bc414bf4c0652e1707cd624d45fecc64c00bd230ec664bb1"
+}

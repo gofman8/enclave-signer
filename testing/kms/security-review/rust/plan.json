@@ -1,0 +1,386 @@
+{
+  "host": "macOS-26.3-arm64-arm-64bit",
+  "rustc": "rustc 1.96.1 (31fca3adb 2026-06-26)",
+  "repo": "/Users/gofman/Documents/Codex/2026-09-13/https-github-com-utexo-protocol-enclave/work/enclave-signer",
+  "head": "9eae97860157e281717805f46fc124dddc0a63b8",
+  "initial_source_manifest": "d0aa78521ea69ce7ffe99f6991761c3a60777869aec67c6636ad8a4d765d7822",
+  "initial_lockfiles": {
+    "Cargo.lock": "fdfa2cdc2659f70af72ef95236f29db646247c6a017f0561b9eaa8d7a1ef3a77",
+    "parent/Cargo.lock": "f8ee32187adcbad78675e418101e8240767050bc149ca2c50c07f0fad2f16330"
+  },
+  "planned_lanes": [
+    {
+      "name": "workspace-format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ]
+    },
+    {
+      "name": "parent-format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--manifest-path",
+        "parent/Cargo.toml",
+        "--",
+        "--check"
+      ]
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "--workspace"
+      ]
+    },
+    {
+      "name": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--offline",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    {
+      "name": "workspace-test",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "--workspace"
+      ]
+    },
+    {
+      "name": "parent-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "parent/Cargo.toml"
+      ]
+    },
+    {
+      "name": "parent-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "parent/Cargo.toml",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    {
+      "name": "parent-test",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "parent/Cargo.toml"
+      ]
+    },
+    {
+      "name": "production-combo-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--features",
+        "vsock,rgb,rgb-swap,ccd,evm-rpc"
+      ]
+    },
+    {
+      "name": "production-combo-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--features",
+        "vsock,rgb,rgb-swap,ccd,evm-rpc",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    {
+      "name": "spv-swap-test",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--features",
+        "spv,rgb-swap"
+      ]
+    },
+    {
+      "name": "rgb-swap-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--no-default-features",
+        "--features",
+        "vsock,rgb,rgb-swap,evm-rpc"
+      ]
+    },
+    {
+      "name": "rgb-swap-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--no-default-features",
+        "--features",
+        "vsock,rgb,rgb-swap,evm-rpc",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    {
+      "name": "rgb-swap-test",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--no-default-features",
+        "--features",
+        "rgb,rgb-swap,evm-rpc,mock-attestation,allow-seed-import"
+      ]
+    },
+    {
+      "name": "rgb-mint-burn-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--no-default-features",
+        "--features",
+        "vsock,rgb,rgb-mint-burn,evm-rpc"
+      ]
+    },
+    {
+      "name": "rgb-mint-burn-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--no-default-features",
+        "--features",
+        "vsock,rgb,rgb-mint-burn,evm-rpc",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    {
+      "name": "bfa-mint-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--no-default-features",
+        "--features",
+        "vsock,rgb,evm-rpc,bfa-mint"
+      ]
+    },
+    {
+      "name": "bfa-mint-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--no-default-features",
+        "--features",
+        "vsock,rgb,evm-rpc,bfa-mint",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    {
+      "name": "bfa-mint-test",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--no-default-features",
+        "--features",
+        "rgb,bfa-mint,mock-attestation,allow-seed-import"
+      ]
+    },
+    {
+      "name": "ccd-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--no-default-features",
+        "--features",
+        "vsock,ccd"
+      ]
+    },
+    {
+      "name": "ccd-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--no-default-features",
+        "--features",
+        "vsock,ccd,mock-attestation,allow-seed-import",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    {
+      "name": "ccd-test",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--no-default-features",
+        "--features",
+        "ccd,mock-attestation,allow-seed-import"
+      ]
+    },
+    {
+      "name": "minimal-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--no-default-features"
+      ]
+    },
+    {
+      "name": "minimal-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--no-default-features",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    {
+      "name": "minimal-test",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--no-default-features"
+      ]
+    },
+    {
+      "name": "evm-rpc-test",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--features",
+        "evm-rpc"
+      ]
+    },
+    {
+      "name": "default-mock-test",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--features",
+        "mock-attestation,allow-seed-import"
+      ]
+    }
+  ],
+  "results": []
+}

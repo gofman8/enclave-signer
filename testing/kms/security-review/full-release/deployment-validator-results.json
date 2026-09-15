@@ -1,0 +1,13 @@
+{
+  "removed_allow_create_env_absent": true,
+  "actual_eif_structural_verification": {
+    "sha256": "ddccba5d36a45413a4b1f0c8577f4be8b2cce66272e4a8f75044658220eb0184",
+    "pcr0": "bccc73d93a81eefb4d62dcc5f604a7721bfd573073124f6308b698d8a9485e49071832383b34ac9f8d2aef32116a4faf",
+    "mode": "bootstrap"
+  },
+  "check_crc": true,
+  "fixture_approval_rejected": "fixture or invalid AWS account",
+  "measured_configuration_mismatch_rejected": "EIF public custody configuration differs from approval",
+  "production_ready": false,
+  "note": "No approved deployment or live AWS/Nitro evidence exists for this local fixture. This exercises the image verification layer and proves the fixture cannot pass the approval gate."
+}

@@ -1,0 +1,20 @@
+mutex: PASS (status=0)
+condition-variable: PASS (status=0)
+request-stream: FAIL (status=139)
+request-message: FAIL (status=139)
+response-allocation: PASS (status=0)
+response-message: FAIL (status=139)
+signable: FAIL (status=14)
+sign-start: PASS (status=0)
+check failed: /repo/enclave/kms-tool/tests/sdk_cleanup.c:86: stream == NULL || stream == STREAM
+sign-sync: FAIL (status=134)
+check failed: /repo/enclave/kms-tool/tests/sdk_cleanup.c:86: stream == NULL || stream == STREAM
+apply-sync: FAIL (status=134)
+failed to create request.make-stream: FAIL (status=14)
+failed to create request.activate-stream: FAIL (status=14)
+check failed: /repo/enclave/kms-tool/tests/sdk_cleanup.c:86: stream == NULL || stream == STREAM
+sign-async: FAIL (status=134)
+failed  to process requeststream-async-error: PASS (status=0)
+stream-async-success: PASS (status=0)
+spurious-wake: FAIL (status=14)
+unpatched_exit_status=1

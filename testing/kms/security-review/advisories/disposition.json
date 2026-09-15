@@ -1,0 +1,200 @@
+{
+  "queried_at": "2026-09-14T22:35:58.661220+00:00",
+  "head": "00b2ae318811c68b04620d1d7ebbe986c3242dc5",
+  "source_hashes_match_query": true,
+  "source_sha256": {
+    "Cargo.lock": "1d88084e16fe0407c17d0e6765a422a07f1a8b14fe0e2ee4a2ea1345a3560696",
+    "parent/Cargo.lock": "f8ee32187adcbad78675e418101e8240767050bc149ca2c50c07f0fad2f16330",
+    "build/swap-kms-nsm.Cargo.lock": "02dce31c049455647f78a2315ade3d015564fce6d3ea6f03750b7c24ae4c8fc6",
+    "deploy/requirements-swap-kms.txt": "8251020dde07b66c42abb007ca3eebcf92bd40da2d3abfd9d0d9dd4da752533c",
+    "build/swap-kms-dependencies.tsv": "5a826eca4bd1e7cfe6d10c87d9dedeac7e6bdc7a2f7a96bd28f18ee53d1d5acb"
+  },
+  "public_versions_queried": 873,
+  "all_advisory_records_including_baseline": 21,
+  "current_matched_packages": [
+    {
+      "name": "derivative",
+      "version": "2.2.0",
+      "advisories": [
+        "RUSTSEC-2024-0388"
+      ],
+      "scopes": [
+        "head:Cargo.lock",
+        "dev:Cargo.lock",
+        "head:parent/Cargo.lock",
+        "dev:parent/Cargo.lock"
+      ],
+      "normal_graphs": []
+    },
+    {
+      "name": "h2",
+      "version": "0.3.27",
+      "advisories": [
+        "RUSTSEC-2026-0258"
+      ],
+      "scopes": [
+        "head:Cargo.lock",
+        "dev:Cargo.lock",
+        "dev:parent/Cargo.lock"
+      ],
+      "normal_graphs": [
+        "optional-helios"
+      ]
+    },
+    {
+      "name": "hickory-proto",
+      "version": "0.25.2",
+      "advisories": [
+        "GHSA-3v94-mw7p-v465",
+        "GHSA-q2qq-hmj6-3wpp",
+        "RUSTSEC-2026-0118",
+        "RUSTSEC-2026-0119"
+      ],
+      "scopes": [
+        "head:Cargo.lock",
+        "dev:Cargo.lock",
+        "dev:parent/Cargo.lock"
+      ],
+      "normal_graphs": [
+        "optional-helios"
+      ]
+    },
+    {
+      "name": "instant",
+      "version": "0.1.13",
+      "advisories": [
+        "RUSTSEC-2024-0384"
+      ],
+      "scopes": [
+        "head:Cargo.lock",
+        "dev:Cargo.lock",
+        "dev:parent/Cargo.lock"
+      ],
+      "normal_graphs": []
+    },
+    {
+      "name": "libsecp256k1",
+      "version": "0.7.2",
+      "advisories": [
+        "RUSTSEC-2025-0161"
+      ],
+      "scopes": [
+        "head:Cargo.lock",
+        "dev:Cargo.lock",
+        "dev:parent/Cargo.lock"
+      ],
+      "normal_graphs": []
+    },
+    {
+      "name": "lru",
+      "version": "0.16.4",
+      "advisories": [
+        "RUSTSEC-2026-0253"
+      ],
+      "scopes": [
+        "head:Cargo.lock",
+        "dev:Cargo.lock",
+        "dev:parent/Cargo.lock"
+      ],
+      "normal_graphs": [
+        "swap",
+        "optional-helios"
+      ]
+    },
+    {
+      "name": "paste",
+      "version": "1.0.15",
+      "advisories": [
+        "RUSTSEC-2024-0436"
+      ],
+      "scopes": [
+        "head:Cargo.lock",
+        "dev:Cargo.lock",
+        "head:parent/Cargo.lock",
+        "dev:parent/Cargo.lock"
+      ],
+      "normal_graphs": [
+        "swap",
+        "optional-helios"
+      ]
+    },
+    {
+      "name": "rustls-pemfile",
+      "version": "1.0.4",
+      "advisories": [
+        "RUSTSEC-2025-0134"
+      ],
+      "scopes": [
+        "head:Cargo.lock",
+        "dev:Cargo.lock",
+        "dev:parent/Cargo.lock"
+      ],
+      "normal_graphs": [
+        "optional-helios"
+      ]
+    },
+    {
+      "name": "rustls-webpki",
+      "version": "0.101.7",
+      "advisories": [
+        "GHSA-82j2-j2ch-gfr8",
+        "GHSA-965h-392x-2mh5",
+        "GHSA-xgp8-3hg3-c2mh",
+        "RUSTSEC-2026-0098",
+        "RUSTSEC-2026-0099",
+        "RUSTSEC-2026-0104"
+      ],
+      "scopes": [
+        "head:Cargo.lock",
+        "dev:Cargo.lock",
+        "head:parent/Cargo.lock",
+        "dev:parent/Cargo.lock"
+      ],
+      "normal_graphs": [
+        "swap",
+        "optional-helios"
+      ]
+    },
+    {
+      "name": "serde_cbor",
+      "version": "0.11.2",
+      "advisories": [
+        "RUSTSEC-2021-0127"
+      ],
+      "scopes": [
+        "head:Cargo.lock",
+        "dev:Cargo.lock",
+        "head:parent/Cargo.lock",
+        "dev:parent/Cargo.lock",
+        "head:nsm"
+      ],
+      "normal_graphs": [
+        "swap",
+        "optional-helios"
+      ]
+    },
+    {
+      "name": "tracing-subscriber",
+      "version": "0.2.25",
+      "advisories": [
+        "GHSA-xwfj-jgwm-7wp5",
+        "RUSTSEC-2025-0055"
+      ],
+      "scopes": [
+        "head:Cargo.lock",
+        "dev:Cargo.lock",
+        "dev:parent/Cargo.lock"
+      ],
+      "normal_graphs": []
+    }
+  ],
+  "broker_matches": [],
+  "native_advisory_repository_count": 12,
+  "original_query_snapshot_scope": "head and source_sha256 describe the saved public query; see final_source_verification for the final committed lifecycle patch",
+  "final_source_verification": {
+    "file": "final-source-verification.json",
+    "head": "dfb3cce0611a115c4058c706c5dce09cf2449971",
+    "public_package_inputs_unchanged": true,
+    "native_upstream_coordinates_unchanged": true
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "production_native_image": "codex-swap-kms-sdk-builder:security-review-sdk-cleanup",
+  "helper_sha256": "499386a51939a2e4eaaa493bc4c223d108f4f07d848173924fc465eb5eec35dc",
+  "nsm_sha256": "5a8dc2e485d05cd3be15e2b4fa6d091c20aa949f9d6aec1a9c8685efb8a82c5b",
+  "source_sha256": {
+    "build/build-swap-kms-tool.sh": "78b8f2ea9acbeeda41ba968fd55073b68571262f72c262c16f9b5d3f873c6bfd",
+    "build/swap-kms-dependencies.tsv": "fef97021bfdc579d0b252b397a66a3a7fc78004948091e1a59ea8781d647d796",
+    "build/swap-kms-nsm.Cargo.lock": "02dce31c049455647f78a2315ade3d015564fce6d3ea6f03750b7c24ae4c8fc6",
+    "build/Dockerfile.enclave": "6510e8d10b6ae592e5b06d75ff3c67d54cc15537607799d751a10f128f118f8c",
+    "build/Dockerfile.enclave.rgb": "3f0e4a86eb42e58b13282105de0636d5cda20077f5854add7c610f9769da7939",
+    "enclave/kms-tool/CMakeLists.txt": "9831d9e716a210ebbae7b4f2e82a4fd8bb119031c2a2010b9defea79e6c873e3",
+    "enclave/kms-tool/main.c": "d89d0c8f0e967acdc5f2dc5350b7b68b930a611cb21247ce12e08af5df54d3e5",
+    "enclave/kms-tool/tests/input_cleanup.c": "92082776f21bf9b4013da0cc51602b52ddbac178a8ca6320bf8fb3016eff5cab",
+    "enclave/kms-tool/README.md": "e0ba4a019588bb396f03c0f371dfea05e21932659f3708907063abc2d74e1548",
+    "build/patches/nitro-sdk-cleanup.patch": "1f9319934ac86c11cf2b1daf5f084c16e348f323b0c208d524e518247841002a",
+    "enclave/kms-tool/tests/sdk_cleanup.c": "cb08bcf4b4f317cc3b50e2f207a5a501d433173dc124878957431e713a3422e4"
+  },
+  "upstream_local_tests": {
+    "passed": 45,
+    "failed": 0,
+    "excluded": "test_rest_call_blocking (requires external AWS/network setup)",
+    "log": "upstream-tests-sdk-cleanup.log"
+  },
+  "native_credential_cleanup_test": {
+    "passed": 1,
+    "failed": 0
+  },
+  "cms_header_checksum_verified": true,
+  "al2023_loader_verified": true,
+  "limitations": [
+    "No live AWS policy/service enforcement, NSM device, actual vsock, or enclave attestation verified by these native tests.",
+    "Full final production runtime and EIF validation is recorded separately in ../full-release."
+  ],
+  "upstream_json_c_release_tests": {
+    "passed": 29,
+    "failed": 0
+  },
+  "parent_sanitizer_stress": {
+    "cases": 14684,
+    "errors": 0,
+    "leaks": 0,
+    "log": "input-sanitizers-final.log"
+  },
+  "production_commit": "7379c4ffbb497b2ba14971f102f4383f292fa1a3",
+  "json_c_pin": "2094974201fc75b07673110cc40a3e144cbd3b0d",
+  "official_dependencies_unmodified_except_sdk_lifecycle_patch": true,
+  "sdk_source": {
+    "upstream_commit": "cd61b6187c8b20867ba4368d1ae62c5790c0269a",
+    "patch_sha256": "1f9319934ac86c11cf2b1daf5f084c16e348f323b0c208d524e518247841002a",
+    "effective_rest_c_sha256": "d50f092afa72e975c44b01c0a461a8c4f7f0f5f45de987bab8b0c9a12f18d6c9"
+  },
+  "sdk_fault_path_regression": {
+    "passed": 16,
+    "failed": 0,
+    "log": "sdk-cleanup-final-harness.log",
+    "unpatched_negative_control_failures": 10,
+    "unpatched_log": "sdk-cleanup-negative-test.log",
+    "compiler_control_log": "sdk-cleanup-compiler-control.log"
+  },
+  "sdk_patch_integrity": {
+    "exact_patch_reused": true,
+    "different_old_patch_rejected": true,
+    "unrelated_tracked_edit_rejected": true,
+    "unrelated_edit_preserved": true,
+    "log": "sdk-patch-integrity.log"
+  }
+}

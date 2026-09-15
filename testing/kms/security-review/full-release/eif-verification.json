@@ -1,0 +1,31 @@
+{
+  "crc_valid": [
+    true,
+    true
+  ],
+  "pcrs": {
+    "PCR0": "bccc73d93a81eefb4d62dcc5f604a7721bfd573073124f6308b698d8a9485e49071832383b34ac9f8d2aef32116a4faf",
+    "PCR1": "745004eab9a0fb4a67973b261c6e7fa5418dc870292927591574385649338e54686cdeb659f3c6c2e72ba11aba2158a8",
+    "PCR2": "4c3eeebe1dc50477a4141dcf405c2125a143366f59f2e9881da9b722837a1da6a93ab6ec5eb466c4d902a792d19b2547"
+  },
+  "repeat_pcr_matches": {
+    "PCR0": true,
+    "PCR1": true,
+    "PCR2": true
+  },
+  "eif_sha256": "ddccba5d36a45413a4b1f0c8577f4be8b2cce66272e4a8f75044658220eb0184",
+  "repeat_eif_sha256": "6c53d64dc1f158291a5bc7ede94bee99c03bc4dbdd4ffd681432af64bbd9ca9f",
+  "nitro_cli_sha256": "1ec399df68da6df0b54c943d0c04add712778c1db014dc3e797befc11c22226c",
+  "blobs_sha256": {
+    "init": "c478b57a645ec594df9c355824f571bb684ca559d35ab380bb0cda81a0dc590d",
+    "cmdline": "e3a26db3f0375d58ed9756cb986a717a6286f38c6e54e82b457527467fc5ae4c",
+    "Image": "03808bbf031a6f27178b35657e6b4b8cdf11820c349396407995ceeec82ec9b9",
+    "Image.config": "424e97785438d01e1436e738df0192142d81657a7b11d008f2cb9e5637b6354b",
+    "nsm.ko": "fa5475cbe0506ff3b7353b8ffa056da95eacd36626562f27326d73f384e8e49a",
+    "linuxkit": "426cb1685ccd35e89b49abd3eb6357494436663606254c37315a8399105ddf16"
+  },
+  "scope": "Two actual nitro-cli build-enclave calls on the same host using the same normalized runtime image and same Nitro blobs. This does not establish cross-host rebuild reproducibility. EIF metadata records different build timestamps; whole-file equality is reported separately.",
+  "removed_allow_create_env_absent_both": true,
+  "whole_eif_equal": false,
+  "pass": true
+}

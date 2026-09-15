@@ -1,0 +1,1079 @@
+CMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+CMake Warning at CMakeLists.txt:24 (message):
+  ENABLE_PRE_SONAME_BUILD option will be deprecated in a future release.
+  Please see ENABLE_DIST_PKG and ENABLE_DIST_PKG_OPENSSL_SHIM
+
+
+-- Versioning name:awslc version:5.8.0 abi:1
+-- Libraries crypto:crypto ssl:ssl
+-- Go compiler 1.27.1 found
+-- SET_LIB_SONAME: 0
+-- COHABITANT_HEADERS: 0
+-- COHABITANT_BINARIES: 0
+-- INSTALL_OPENSSL_SHIM: 1
+-- ENABLE_SYMBOL_VERSIONING: OFF
+-- Entropy source configured: Dynamic (default: CPU Jitter)
+-- Run check_run file_to_test 'memcmp_invalid_stripped_check.c', flag_to_set 'MEMCMP_INVALID_STRIPPED', and compile_flags '-O3 -DNDEBUG'.
+-- Setting CMAKE_C_STANDARD=11
+-- Compiler supports '-Wno-cast-function-type', adding to CMAKE_C_FLAGS
+-- Compiler supports '-Wno-free-nonheap-object', adding to C_CXX_FLAGS
+-- Compiler supports '-Wmissing-braces', adding to C_CXX_FLAGS
+-- Compiler supports '-Wimplicit-fallthrough', adding to C_CXX_FLAGS
+-- linux_random_h.c probe is positive, enabling HAVE_LINUX_RANDOM_H
+-- stdalign_check.c probe is positive, enabling AWS_LC_STDALIGN_AVAILABLE
+-- builtin_swap_check.c probe is positive, enabling AWS_LC_BUILTIN_SWAP_SUPPORTED
+-- Compiler supports '-Wshadow', adding to C_CXX_FLAGS
+-- neon_sha3_check.c probe is positive, enabling MY_ASSEMBLER_SUPPORTS_NEON_SHA3_EXTENSION
+-- Up-to-date: /opt/swap-kms-build/build/aws-lc/tool-openssl/c_rehash
+-- Configuring done (0.2s)
+-- Generating done (0.0s)
+-- Build files have been written to: /opt/swap-kms-build/build/aws-lc
+[0/2] Re-checking globbed directories...
+[0/1] Install the project...
+-- Install configuration: "Release"
+-- Up-to-date: /opt/swap-kms/include/openssl
+-- Up-to-date: /opt/swap-kms/include/openssl/conf.h
+-- Up-to-date: /opt/swap-kms/include/openssl/obj_mac.h
+-- Up-to-date: /opt/swap-kms/include/openssl/bio.h
+-- Up-to-date: /opt/swap-kms/include/openssl/ecdh.h
+-- Up-to-date: /opt/swap-kms/include/openssl/dsa.h
+-- Up-to-date: /opt/swap-kms/include/openssl/ssl.h
+-- Up-to-date: /opt/swap-kms/include/openssl/is_awslc.h
+-- Up-to-date: /opt/swap-kms/include/openssl/dh.h
+-- Up-to-date: /opt/swap-kms/include/openssl/span.h
+-- Up-to-date: /opt/swap-kms/include/openssl/buffer.h
+-- Up-to-date: /opt/swap-kms/include/openssl/ecdsa.h
+-- Up-to-date: /opt/swap-kms/include/openssl/sha.h
+-- Up-to-date: /opt/swap-kms/include/openssl/rc4.h
+-- Up-to-date: /opt/swap-kms/include/openssl/md5.h
+-- Up-to-date: /opt/swap-kms/include/openssl/engine.h
+-- Up-to-date: /opt/swap-kms/include/openssl/obj.h
+-- Up-to-date: /opt/swap-kms/include/openssl/err.h
+-- Up-to-date: /opt/swap-kms/include/openssl/blake2.h
+-- Up-to-date: /opt/swap-kms/include/openssl/curve25519.h
+-- Up-to-date: /opt/swap-kms/include/openssl/pool.h
+-- Up-to-date: /opt/swap-kms/include/openssl/chacha.h
+-- Up-to-date: /opt/swap-kms/include/openssl/bytestring.h
+-- Up-to-date: /opt/swap-kms/include/openssl/posix_time.h
+-- Up-to-date: /opt/swap-kms/include/openssl/siphash.h
+-- Up-to-date: /opt/swap-kms/include/openssl/dtls1.h
+-- Up-to-date: /opt/swap-kms/include/openssl/lhash.h
+-- Up-to-date: /opt/swap-kms/include/openssl/e_os2.h
+-- Up-to-date: /opt/swap-kms/include/openssl/hpke.h
+-- Up-to-date: /opt/swap-kms/include/openssl/base.h
+-- Up-to-date: /opt/swap-kms/include/openssl/mem.h
+-- Up-to-date: /opt/swap-kms/include/openssl/time.h
+-- Up-to-date: /opt/swap-kms/include/openssl/pkcs8.h
+-- Up-to-date: /opt/swap-kms/include/openssl/ossl_typ.h
+-- Up-to-date: /opt/swap-kms/include/openssl/sshkdf.h
+-- Up-to-date: /opt/swap-kms/include/openssl/x509.h
+-- Up-to-date: /opt/swap-kms/include/openssl/pkcs12.h
+-- Up-to-date: /opt/swap-kms/include/openssl/ripemd.h
+-- Up-to-date: /opt/swap-kms/include/openssl/modes.h
+-- Up-to-date: /opt/swap-kms/include/openssl/crypto.h
+-- Up-to-date: /opt/swap-kms/include/openssl/cipher.h
+-- Up-to-date: /opt/swap-kms/include/openssl/tls1.h
+-- Up-to-date: /opt/swap-kms/include/openssl/aead.h
+-- Up-to-date: /opt/swap-kms/include/openssl/cmac.h
+-- Up-to-date: /opt/swap-kms/include/openssl/nid.h
+-- Up-to-date: /opt/swap-kms/include/openssl/hmac.h
+-- Up-to-date: /opt/swap-kms/include/openssl/rsa.h
+-- Up-to-date: /opt/swap-kms/include/openssl/x509_vfy.h
+-- Up-to-date: /opt/swap-kms/include/openssl/ssl3.h
+-- Up-to-date: /opt/swap-kms/include/openssl/aes.h
+-- Up-to-date: /opt/swap-kms/include/openssl/asn1.h
+-- Up-to-date: /opt/swap-kms/include/openssl/evp.h
+-- Up-to-date: /opt/swap-kms/include/openssl/trust_token.h
+-- Up-to-date: /opt/swap-kms/include/openssl/ec.h
+-- Up-to-date: /opt/swap-kms/include/openssl/pem.h
+-- Up-to-date: /opt/swap-kms/include/openssl/cpu.h
+-- Up-to-date: /opt/swap-kms/include/openssl/asm_base.h
+-- Up-to-date: /opt/swap-kms/include/openssl/ec_key.h
+-- Up-to-date: /opt/swap-kms/include/openssl/stack.h
+-- Up-to-date: /opt/swap-kms/include/openssl/md4.h
+-- Up-to-date: /opt/swap-kms/include/openssl/safestack.h
+-- Up-to-date: /opt/swap-kms/include/openssl/thread.h
+-- Up-to-date: /opt/swap-kms/include/openssl/opensslv.h
+-- Up-to-date: /opt/swap-kms/include/openssl/type_check.h
+-- Up-to-date: /opt/swap-kms/include/openssl/arm_arch.h
+-- Up-to-date: /opt/swap-kms/include/openssl/ocsp.h
+-- Up-to-date: /opt/swap-kms/include/openssl/poly1305.h
+-- Up-to-date: /opt/swap-kms/include/openssl/hrss.h
+-- Up-to-date: /opt/swap-kms/include/openssl/experimental
+-- Up-to-date: /opt/swap-kms/include/openssl/experimental/kem_deterministic_api.h
+-- Up-to-date: /opt/swap-kms/include/openssl/rand.h
+-- Up-to-date: /opt/swap-kms/include/openssl/objects.h
+-- Up-to-date: /opt/swap-kms/include/openssl/evp_errors.h
+-- Up-to-date: /opt/swap-kms/include/openssl/service_indicator.h
+-- Up-to-date: /opt/swap-kms/include/openssl/asn1_mac.h
+-- Up-to-date: /opt/swap-kms/include/openssl/target.h
+-- Up-to-date: /opt/swap-kms/include/openssl/des.h
+-- Up-to-date: /opt/swap-kms/include/openssl/buf.h
+-- Up-to-date: /opt/swap-kms/include/openssl/base64.h
+-- Up-to-date: /opt/swap-kms/include/openssl/hkdf.h
+-- Up-to-date: /opt/swap-kms/include/openssl/blowfish.h
+-- Up-to-date: /opt/swap-kms/include/openssl/asn1t.h
+-- Up-to-date: /opt/swap-kms/include/openssl/ctrdrbg.h
+-- Up-to-date: /opt/swap-kms/include/openssl/digest.h
+-- Up-to-date: /opt/swap-kms/include/openssl/pkcs7.h
+-- Up-to-date: /opt/swap-kms/include/openssl/ex_data.h
+-- Up-to-date: /opt/swap-kms/include/openssl/bn.h
+-- Up-to-date: /opt/swap-kms/include/openssl/kdf.h
+-- Up-to-date: /opt/swap-kms/include/openssl/x509v3_errors.h
+-- Up-to-date: /opt/swap-kms/include/openssl/x509v3.h
+-- Up-to-date: /opt/swap-kms/include/openssl/ui.h
+-- Up-to-date: /opt/swap-kms/include/openssl/opensslconf.h
+-- Up-to-date: /opt/swap-kms/include/openssl
+-- Up-to-date: /opt/swap-kms/include/openssl/boringssl_prefix_symbols_nasm.inc
+-- Up-to-date: /opt/swap-kms/include/openssl/boringssl_prefix_symbols_asm.h
+-- Up-to-date: /opt/swap-kms/include/openssl/boringssl_prefix_symbols.h
+-- Up-to-date: /opt/swap-kms/include/openssl/experimental
+-- Up-to-date: /opt/swap-kms/lib/pkgconfig/aws-lc.pc
+-- Up-to-date: /opt/swap-kms/lib/pkgconfig/libcrypto.pc
+-- Up-to-date: /opt/swap-kms/lib/pkgconfig/libssl.pc
+-- Up-to-date: /opt/swap-kms/lib/pkgconfig/openssl.pc
+-- Up-to-date: /opt/swap-kms/lib/libcrypto.a
+-- Up-to-date: /opt/swap-kms/lib/crypto/cmake/crypto-config.cmake
+-- Up-to-date: /opt/swap-kms/lib/crypto/cmake/static/crypto-targets.cmake
+-- Up-to-date: /opt/swap-kms/lib/crypto/cmake/static/crypto-targets-release.cmake
+-- Up-to-date: /opt/swap-kms/lib/libssl.a
+-- Up-to-date: /opt/swap-kms/lib/ssl/cmake/ssl-config.cmake
+-- Up-to-date: /opt/swap-kms/lib/ssl/cmake/static/ssl-targets.cmake
+-- Up-to-date: /opt/swap-kms/lib/ssl/cmake/static/ssl-targets-release.cmake
+-- Up-to-date: /opt/swap-kms/bin/bssl
+-- Up-to-date: /opt/swap-kms/bin/openssl
+-- Up-to-date: /opt/swap-kms/bin/c_rehash
+-- Detected CMAKE_SYSTEM_PROCESSOR as aarch64
+-- Detected 64-Bit system
+-- FOUND AWS-LC CRYPTO cmake config - static
+-- Using libcrypto from the cmake path
+-- CMAKE_AR found: /usr/bin/ar
+-- CMAKE_RANLIB found: /usr/bin/ranlib
+-- CMAKE_OBJCOPY found: /usr/bin/objcopy
+-- feature S2N_ATOMIC_SUPPORTED: TRUE
+-- feature S2N_CLOEXEC_SUPPORTED: TRUE
+-- feature S2N_CLOEXEC_XOPEN_SUPPORTED: TRUE
+-- feature S2N_CLONE_SUPPORTED: TRUE
+-- feature S2N_COMPILER_SUPPORTS_BRANCH_ALIGN: FALSE
+-- feature S2N_CPUID_AVAILABLE: FALSE
+-- feature S2N_DIAGNOSTICS_POP_SUPPORTED: TRUE
+-- feature S2N_DIAGNOSTICS_PUSH_SUPPORTED: TRUE
+-- feature S2N_EXECINFO_AVAILABLE: TRUE
+-- feature S2N_FALL_THROUGH_SUPPORTED: TRUE
+-- feature S2N_FEATURES_AVAILABLE: TRUE
+-- feature S2N_KTLS_SUPPORTED: TRUE
+-- feature S2N_LIBCRYPTO_SANITY_PROBE: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_CUSTOM_OID: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_EC_KEY_CHECK_FIPS: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_ENGINE: FALSE
+-- feature S2N_LIBCRYPTO_SUPPORTS_EVP_AEAD_TLS: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_EVP_KEM: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_EVP_MD5_SHA1_HASH: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_EVP_MD_CTX_SET_PKEY_CTX: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_EVP_RC4: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_FLAG_NO_CHECK_TIME: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_GET0_CHAIN: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_HKDF: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_MLDSA: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_MLKEM: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_PRIVATE_RAND: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_PROVIDERS: FALSE
+-- feature S2N_LIBCRYPTO_SUPPORTS_PUBLIC_RAND: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_RSA_PSS_SIGNING: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_SHAKE: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_X509_STORE_LIST: TRUE
+-- feature S2N_LINUX_SENDFILE: TRUE
+-- feature S2N_STACKTRACE: TRUE
+-- Configuring done (1.4s)
+-- Generating done (0.0s)
+-- Build files have been written to: /opt/swap-kms-build/build/s2n-tls
+[0/1] Install the project...
+-- Install configuration: "Release"
+-- Up-to-date: /opt/swap-kms/include/s2n.h
+-- Up-to-date: /opt/swap-kms/include/s2n/unstable/allow_ip_in_cn.h
+-- Up-to-date: /opt/swap-kms/include/s2n/unstable/async_offload.h
+-- Up-to-date: /opt/swap-kms/include/s2n/unstable/cert_authorities.h
+-- Up-to-date: /opt/swap-kms/include/s2n/unstable/cleanup.h
+-- Up-to-date: /opt/swap-kms/include/s2n/unstable/crl.h
+-- Up-to-date: /opt/swap-kms/include/s2n/unstable/custom_x509_extensions.h
+-- Up-to-date: /opt/swap-kms/include/s2n/unstable/events.h
+-- Up-to-date: /opt/swap-kms/include/s2n/unstable/fingerprint.h
+-- Up-to-date: /opt/swap-kms/include/s2n/unstable/ktls.h
+-- Up-to-date: /opt/swap-kms/include/s2n/unstable/npn.h
+-- Up-to-date: /opt/swap-kms/include/s2n/unstable/renegotiate.h
+-- Up-to-date: /opt/swap-kms/lib/libs2n.a
+-- Up-to-date: /opt/swap-kms/lib/s2n/cmake/static/s2n-targets.cmake
+-- Up-to-date: /opt/swap-kms/lib/s2n/cmake/static/s2n-targets-release.cmake
+-- Up-to-date: /opt/swap-kms/lib/s2n/cmake/s2n-config.cmake
+-- Up-to-date: /opt/swap-kms/lib/s2n/cmake/modules/Findcrypto.cmake
+-- CMake 3.31.6
+-- Packaging currently only supported on Fedora.
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /opt/swap-kms-build/build/aws-c-common
+[0/1] Install the project...
+-- Install configuration: "Release"
+-- Up-to-date: /opt/swap-kms/include/aws/common/allocator.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/array_list.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/array_list.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/assert.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/atomics.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/atomics.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/atomics_fallback.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/atomics_gnu.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/atomics_gnu_old.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/atomics_msvc.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/byte_buf.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/byte_order.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/byte_order.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/cache.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/cbor.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/clock.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/clock.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/command_line_parser.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/common.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/condition_variable.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/cpuid.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/cross_process_lock.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/date_time.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/device_random.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/encoding.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/encoding.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/environment.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/error.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/error.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/exports.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/fifo_cache.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/file.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/hash_table.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/host_utils.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/json.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/lifo_cache.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/linked_hash_table.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/linked_list.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/linked_list.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/log_channel.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/log_formatter.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/log_writer.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/logging.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/lru_cache.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/macros.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/math.cbmc.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/math.fallback.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/math.gcc_arm64_asm.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/math.gcc_builtin.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/math.gcc_overflow.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/math.gcc_x64_asm.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/math.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/math.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/math.msvc_x64.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/mutex.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/package.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/platform.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/predicates.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/priority_queue.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/process.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/ref_count.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/ring_buffer.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/ring_buffer.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/rw_lock.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/shutdown_types.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/statistics.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/stdbool.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/stdint.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/string.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/string.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/system_info.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/system_resource_util.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/task_scheduler.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/thread.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/thread_scheduler.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/time.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/uri.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/uuid.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/xml_parser.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/zero.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/zero.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/posix/common.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/config.h
+-- Up-to-date: /opt/swap-kms/include/aws/testing/aws_test_harness.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/external/ittnotify.h
+-- Up-to-date: /opt/swap-kms/lib/libaws-c-common.a
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/static/aws-c-common-targets.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/static/aws-c-common-targets-release.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/aws-c-common-config.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/modules/AwsCFlags.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/modules/AwsCheckHeaders.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/modules/AwsSharedLibSetup.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/modules/AwsTestHarness.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/modules/AwsLibFuzzer.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/modules/AwsSanitizers.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/modules/AwsSIMD.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/modules/AwsFindPackage.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/modules/AwsFeatureTests.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/modules/AwsCRuntime.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/modules/AwsGetVersion.cmake
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /opt/swap-kms-build/build/aws-c-sdkutils
+[0/1] Install the project...
+-- Install configuration: "Release"
+-- Up-to-date: /opt/swap-kms/lib/libaws-c-sdkutils.a
+-- Up-to-date: /opt/swap-kms/include/aws/sdkutils/aws_profile.h
+-- Up-to-date: /opt/swap-kms/include/aws/sdkutils/endpoints_bdd_engine.h
+-- Up-to-date: /opt/swap-kms/include/aws/sdkutils/endpoints_rule_engine.h
+-- Up-to-date: /opt/swap-kms/include/aws/sdkutils/exports.h
+-- Up-to-date: /opt/swap-kms/include/aws/sdkutils/partitions.h
+-- Up-to-date: /opt/swap-kms/include/aws/sdkutils/resource_name.h
+-- Up-to-date: /opt/swap-kms/include/aws/sdkutils/sdkutils.h
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-sdkutils/static/aws-c-sdkutils-targets.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-sdkutils/static/aws-c-sdkutils-targets-release.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-sdkutils/aws-c-sdkutils-config.cmake
+-- FOUND AWS-LC CRYPTO cmake config - static
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /opt/swap-kms-build/build/aws-c-cal
+[0/1] Install the project...
+-- Install configuration: "Release"
+-- Up-to-date: /opt/swap-kms/lib/libaws-c-cal.a
+-- Up-to-date: /opt/swap-kms/include/aws/cal/cal.h
+-- Up-to-date: /opt/swap-kms/include/aws/cal/ecc.h
+-- Up-to-date: /opt/swap-kms/include/aws/cal/ed25519.h
+-- Up-to-date: /opt/swap-kms/include/aws/cal/exports.h
+-- Up-to-date: /opt/swap-kms/include/aws/cal/hash.h
+-- Up-to-date: /opt/swap-kms/include/aws/cal/hkdf.h
+-- Up-to-date: /opt/swap-kms/include/aws/cal/hmac.h
+-- Up-to-date: /opt/swap-kms/include/aws/cal/rsa.h
+-- Up-to-date: /opt/swap-kms/include/aws/cal/symmetric_cipher.h
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-cal/static/aws-c-cal-targets.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-cal/static/aws-c-cal-targets-release.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-cal/aws-c-cal-config.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-cal/modules/Findcrypto.cmake
+-- LibCrypto Include Dir: /opt/swap-kms/include
+-- LibCrypto Shared Lib:  /usr/lib/aarch64-linux-gnu/libcrypto.so
+-- LibCrypto Static Lib:  /opt/swap-kms/lib/libcrypto.a
+-- S2N found target: AWS::crypto
+-- crypto Include Dir: /opt/swap-kms/include
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /opt/swap-kms-build/build/aws-c-io
+[0/1] Install the project...
+-- Install configuration: "Release"
+-- Up-to-date: /opt/swap-kms/lib/libaws-c-io.a
+-- Up-to-date: /opt/swap-kms/include/aws/io/async_stream.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/channel.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/channel_bootstrap.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/event_loop.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/exports.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/file_utils.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/future.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/host_resolver.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/io.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/logging.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/message_pool.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/pem.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/pipe.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/pkcs11.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/retry_strategy.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/shared_library.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/socket.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/socket_channel_handler.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/statistics.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/stream.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/tls_channel_handler.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/uri.h
+-- Up-to-date: /opt/swap-kms/include/aws/testing/async_stream_tester.h
+-- Up-to-date: /opt/swap-kms/include/aws/testing/io_testing_channel.h
+-- Up-to-date: /opt/swap-kms/include/aws/testing/stream_tester.h
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-io/static/aws-c-io-targets.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-io/static/aws-c-io-targets-release.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-io/aws-c-io-config.cmake
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /opt/swap-kms-build/build/aws-c-compression
+[0/1] Install the project...
+-- Install configuration: "Release"
+-- Up-to-date: /opt/swap-kms/lib/libaws-c-compression.a
+-- Up-to-date: /opt/swap-kms/include/aws/compression/compression.h
+-- Up-to-date: /opt/swap-kms/include/aws/compression/exports.h
+-- Up-to-date: /opt/swap-kms/include/aws/compression/huffman.h
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-compression/static/aws-c-compression-targets.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-compression/static/aws-c-compression-targets-release.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-compression/aws-c-compression-config.cmake
+-- LibCrypto Include Dir: /opt/swap-kms/include
+-- LibCrypto Shared Lib:  /usr/lib/aarch64-linux-gnu/libcrypto.so
+-- LibCrypto Static Lib:  /opt/swap-kms/lib/libcrypto.a
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /opt/swap-kms-build/build/aws-c-http
+[0/1] Install the project...
+-- Install configuration: "Release"
+-- Up-to-date: /opt/swap-kms/lib/libaws-c-http.a
+-- Up-to-date: /opt/swap-kms/include/aws/http/connection.h
+-- Up-to-date: /opt/swap-kms/include/aws/http/connection_manager.h
+-- Up-to-date: /opt/swap-kms/include/aws/http/exports.h
+-- Up-to-date: /opt/swap-kms/include/aws/http/http.h
+-- Up-to-date: /opt/swap-kms/include/aws/http/http2_stream_manager.h
+-- Up-to-date: /opt/swap-kms/include/aws/http/proxy.h
+-- Up-to-date: /opt/swap-kms/include/aws/http/request_response.h
+-- Up-to-date: /opt/swap-kms/include/aws/http/server.h
+-- Up-to-date: /opt/swap-kms/include/aws/http/statistics.h
+-- Up-to-date: /opt/swap-kms/include/aws/http/status_code.h
+-- Up-to-date: /opt/swap-kms/include/aws/http/websocket.h
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-http/static/aws-c-http-targets.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-http/static/aws-c-http-targets-release.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-http/aws-c-http-config.cmake
+-- LibCrypto Include Dir: /opt/swap-kms/include
+-- LibCrypto Shared Lib:  /usr/lib/aarch64-linux-gnu/libcrypto.so
+-- LibCrypto Static Lib:  /opt/swap-kms/lib/libcrypto.a
+-- S2N found target: AWS::crypto
+-- crypto Include Dir: /opt/swap-kms/include
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /opt/swap-kms-build/build/aws-c-auth
+[0/1] Install the project...
+-- Install configuration: "Release"
+-- Up-to-date: /opt/swap-kms/lib/libaws-c-auth.a
+-- Up-to-date: /opt/swap-kms/include/aws/auth/auth.h
+-- Up-to-date: /opt/swap-kms/include/aws/auth/aws_imds_client.h
+-- Up-to-date: /opt/swap-kms/include/aws/auth/credentials.h
+-- Up-to-date: /opt/swap-kms/include/aws/auth/exports.h
+-- Up-to-date: /opt/swap-kms/include/aws/auth/signable.h
+-- Up-to-date: /opt/swap-kms/include/aws/auth/signing.h
+-- Up-to-date: /opt/swap-kms/include/aws/auth/signing_config.h
+-- Up-to-date: /opt/swap-kms/include/aws/auth/signing_result.h
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-auth/static/aws-c-auth-targets.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-auth/static/aws-c-auth-targets-release.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-auth/aws-c-auth-config.cmake
+-- Building for Linux
+-- Wrote /opt/swap-kms-build/build/json-c/config.h
+-- Wrote /opt/swap-kms-build/build/json-c/json_config.h
+-- Could NOT find Doxygen (missing: DOXYGEN_EXECUTABLE) 
+Warning: doxygen not found, the 'doc' target will not be included
+-- Wrote /opt/swap-kms-build/build/json-c/apps_config.h
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /opt/swap-kms-build/build/json-c
+[0/1] Install the project...
+-- Install configuration: "Release"
+-- Up-to-date: /opt/swap-kms/lib/libjson-c.a
+-- Up-to-date: /opt/swap-kms/lib/cmake/json-c/json-c-targets.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/json-c/json-c-targets-release.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/json-c/json-c-config.cmake
+-- Up-to-date: /opt/swap-kms/lib/pkgconfig/json-c.pc
+-- Up-to-date: /opt/swap-kms/include/json-c/json_config.h
+-- Up-to-date: /opt/swap-kms/include/json-c/json.h
+-- Up-to-date: /opt/swap-kms/include/json-c/arraylist.h
+-- Up-to-date: /opt/swap-kms/include/json-c/debug.h
+-- Up-to-date: /opt/swap-kms/include/json-c/json_c_version.h
+-- Up-to-date: /opt/swap-kms/include/json-c/json_inttypes.h
+-- Up-to-date: /opt/swap-kms/include/json-c/json_object.h
+-- Up-to-date: /opt/swap-kms/include/json-c/json_object_iterator.h
+-- Up-to-date: /opt/swap-kms/include/json-c/json_tokener.h
+-- Up-to-date: /opt/swap-kms/include/json-c/json_types.h
+-- Up-to-date: /opt/swap-kms/include/json-c/json_util.h
+-- Up-to-date: /opt/swap-kms/include/json-c/json_visit.h
+-- Up-to-date: /opt/swap-kms/include/json-c/linkhash.h
+-- Up-to-date: /opt/swap-kms/include/json-c/printbuf.h
+-- Up-to-date: /opt/swap-kms/include/json-c/json_pointer.h
+-- Up-to-date: /opt/swap-kms/include/json-c/json_patch.h
+    Finished `release` profile [optimized] target(s) in 0.03s
+CMake Deprecation Warning at CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+fatal: No names found, cannot describe anything.
+-- Version=v0.2.1-unknown
+-- LibJsonC Include Dir: /opt/swap-kms/include
+-- LibJsonC Shared Lib:  LibJsonC_SHARED_LIBRARY-NOTFOUND
+-- LibJsonC Static Lib:  /opt/swap-kms/lib/libjson-c.a
+-- LibCrypto Include Dir: /opt/swap-kms/include
+-- LibCrypto Shared Lib:  /usr/lib/aarch64-linux-gnu/libcrypto.so
+-- LibCrypto Static Lib:  /opt/swap-kms/lib/libcrypto.a
+-- S2N found target: AWS::crypto
+-- crypto Include Dir: /opt/swap-kms/include
+-- aws-c-cal found target: AWS::crypto
+-- crypto Include Dir: /opt/swap-kms/include
+-- Could NOT find Doxygen (missing: DOXYGEN_EXECUTABLE) 
+-- Configuring done (0.0s)
+CMake Warning (dev) at CMakeLists.txt:83 (add_library):
+  Policy CMP0063 is not set: Honor visibility properties for all target
+  types.  Run "cmake --help-policy CMP0063" for policy details.  Use the
+  cmake_policy command to set the policy and suppress this warning.
+
+  Target "aws-nitro-enclaves-sdk-c" of type "STATIC_LIBRARY" has the
+  following visibility properties set for C:
+
+    C_VISIBILITY_PRESET
+
+  For compatibility CMake is not honoring them for this target.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at bin/kmstool-instance/CMakeLists.txt:6 (add_executable):
+  Policy CMP0063 is not set: Honor visibility properties for all target
+  types.  Run "cmake --help-policy CMP0063" for policy details.  Use the
+  cmake_policy command to set the policy and suppress this warning.
+
+  Target "kmstool_instance" of type "EXECUTABLE" has the following visibility
+  properties set for C:
+
+    C_VISIBILITY_PRESET
+
+  For compatibility CMake is not honoring them for this target.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at bin/kmstool-enclave/CMakeLists.txt:6 (add_executable):
+  Policy CMP0063 is not set: Honor visibility properties for all target
+  types.  Run "cmake --help-policy CMP0063" for policy details.  Use the
+  cmake_policy command to set the policy and suppress this warning.
+
+  Target "kmstool_enclave" of type "EXECUTABLE" has the following visibility
+  properties set for C:
+
+    C_VISIBILITY_PRESET
+
+  For compatibility CMake is not honoring them for this target.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at bin/kmstool-enclave-cli/CMakeLists.txt:6 (add_executable):
+  Policy CMP0063 is not set: Honor visibility properties for all target
+  types.  Run "cmake --help-policy CMP0063" for policy details.  Use the
+  cmake_policy command to set the policy and suppress this warning.
+
+  Target "kmstool_enclave_cli" of type "EXECUTABLE" has the following
+  visibility properties set for C:
+
+    C_VISIBILITY_PRESET
+
+  For compatibility CMake is not honoring them for this target.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Generating done (0.0s)
+-- Build files have been written to: /opt/swap-kms-build/build/aws-nitro-enclaves-sdk-c
+[1/7] Building C object CMakeFiles/aws-nitro-enclaves-sdk-c.dir/source/nitro_enclaves.c.o
+[2/7] Building C object CMakeFiles/aws-nitro-enclaves-sdk-c.dir/source/attestation.c.o
+[3/7] Linking C static library libaws-nitro-enclaves-sdk-c.a
+[4/7] Linking C executable bin/kmstool-instance/kmstool_instance
+[5/7] Linking C executable bin/kmstool-enclave-cli/kmstool_enclave_cli
+[6/7] Linking C executable bin/kmstool-enclave/kmstool_enclave
+[6/7] Install the project...
+-- Install configuration: "Release"
+-- Installing: /opt/swap-kms/lib/libaws-nitro-enclaves-sdk-c.a
+-- Up-to-date: /opt/swap-kms/include/aws/nitro_enclaves/attestation.h
+-- Up-to-date: /opt/swap-kms/include/aws/nitro_enclaves/exports.h
+-- Up-to-date: /opt/swap-kms/include/aws/nitro_enclaves/kms.h
+-- Up-to-date: /opt/swap-kms/include/aws/nitro_enclaves/nitro_enclaves.h
+-- Up-to-date: /opt/swap-kms/include/aws/nitro_enclaves/rest.h
+-- Up-to-date: /opt/swap-kms/lib/aws-nitro-enclaves-sdk-c/cmake/static/aws-nitro-enclaves-sdk-c-targets.cmake
+-- Up-to-date: /opt/swap-kms/lib/aws-nitro-enclaves-sdk-c/cmake/static/aws-nitro-enclaves-sdk-c-targets-release.cmake
+-- Up-to-date: /opt/swap-kms/lib/aws-nitro-enclaves-sdk-c/cmake/aws-nitro-enclaves-sdk-c-config.cmake
+-- Installing: /opt/swap-kms/bin/kmstool_instance
+-- Set non-toolchain portion of runtime path of "/opt/swap-kms/bin/kmstool_instance" to ""
+-- Installing: /opt/swap-kms/bin/kmstool_enclave
+-- Set non-toolchain portion of runtime path of "/opt/swap-kms/bin/kmstool_enclave" to ""
+-- Installing: /opt/swap-kms/bin/kmstool_enclave_cli
+-- Set non-toolchain portion of runtime path of "/opt/swap-kms/bin/kmstool_enclave_cli" to ""
+CMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+CMake Warning at CMakeLists.txt:24 (message):
+  ENABLE_PRE_SONAME_BUILD option will be deprecated in a future release.
+  Please see ENABLE_DIST_PKG and ENABLE_DIST_PKG_OPENSSL_SHIM
+
+
+-- Versioning name:awslc version:5.8.0 abi:1
+-- Libraries crypto:crypto ssl:ssl
+-- Go compiler 1.27.1 found
+-- SET_LIB_SONAME: 0
+-- COHABITANT_HEADERS: 0
+-- COHABITANT_BINARIES: 0
+-- INSTALL_OPENSSL_SHIM: 1
+-- ENABLE_SYMBOL_VERSIONING: OFF
+-- Entropy source configured: Dynamic (default: CPU Jitter)
+-- Run check_run file_to_test 'memcmp_invalid_stripped_check.c', flag_to_set 'MEMCMP_INVALID_STRIPPED', and compile_flags '-O3 -DNDEBUG'.
+-- Setting CMAKE_C_STANDARD=11
+-- Compiler supports '-Wno-cast-function-type', adding to CMAKE_C_FLAGS
+-- Compiler supports '-Wno-free-nonheap-object', adding to C_CXX_FLAGS
+-- Compiler supports '-Wmissing-braces', adding to C_CXX_FLAGS
+-- Compiler supports '-Wimplicit-fallthrough', adding to C_CXX_FLAGS
+-- linux_random_h.c probe is positive, enabling HAVE_LINUX_RANDOM_H
+-- stdalign_check.c probe is positive, enabling AWS_LC_STDALIGN_AVAILABLE
+-- builtin_swap_check.c probe is positive, enabling AWS_LC_BUILTIN_SWAP_SUPPORTED
+-- Compiler supports '-Wshadow', adding to C_CXX_FLAGS
+-- neon_sha3_check.c probe is positive, enabling MY_ASSEMBLER_SUPPORTS_NEON_SHA3_EXTENSION
+-- Up-to-date: /opt/swap-kms-build/build/aws-lc/tool-openssl/c_rehash
+-- Configuring done (0.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: /opt/swap-kms-build/build/aws-lc
+[0/2] Re-checking globbed directories...
+[0/1] Install the project...
+-- Install configuration: "Release"
+-- Up-to-date: /opt/swap-kms/include/openssl
+-- Up-to-date: /opt/swap-kms/include/openssl/conf.h
+-- Up-to-date: /opt/swap-kms/include/openssl/obj_mac.h
+-- Up-to-date: /opt/swap-kms/include/openssl/bio.h
+-- Up-to-date: /opt/swap-kms/include/openssl/ecdh.h
+-- Up-to-date: /opt/swap-kms/include/openssl/dsa.h
+-- Up-to-date: /opt/swap-kms/include/openssl/ssl.h
+-- Up-to-date: /opt/swap-kms/include/openssl/is_awslc.h
+-- Up-to-date: /opt/swap-kms/include/openssl/dh.h
+-- Up-to-date: /opt/swap-kms/include/openssl/span.h
+-- Up-to-date: /opt/swap-kms/include/openssl/buffer.h
+-- Up-to-date: /opt/swap-kms/include/openssl/ecdsa.h
+-- Up-to-date: /opt/swap-kms/include/openssl/sha.h
+-- Up-to-date: /opt/swap-kms/include/openssl/rc4.h
+-- Up-to-date: /opt/swap-kms/include/openssl/md5.h
+-- Up-to-date: /opt/swap-kms/include/openssl/engine.h
+-- Up-to-date: /opt/swap-kms/include/openssl/obj.h
+-- Up-to-date: /opt/swap-kms/include/openssl/err.h
+-- Up-to-date: /opt/swap-kms/include/openssl/blake2.h
+-- Up-to-date: /opt/swap-kms/include/openssl/curve25519.h
+-- Up-to-date: /opt/swap-kms/include/openssl/pool.h
+-- Up-to-date: /opt/swap-kms/include/openssl/chacha.h
+-- Up-to-date: /opt/swap-kms/include/openssl/bytestring.h
+-- Up-to-date: /opt/swap-kms/include/openssl/posix_time.h
+-- Up-to-date: /opt/swap-kms/include/openssl/siphash.h
+-- Up-to-date: /opt/swap-kms/include/openssl/dtls1.h
+-- Up-to-date: /opt/swap-kms/include/openssl/lhash.h
+-- Up-to-date: /opt/swap-kms/include/openssl/e_os2.h
+-- Up-to-date: /opt/swap-kms/include/openssl/hpke.h
+-- Up-to-date: /opt/swap-kms/include/openssl/base.h
+-- Up-to-date: /opt/swap-kms/include/openssl/mem.h
+-- Up-to-date: /opt/swap-kms/include/openssl/time.h
+-- Up-to-date: /opt/swap-kms/include/openssl/pkcs8.h
+-- Up-to-date: /opt/swap-kms/include/openssl/ossl_typ.h
+-- Up-to-date: /opt/swap-kms/include/openssl/sshkdf.h
+-- Up-to-date: /opt/swap-kms/include/openssl/x509.h
+-- Up-to-date: /opt/swap-kms/include/openssl/pkcs12.h
+-- Up-to-date: /opt/swap-kms/include/openssl/ripemd.h
+-- Up-to-date: /opt/swap-kms/include/openssl/modes.h
+-- Up-to-date: /opt/swap-kms/include/openssl/crypto.h
+-- Up-to-date: /opt/swap-kms/include/openssl/cipher.h
+-- Up-to-date: /opt/swap-kms/include/openssl/tls1.h
+-- Up-to-date: /opt/swap-kms/include/openssl/aead.h
+-- Up-to-date: /opt/swap-kms/include/openssl/cmac.h
+-- Up-to-date: /opt/swap-kms/include/openssl/nid.h
+-- Up-to-date: /opt/swap-kms/include/openssl/hmac.h
+-- Up-to-date: /opt/swap-kms/include/openssl/rsa.h
+-- Up-to-date: /opt/swap-kms/include/openssl/x509_vfy.h
+-- Up-to-date: /opt/swap-kms/include/openssl/ssl3.h
+-- Up-to-date: /opt/swap-kms/include/openssl/aes.h
+-- Up-to-date: /opt/swap-kms/include/openssl/asn1.h
+-- Up-to-date: /opt/swap-kms/include/openssl/evp.h
+-- Up-to-date: /opt/swap-kms/include/openssl/trust_token.h
+-- Up-to-date: /opt/swap-kms/include/openssl/ec.h
+-- Up-to-date: /opt/swap-kms/include/openssl/pem.h
+-- Up-to-date: /opt/swap-kms/include/openssl/cpu.h
+-- Up-to-date: /opt/swap-kms/include/openssl/asm_base.h
+-- Up-to-date: /opt/swap-kms/include/openssl/ec_key.h
+-- Up-to-date: /opt/swap-kms/include/openssl/stack.h
+-- Up-to-date: /opt/swap-kms/include/openssl/md4.h
+-- Up-to-date: /opt/swap-kms/include/openssl/safestack.h
+-- Up-to-date: /opt/swap-kms/include/openssl/thread.h
+-- Up-to-date: /opt/swap-kms/include/openssl/opensslv.h
+-- Up-to-date: /opt/swap-kms/include/openssl/type_check.h
+-- Up-to-date: /opt/swap-kms/include/openssl/arm_arch.h
+-- Up-to-date: /opt/swap-kms/include/openssl/ocsp.h
+-- Up-to-date: /opt/swap-kms/include/openssl/poly1305.h
+-- Up-to-date: /opt/swap-kms/include/openssl/hrss.h
+-- Up-to-date: /opt/swap-kms/include/openssl/experimental
+-- Up-to-date: /opt/swap-kms/include/openssl/experimental/kem_deterministic_api.h
+-- Up-to-date: /opt/swap-kms/include/openssl/rand.h
+-- Up-to-date: /opt/swap-kms/include/openssl/objects.h
+-- Up-to-date: /opt/swap-kms/include/openssl/evp_errors.h
+-- Up-to-date: /opt/swap-kms/include/openssl/service_indicator.h
+-- Up-to-date: /opt/swap-kms/include/openssl/asn1_mac.h
+-- Up-to-date: /opt/swap-kms/include/openssl/target.h
+-- Up-to-date: /opt/swap-kms/include/openssl/des.h
+-- Up-to-date: /opt/swap-kms/include/openssl/buf.h
+-- Up-to-date: /opt/swap-kms/include/openssl/base64.h
+-- Up-to-date: /opt/swap-kms/include/openssl/hkdf.h
+-- Up-to-date: /opt/swap-kms/include/openssl/blowfish.h
+-- Up-to-date: /opt/swap-kms/include/openssl/asn1t.h
+-- Up-to-date: /opt/swap-kms/include/openssl/ctrdrbg.h
+-- Up-to-date: /opt/swap-kms/include/openssl/digest.h
+-- Up-to-date: /opt/swap-kms/include/openssl/pkcs7.h
+-- Up-to-date: /opt/swap-kms/include/openssl/ex_data.h
+-- Up-to-date: /opt/swap-kms/include/openssl/bn.h
+-- Up-to-date: /opt/swap-kms/include/openssl/kdf.h
+-- Up-to-date: /opt/swap-kms/include/openssl/x509v3_errors.h
+-- Up-to-date: /opt/swap-kms/include/openssl/x509v3.h
+-- Up-to-date: /opt/swap-kms/include/openssl/ui.h
+-- Up-to-date: /opt/swap-kms/include/openssl/opensslconf.h
+-- Up-to-date: /opt/swap-kms/include/openssl
+-- Up-to-date: /opt/swap-kms/include/openssl/boringssl_prefix_symbols_nasm.inc
+-- Up-to-date: /opt/swap-kms/include/openssl/boringssl_prefix_symbols_asm.h
+-- Up-to-date: /opt/swap-kms/include/openssl/boringssl_prefix_symbols.h
+-- Up-to-date: /opt/swap-kms/include/openssl/experimental
+-- Up-to-date: /opt/swap-kms/lib/pkgconfig/aws-lc.pc
+-- Up-to-date: /opt/swap-kms/lib/pkgconfig/libcrypto.pc
+-- Up-to-date: /opt/swap-kms/lib/pkgconfig/libssl.pc
+-- Up-to-date: /opt/swap-kms/lib/pkgconfig/openssl.pc
+-- Up-to-date: /opt/swap-kms/lib/libcrypto.a
+-- Up-to-date: /opt/swap-kms/lib/crypto/cmake/crypto-config.cmake
+-- Up-to-date: /opt/swap-kms/lib/crypto/cmake/static/crypto-targets.cmake
+-- Up-to-date: /opt/swap-kms/lib/crypto/cmake/static/crypto-targets-release.cmake
+-- Up-to-date: /opt/swap-kms/lib/libssl.a
+-- Up-to-date: /opt/swap-kms/lib/ssl/cmake/ssl-config.cmake
+-- Up-to-date: /opt/swap-kms/lib/ssl/cmake/static/ssl-targets.cmake
+-- Up-to-date: /opt/swap-kms/lib/ssl/cmake/static/ssl-targets-release.cmake
+-- Up-to-date: /opt/swap-kms/bin/bssl
+-- Up-to-date: /opt/swap-kms/bin/openssl
+-- Up-to-date: /opt/swap-kms/bin/c_rehash
+-- Detected CMAKE_SYSTEM_PROCESSOR as aarch64
+-- Detected 64-Bit system
+-- FOUND AWS-LC CRYPTO cmake config - static
+-- Using libcrypto from the cmake path
+-- CMAKE_AR found: /usr/bin/ar
+-- CMAKE_RANLIB found: /usr/bin/ranlib
+-- CMAKE_OBJCOPY found: /usr/bin/objcopy
+-- feature S2N_ATOMIC_SUPPORTED: TRUE
+-- feature S2N_CLOEXEC_SUPPORTED: TRUE
+-- feature S2N_CLOEXEC_XOPEN_SUPPORTED: TRUE
+-- feature S2N_CLONE_SUPPORTED: TRUE
+-- feature S2N_COMPILER_SUPPORTS_BRANCH_ALIGN: FALSE
+-- feature S2N_CPUID_AVAILABLE: FALSE
+-- feature S2N_DIAGNOSTICS_POP_SUPPORTED: TRUE
+-- feature S2N_DIAGNOSTICS_PUSH_SUPPORTED: TRUE
+-- feature S2N_EXECINFO_AVAILABLE: TRUE
+-- feature S2N_FALL_THROUGH_SUPPORTED: TRUE
+-- feature S2N_FEATURES_AVAILABLE: TRUE
+-- feature S2N_KTLS_SUPPORTED: TRUE
+-- feature S2N_LIBCRYPTO_SANITY_PROBE: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_CUSTOM_OID: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_EC_KEY_CHECK_FIPS: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_ENGINE: FALSE
+-- feature S2N_LIBCRYPTO_SUPPORTS_EVP_AEAD_TLS: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_EVP_KEM: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_EVP_MD5_SHA1_HASH: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_EVP_MD_CTX_SET_PKEY_CTX: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_EVP_RC4: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_FLAG_NO_CHECK_TIME: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_GET0_CHAIN: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_HKDF: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_MLDSA: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_MLKEM: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_PRIVATE_RAND: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_PROVIDERS: FALSE
+-- feature S2N_LIBCRYPTO_SUPPORTS_PUBLIC_RAND: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_RSA_PSS_SIGNING: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_SHAKE: TRUE
+-- feature S2N_LIBCRYPTO_SUPPORTS_X509_STORE_LIST: TRUE
+-- feature S2N_LINUX_SENDFILE: TRUE
+-- feature S2N_STACKTRACE: TRUE
+-- Configuring done (1.4s)
+-- Generating done (0.0s)
+-- Build files have been written to: /opt/swap-kms-build/build/s2n-tls
+[0/1] Install the project...
+-- Install configuration: "Release"
+-- Up-to-date: /opt/swap-kms/include/s2n.h
+-- Up-to-date: /opt/swap-kms/include/s2n/unstable/allow_ip_in_cn.h
+-- Up-to-date: /opt/swap-kms/include/s2n/unstable/async_offload.h
+-- Up-to-date: /opt/swap-kms/include/s2n/unstable/cert_authorities.h
+-- Up-to-date: /opt/swap-kms/include/s2n/unstable/cleanup.h
+-- Up-to-date: /opt/swap-kms/include/s2n/unstable/crl.h
+-- Up-to-date: /opt/swap-kms/include/s2n/unstable/custom_x509_extensions.h
+-- Up-to-date: /opt/swap-kms/include/s2n/unstable/events.h
+-- Up-to-date: /opt/swap-kms/include/s2n/unstable/fingerprint.h
+-- Up-to-date: /opt/swap-kms/include/s2n/unstable/ktls.h
+-- Up-to-date: /opt/swap-kms/include/s2n/unstable/npn.h
+-- Up-to-date: /opt/swap-kms/include/s2n/unstable/renegotiate.h
+-- Up-to-date: /opt/swap-kms/lib/libs2n.a
+-- Up-to-date: /opt/swap-kms/lib/s2n/cmake/static/s2n-targets.cmake
+-- Up-to-date: /opt/swap-kms/lib/s2n/cmake/static/s2n-targets-release.cmake
+-- Up-to-date: /opt/swap-kms/lib/s2n/cmake/s2n-config.cmake
+-- Up-to-date: /opt/swap-kms/lib/s2n/cmake/modules/Findcrypto.cmake
+-- CMake 3.31.6
+-- Packaging currently only supported on Fedora.
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /opt/swap-kms-build/build/aws-c-common
+[0/1] Install the project...
+-- Install configuration: "Release"
+-- Up-to-date: /opt/swap-kms/include/aws/common/allocator.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/array_list.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/array_list.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/assert.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/atomics.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/atomics.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/atomics_fallback.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/atomics_gnu.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/atomics_gnu_old.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/atomics_msvc.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/byte_buf.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/byte_order.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/byte_order.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/cache.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/cbor.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/clock.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/clock.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/command_line_parser.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/common.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/condition_variable.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/cpuid.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/cross_process_lock.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/date_time.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/device_random.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/encoding.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/encoding.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/environment.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/error.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/error.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/exports.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/fifo_cache.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/file.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/hash_table.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/host_utils.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/json.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/lifo_cache.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/linked_hash_table.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/linked_list.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/linked_list.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/log_channel.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/log_formatter.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/log_writer.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/logging.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/lru_cache.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/macros.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/math.cbmc.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/math.fallback.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/math.gcc_arm64_asm.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/math.gcc_builtin.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/math.gcc_overflow.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/math.gcc_x64_asm.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/math.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/math.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/math.msvc_x64.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/mutex.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/package.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/platform.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/predicates.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/priority_queue.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/process.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/ref_count.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/ring_buffer.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/ring_buffer.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/rw_lock.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/shutdown_types.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/statistics.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/stdbool.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/stdint.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/string.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/string.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/system_info.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/system_resource_util.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/task_scheduler.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/thread.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/thread_scheduler.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/time.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/uri.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/uuid.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/xml_parser.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/zero.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/zero.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/posix/common.inl
+-- Up-to-date: /opt/swap-kms/include/aws/common/config.h
+-- Up-to-date: /opt/swap-kms/include/aws/testing/aws_test_harness.h
+-- Up-to-date: /opt/swap-kms/include/aws/common/external/ittnotify.h
+-- Up-to-date: /opt/swap-kms/lib/libaws-c-common.a
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/static/aws-c-common-targets.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/static/aws-c-common-targets-release.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/aws-c-common-config.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/modules/AwsCFlags.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/modules/AwsCheckHeaders.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/modules/AwsSharedLibSetup.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/modules/AwsTestHarness.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/modules/AwsLibFuzzer.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/modules/AwsSanitizers.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/modules/AwsSIMD.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/modules/AwsFindPackage.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/modules/AwsFeatureTests.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/modules/AwsCRuntime.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-common/modules/AwsGetVersion.cmake
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /opt/swap-kms-build/build/aws-c-sdkutils
+[0/1] Install the project...
+-- Install configuration: "Release"
+-- Up-to-date: /opt/swap-kms/lib/libaws-c-sdkutils.a
+-- Up-to-date: /opt/swap-kms/include/aws/sdkutils/aws_profile.h
+-- Up-to-date: /opt/swap-kms/include/aws/sdkutils/endpoints_bdd_engine.h
+-- Up-to-date: /opt/swap-kms/include/aws/sdkutils/endpoints_rule_engine.h
+-- Up-to-date: /opt/swap-kms/include/aws/sdkutils/exports.h
+-- Up-to-date: /opt/swap-kms/include/aws/sdkutils/partitions.h
+-- Up-to-date: /opt/swap-kms/include/aws/sdkutils/resource_name.h
+-- Up-to-date: /opt/swap-kms/include/aws/sdkutils/sdkutils.h
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-sdkutils/static/aws-c-sdkutils-targets.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-sdkutils/static/aws-c-sdkutils-targets-release.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-sdkutils/aws-c-sdkutils-config.cmake
+-- FOUND AWS-LC CRYPTO cmake config - static
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /opt/swap-kms-build/build/aws-c-cal
+[0/1] Install the project...
+-- Install configuration: "Release"
+-- Up-to-date: /opt/swap-kms/lib/libaws-c-cal.a
+-- Up-to-date: /opt/swap-kms/include/aws/cal/cal.h
+-- Up-to-date: /opt/swap-kms/include/aws/cal/ecc.h
+-- Up-to-date: /opt/swap-kms/include/aws/cal/ed25519.h
+-- Up-to-date: /opt/swap-kms/include/aws/cal/exports.h
+-- Up-to-date: /opt/swap-kms/include/aws/cal/hash.h
+-- Up-to-date: /opt/swap-kms/include/aws/cal/hkdf.h
+-- Up-to-date: /opt/swap-kms/include/aws/cal/hmac.h
+-- Up-to-date: /opt/swap-kms/include/aws/cal/rsa.h
+-- Up-to-date: /opt/swap-kms/include/aws/cal/symmetric_cipher.h
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-cal/static/aws-c-cal-targets.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-cal/static/aws-c-cal-targets-release.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-cal/aws-c-cal-config.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-cal/modules/Findcrypto.cmake
+-- LibCrypto Include Dir: /opt/swap-kms/include
+-- LibCrypto Shared Lib:  /usr/lib/aarch64-linux-gnu/libcrypto.so
+-- LibCrypto Static Lib:  /opt/swap-kms/lib/libcrypto.a
+-- S2N found target: AWS::crypto
+-- crypto Include Dir: /opt/swap-kms/include
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /opt/swap-kms-build/build/aws-c-io
+[0/1] Install the project...
+-- Install configuration: "Release"
+-- Up-to-date: /opt/swap-kms/lib/libaws-c-io.a
+-- Up-to-date: /opt/swap-kms/include/aws/io/async_stream.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/channel.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/channel_bootstrap.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/event_loop.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/exports.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/file_utils.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/future.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/host_resolver.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/io.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/logging.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/message_pool.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/pem.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/pipe.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/pkcs11.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/retry_strategy.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/shared_library.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/socket.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/socket_channel_handler.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/statistics.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/stream.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/tls_channel_handler.h
+-- Up-to-date: /opt/swap-kms/include/aws/io/uri.h
+-- Up-to-date: /opt/swap-kms/include/aws/testing/async_stream_tester.h
+-- Up-to-date: /opt/swap-kms/include/aws/testing/io_testing_channel.h
+-- Up-to-date: /opt/swap-kms/include/aws/testing/stream_tester.h
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-io/static/aws-c-io-targets.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-io/static/aws-c-io-targets-release.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-io/aws-c-io-config.cmake
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /opt/swap-kms-build/build/aws-c-compression
+[0/1] Install the project...
+-- Install configuration: "Release"
+-- Up-to-date: /opt/swap-kms/lib/libaws-c-compression.a
+-- Up-to-date: /opt/swap-kms/include/aws/compression/compression.h
+-- Up-to-date: /opt/swap-kms/include/aws/compression/exports.h
+-- Up-to-date: /opt/swap-kms/include/aws/compression/huffman.h
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-compression/static/aws-c-compression-targets.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-compression/static/aws-c-compression-targets-release.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-compression/aws-c-compression-config.cmake
+-- LibCrypto Include Dir: /opt/swap-kms/include
+-- LibCrypto Shared Lib:  /usr/lib/aarch64-linux-gnu/libcrypto.so
+-- LibCrypto Static Lib:  /opt/swap-kms/lib/libcrypto.a
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /opt/swap-kms-build/build/aws-c-http
+[0/1] Install the project...
+-- Install configuration: "Release"
+-- Up-to-date: /opt/swap-kms/lib/libaws-c-http.a
+-- Up-to-date: /opt/swap-kms/include/aws/http/connection.h
+-- Up-to-date: /opt/swap-kms/include/aws/http/connection_manager.h
+-- Up-to-date: /opt/swap-kms/include/aws/http/exports.h
+-- Up-to-date: /opt/swap-kms/include/aws/http/http.h
+-- Up-to-date: /opt/swap-kms/include/aws/http/http2_stream_manager.h
+-- Up-to-date: /opt/swap-kms/include/aws/http/proxy.h
+-- Up-to-date: /opt/swap-kms/include/aws/http/request_response.h
+-- Up-to-date: /opt/swap-kms/include/aws/http/server.h
+-- Up-to-date: /opt/swap-kms/include/aws/http/statistics.h
+-- Up-to-date: /opt/swap-kms/include/aws/http/status_code.h
+-- Up-to-date: /opt/swap-kms/include/aws/http/websocket.h
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-http/static/aws-c-http-targets.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-http/static/aws-c-http-targets-release.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-http/aws-c-http-config.cmake
+-- LibCrypto Include Dir: /opt/swap-kms/include
+-- LibCrypto Shared Lib:  /usr/lib/aarch64-linux-gnu/libcrypto.so
+-- LibCrypto Static Lib:  /opt/swap-kms/lib/libcrypto.a
+-- S2N found target: AWS::crypto
+-- crypto Include Dir: /opt/swap-kms/include
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /opt/swap-kms-build/build/aws-c-auth
+[0/1] Install the project...
+-- Install configuration: "Release"
+-- Up-to-date: /opt/swap-kms/lib/libaws-c-auth.a
+-- Up-to-date: /opt/swap-kms/include/aws/auth/auth.h
+-- Up-to-date: /opt/swap-kms/include/aws/auth/aws_imds_client.h
+-- Up-to-date: /opt/swap-kms/include/aws/auth/credentials.h
+-- Up-to-date: /opt/swap-kms/include/aws/auth/exports.h
+-- Up-to-date: /opt/swap-kms/include/aws/auth/signable.h
+-- Up-to-date: /opt/swap-kms/include/aws/auth/signing.h
+-- Up-to-date: /opt/swap-kms/include/aws/auth/signing_config.h
+-- Up-to-date: /opt/swap-kms/include/aws/auth/signing_result.h
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-auth/static/aws-c-auth-targets.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-auth/static/aws-c-auth-targets-release.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/aws-c-auth/aws-c-auth-config.cmake
+-- Building for Linux
+-- Wrote /opt/swap-kms-build/build/json-c/config.h
+-- Wrote /opt/swap-kms-build/build/json-c/json_config.h
+-- Could NOT find Doxygen (missing: DOXYGEN_EXECUTABLE) 
+Warning: doxygen not found, the 'doc' target will not be included
+-- Wrote /opt/swap-kms-build/build/json-c/apps_config.h
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /opt/swap-kms-build/build/json-c
+[0/1] Install the project...
+-- Install configuration: "Release"
+-- Up-to-date: /opt/swap-kms/lib/libjson-c.a
+-- Up-to-date: /opt/swap-kms/lib/cmake/json-c/json-c-targets.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/json-c/json-c-targets-release.cmake
+-- Up-to-date: /opt/swap-kms/lib/cmake/json-c/json-c-config.cmake
+-- Up-to-date: /opt/swap-kms/lib/pkgconfig/json-c.pc
+-- Up-to-date: /opt/swap-kms/include/json-c/json_config.h
+-- Up-to-date: /opt/swap-kms/include/json-c/json.h
+-- Up-to-date: /opt/swap-kms/include/json-c/arraylist.h
+-- Up-to-date: /opt/swap-kms/include/json-c/debug.h
+-- Up-to-date: /opt/swap-kms/include/json-c/json_c_version.h
+-- Up-to-date: /opt/swap-kms/include/json-c/json_inttypes.h
+-- Up-to-date: /opt/swap-kms/include/json-c/json_object.h
+-- Up-to-date: /opt/swap-kms/include/json-c/json_object_iterator.h
+-- Up-to-date: /opt/swap-kms/include/json-c/json_tokener.h
+-- Up-to-date: /opt/swap-kms/include/json-c/json_types.h
+-- Up-to-date: /opt/swap-kms/include/json-c/json_util.h
+-- Up-to-date: /opt/swap-kms/include/json-c/json_visit.h
+-- Up-to-date: /opt/swap-kms/include/json-c/linkhash.h
+-- Up-to-date: /opt/swap-kms/include/json-c/printbuf.h
+-- Up-to-date: /opt/swap-kms/include/json-c/json_pointer.h
+-- Up-to-date: /opt/swap-kms/include/json-c/json_patch.h
+    Finished `release` profile [optimized] target(s) in 0.01s
+SDK source differs from the exact reviewed cleanup patch
+/* deliberate unrelated integrity-test edit */
+Exact patch reuse PASS; unrelated tracked edit rejected and preserved PASS
