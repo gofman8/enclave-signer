@@ -22,6 +22,10 @@ The cleaned revision passed **44/44 scenarios** at testing `6254333`, containing
 production `c980fda`. See [cleanup validation](pr-cleanup/README.md) for the exact
 scope, source revisions, regression results and actual Docker/EIF evidence.
 
+The subsequent [SDK patch reduction](patch-reduction/README.md) passed five
+native suites and a fresh **44/44 local E2E scenarios** with the rebuilt SDK and
+helper. It reduces the SDK change to 19 added / 8 removed source lines.
+
 The earlier security-hardening revision passed **44/44 scenarios** on 2026-09-15
 at testing `530dc8a`, production `6cc65d6`. Its
 [security review evidence](security-review/README.md) is historical and includes

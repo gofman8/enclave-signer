@@ -6,6 +6,7 @@
 #include <aws/nitro_enclaves/rest.h>
 #include <aws/io/channel_bootstrap.h>
 #include <aws/http/connection.h>
+#include <aws/http/http.h>
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -100,6 +101,7 @@ int main(int argc, char **argv) {
     CHECK(clock_gettime(CLOCK_MONOTONIC, &after) == 0);
     double seconds = (double)(after.tv_sec - before.tv_sec) + (double)(after.tv_nsec - before.tv_nsec) / 1e9;
     CHECK(response == NULL);
+    CHECK(aws_last_error() == AWS_ERROR_HTTP_CONNECTION_CLOSED);
     printf("request returned error=%s in %.6f seconds\n", aws_error_name(aws_last_error()), seconds);
     CHECK(seconds < 1.0);
     aws_http_connection_release(connection);

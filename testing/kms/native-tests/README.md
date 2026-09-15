@@ -1,6 +1,6 @@
 # Native helper regressions
 
-These tests remain on `kms-testing`. They include the current production helper source and link the same pinned SDK libraries. Test-only linker wrappers inject request failures; production code has no test hooks.
+These tests include the current production helper source and link the same pinned SDK libraries. Test-only linker wrappers inject request failures; production code has no test hooks. The closed-connection regression uses the real signer and HTTP transport without wrappers.
 
 Run inside the Linux SDK builder with the repository mounted at `/repo`:
 
@@ -12,4 +12,4 @@ LD_LIBRARY_PATH=/opt/swap-kms/lib \
   ctest --test-dir /tmp/swap-kms-native-tests --output-on-failure
 ```
 
-The three suites check credential cleanup and strict IPC, authoritative KMS response keys and fixed error categories, and SDK request cleanup/completion fault paths. The lifecycle suite must also fail against the unpatched SDK as a negative control when changing the maintained patch.
+The five CTest entries check credential cleanup and strict IPC, authoritative KMS response keys and fixed error categories, 11 SDK request lifecycle cases, and closed-connection handling for both KMS operation targets. The last two must fail against the unpatched SDK as a negative control when changing the maintained patch. Forced allocation-NULL cases are excluded: the pinned allocator aborts on OOM.
