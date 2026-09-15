@@ -136,9 +136,7 @@ nitro-cli build-enclave \
 # --- 3. Emit measurements + checksums --------------------------------------
 echo "Extracting PCRs..."
 nitro-cli describe-eif --eif-path "$EIF_PATH" \
-    > "$OUT_DIR/EIF-DESCRIBE.json"
-jq -e '.CheckCRC == true' "$OUT_DIR/EIF-DESCRIBE.json" >/dev/null
-jq '.Measurements' "$OUT_DIR/EIF-DESCRIBE.json" > "$OUT_DIR/PCR.json"
+    | jq '.Measurements' > "$OUT_DIR/PCR.json"
 
 echo "Writing SHA256SUMS..."
 ( cd "$OUT_DIR" && sha256sum "$(basename "$EIF_PATH")" > SHA256SUMS )

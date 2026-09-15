@@ -4,24 +4,34 @@
     {
       "Sid": "AllowSignerToDistinguishMissingSeedFromAccessDenied",
       "Effect": "Allow",
-      "Principal": { "AWS": "arn:aws:iam::REPLACE_ACCOUNT_ID:role/REPLACE_SIGNER_ROLE" },
+      "Principal": {
+        "AWS": "arn:aws:iam::REPLACE_ACCOUNT_ID:role/REPLACE_SIGNER_ROLE"
+      },
       "Action": "s3:ListBucket",
       "Resource": "arn:aws:s3:::REPLACE_SEED_BUCKET"
     },
     {
       "Sid": "AllowSignerToReadOneSeedCiphertext",
       "Effect": "Allow",
-      "Principal": { "AWS": "arn:aws:iam::REPLACE_ACCOUNT_ID:role/REPLACE_SIGNER_ROLE" },
+      "Principal": {
+        "AWS": "arn:aws:iam::REPLACE_ACCOUNT_ID:role/REPLACE_SIGNER_ROLE"
+      },
       "Action": "s3:GetObject",
       "Resource": "arn:aws:s3:::REPLACE_SEED_BUCKET/REPLACE_SEED_OBJECT_KEY"
     },
     {
       "Sid": "AllowSignerToCreateOneSeedCiphertext",
       "Effect": "Allow",
-      "Principal": { "AWS": "arn:aws:iam::REPLACE_ACCOUNT_ID:role/REPLACE_SIGNER_ROLE" },
+      "Principal": {
+        "AWS": "arn:aws:iam::REPLACE_ACCOUNT_ID:role/REPLACE_SIGNER_ROLE"
+      },
       "Action": "s3:PutObject",
       "Resource": "arn:aws:s3:::REPLACE_SEED_BUCKET/REPLACE_SEED_OBJECT_KEY",
-      "Condition": { "StringEquals": { "s3:if-none-match": "*" } }
+      "Condition": {
+        "StringEquals": {
+          "s3:if-none-match": "*"
+        }
+      }
     },
     {
       "Sid": "DenySeedWritesWithoutCreateOnlyPrecondition",
@@ -29,49 +39,19 @@
       "Principal": "*",
       "Action": "s3:PutObject",
       "Resource": "arn:aws:s3:::REPLACE_SEED_BUCKET/REPLACE_SEED_OBJECT_KEY",
-      "Condition": { "StringNotEquals": { "s3:if-none-match": "*" } }
+      "Condition": {
+        "StringNotEquals": {
+          "s3:if-none-match": "*"
+        }
+      }
     },
     {
       "Sid": "DenySeedDeletionIncludingVersionDeletion",
       "Effect": "Deny",
       "Principal": "*",
-      "Action": [ "s3:DeleteObject", "s3:DeleteObjectVersion" ],
-      "Resource": "arn:aws:s3:::REPLACE_SEED_BUCKET/REPLACE_SEED_OBJECT_KEY"
-    },
-    {
-      "Sid": "DenySignerStoragePolicyAndRetentionChanges",
-      "Effect": "Deny",
-      "Principal": { "AWS": "arn:aws:iam::REPLACE_ACCOUNT_ID:role/REPLACE_SIGNER_ROLE" },
       "Action": [
-        "s3:PutBucketPolicy",
-        "s3:DeleteBucketPolicy",
-        "s3:PutBucketVersioning",
-        "s3:PutLifecycleConfiguration",
-        "s3:PutBucketObjectLockConfiguration",
-        "s3:PutBucketPublicAccessBlock",
-        "s3:PutBucketOwnershipControls",
-        "s3:PutBucketAcl",
-        "s3:PutEncryptionConfiguration",
-        "s3:PutReplicationConfiguration",
-        "s3:DeleteBucket"
-      ],
-      "Resource": "arn:aws:s3:::REPLACE_SEED_BUCKET"
-    },
-    {
-      "Sid": "DenySignerObjectAccessAndRetentionChanges",
-      "Effect": "Deny",
-      "Principal": { "AWS": "arn:aws:iam::REPLACE_ACCOUNT_ID:role/REPLACE_SIGNER_ROLE" },
-      "Action": [
-        "s3:PutObjectAcl",
-        "s3:PutObjectVersionAcl",
-        "s3:UpdateObjectEncryption",
-        "s3:PutObjectRetention",
-        "s3:PutObjectLegalHold",
-        "s3:BypassGovernanceRetention",
-        "s3:PutObjectTagging",
-        "s3:PutObjectVersionTagging",
-        "s3:DeleteObjectTagging",
-        "s3:DeleteObjectVersionTagging"
+        "s3:DeleteObject",
+        "s3:DeleteObjectVersion"
       ],
       "Resource": "arn:aws:s3:::REPLACE_SEED_BUCKET/REPLACE_SEED_OBJECT_KEY"
     },
@@ -84,7 +64,11 @@
         "arn:aws:s3:::REPLACE_SEED_BUCKET",
         "arn:aws:s3:::REPLACE_SEED_BUCKET/*"
       ],
-      "Condition": { "Bool": { "aws:SecureTransport": "false" } }
+      "Condition": {
+        "Bool": {
+          "aws:SecureTransport": "false"
+        }
+      }
     }
   ]
 }

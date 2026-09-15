@@ -1,7 +1,8 @@
 //! RGB swap seed lifecycle. The parent holds only an opaque KMS ciphertext;
 //! KMS responses are authenticated and decrypted inside the enclave.
 
-use std::io::{Read, Write};
+use std::io::{self, Read, Write};
+#[cfg(not(all(feature = "vsock", target_os = "linux", not(test))))]
 use std::net::{Ipv4Addr, SocketAddr, TcpStream};
 use std::time::{Duration, Instant};
 
@@ -18,6 +19,12 @@ use crate::swap_kms::{
     deserialize_secret, AwsCredentials, SwapKmsClient, SwapKmsConfig, MAX_CIPHERTEXT_BYTES,
     MAX_MESSAGE_BYTES,
 };
+
+// TCP is only used by non-VSOCK development builds and unit fixtures.
+#[cfg(not(all(feature = "vsock", target_os = "linux", not(test))))]
+type BrokerStream = TcpStream;
+#[cfg(all(feature = "vsock", target_os = "linux", not(test)))]
+type BrokerStream = vsock::VsockStream;
 
 pub const BROKER_LOCAL_PORT: u16 = 3446;
 pub const BROKER_VSOCK_PORT: u32 = 8004;
@@ -127,6 +134,7 @@ impl PersistentSwapSeed {
             Err(_) => return Err(failure("invalid expected address configuration")),
         };
         let broker = SeedBroker {
+            #[cfg(not(all(feature = "vsock", target_os = "linux", not(test))))]
             address: SocketAddr::from((Ipv4Addr::LOCALHOST, BROKER_LOCAL_PORT)),
             seed_id: config.seed_id.clone(),
         };
@@ -161,19 +169,32 @@ fn restore_keys(
 }
 
 struct SeedBroker {
+    #[cfg(not(all(feature = "vsock", target_os = "linux", not(test))))]
     address: SocketAddr,
     seed_id: String,
 }
 
 impl SeedBroker {
+    fn connect(&self, deadline: Instant) -> io::Result<BrokerStream> {
+        #[cfg(all(feature = "vsock", target_os = "linux", not(test)))]
+        {
+            connect_vsock(BROKER_VSOCK_PORT, deadline)
+        }
+        #[cfg(not(all(feature = "vsock", target_os = "linux", not(test))))]
+        {
+            TcpStream::connect_timeout(&self.address, remaining_until(deadline)?)
+        }
+    }
+
     fn request<T: serde::de::DeserializeOwned>(
         &self,
         request: serde_json::Value,
         deadline: Instant,
     ) -> Result<T> {
         let deadline = deadline.min(Instant::now() + BROKER_TIMEOUT);
-        let remaining = remaining_until(deadline).map_err(|_| broker_error("operation_timeout"))?;
-        let stream = TcpStream::connect_timeout(&self.address, remaining)
+        remaining_until(deadline).map_err(|_| broker_error("operation_timeout"))?;
+        let stream = self
+            .connect(deadline)
             .map_err(|_| broker_error("aws_unavailable"))?;
         let mut stream = DeadlineStream::with_deadline(stream, deadline, BROKER_TIMEOUT);
         let bytes = serde_json::to_vec(&request).map_err(|_| failure("encode broker request"))?;
@@ -285,6 +306,62 @@ impl SeedStore for SeedBroker {
         )?)?
         .ok_or_else(|| failure("broker did not return a committed seed"))
     }
+}
+
+// The only broker connection is owned by the initialization attempt: there is
+// no background relay or detached I/O. Parent CID 3 is fixed by Nitro, and the
+// nonblocking connect consumes the same deadline as framing and recovery.
+#[cfg(all(feature = "vsock", target_os = "linux"))]
+fn connect_vsock(port: u32, deadline: Instant) -> io::Result<vsock::VsockStream> {
+    use nix::poll::{poll, PollFd, PollFlags, PollTimeout};
+    use nix::sys::socket::{connect, socket, AddressFamily, SockFlag, SockType, VsockAddr};
+    use std::os::fd::{AsFd, AsRawFd};
+    remaining_until(deadline)?;
+    let socket = socket(
+        AddressFamily::Vsock,
+        SockType::Stream,
+        SockFlag::SOCK_CLOEXEC | SockFlag::SOCK_NONBLOCK,
+        None,
+    )?;
+    remaining_until(deadline)?;
+    match connect(socket.as_raw_fd(), &VsockAddr::new(3, port)) {
+        Ok(()) => {}
+        Err(nix::errno::Errno::EINPROGRESS) => loop {
+            let millis = remaining_until(deadline)?
+                .as_millis()
+                .clamp(1, i32::MAX as u128);
+            let timeout = PollTimeout::try_from(millis).map_err(io::Error::other)?;
+            let mut fds = [PollFd::new(socket.as_fd(), PollFlags::POLLOUT)];
+            let ready = match poll(&mut fds, timeout) {
+                Ok(ready) => ready,
+                Err(nix::errno::Errno::EINTR) => continue,
+                Err(error) => return Err(error.into()),
+            };
+            if ready == 0 {
+                return Err(io::Error::new(
+                    io::ErrorKind::TimedOut,
+                    "vsock connect timed out",
+                ));
+            }
+            let error =
+                nix::sys::socket::getsockopt(&socket, nix::sys::socket::sockopt::SocketError)?;
+            if error != 0 {
+                return Err(io::Error::from_raw_os_error(error));
+            }
+            if !fds[0]
+                .revents()
+                .is_some_and(|events| events.contains(PollFlags::POLLOUT))
+            {
+                return Err(io::Error::other("vsock connect did not complete"));
+            }
+            break;
+        },
+        Err(error) => return Err(error.into()),
+    }
+    remaining_until(deadline)?;
+    let stream = vsock::VsockStream::from(socket);
+    stream.set_nonblocking(false)?;
+    Ok(stream)
 }
 
 #[cfg(test)]
@@ -649,6 +726,14 @@ mod tests {
         assert!(broker.load(deadline).unwrap().is_none());
         assert!(broker.load(deadline).is_err());
         server.join().unwrap();
+    }
+
+    #[test]
+    #[cfg(all(feature = "vsock", target_os = "linux"))]
+    fn vsock_connect_rejects_expired_deadline_before_opening_a_socket() {
+        // This also runs on Linux hosts without the Nitro VSOCK device.
+        let error = connect_vsock(BROKER_VSOCK_PORT, Instant::now()).unwrap_err();
+        assert_eq!(error.kind(), io::ErrorKind::TimedOut);
     }
 
     #[test]
