@@ -49,8 +49,8 @@ See the [component diagram](docs/diagrams/01-components.md) and
 ### Key management
 
 **RGB swaps:** keys now initialize through attested AWS KMS generation/recovery,
-with the encrypted 64-byte seed persisted in S3. Configure the swap EIF and host
-broker using [the KMS persistence guide](docs/swap-kms-persistence.md). Initialization
+with the encrypted 64-byte seed persisted in S3. Configure the swap EIF and parent
+using [the KMS persistence guide](docs/swap-kms-persistence.md). Initialization
 loads existing ciphertext or creates it atomically after confirmed absence.
 Swap replicas restore the same seed instead of using peer cloning. Signing and
 HD derivation remain unchanged. RGB mint/burn and CCD-only builds retain the
@@ -224,7 +224,7 @@ profile. CI asserts every guard fires.
 
 For combined and RGB-swap builds, export `SWAP_KMS_KEY_ARN`, `SWAP_KMS_REGION`
 and `SWAP_KMS_SEED_ID`. Set `SWAP_KMS_EXPECTED_EVM_ADDRESS` when restoring a
-known identity. See [KMS setup](docs/swap-kms-persistence.md) for the host broker
+known identity. See [KMS setup](docs/swap-kms-persistence.md) for the parent
 and policy requirements. Other images do not require these values.
 
 ```bash
@@ -331,8 +331,8 @@ GRPC_HOST=0.0.0.0 GRPC_PORT=50051 USE_VSOCK=true ENCLAVE_VSOCK_CID=16 ./utexo-br
 `deploy/deploy-host.sh` installs the systemd units for a three-enclave host:
 CIDs 16 / 18 / 20 with parents on ports 50051 / 50052 / 50053. It verifies the
 EIF checksum and PCR0 against the S3 manifest before and after start. After a
-restart, swap images recover persisted keys through `init`; install their
-[additional KMS broker and relay](docs/swap-kms-persistence.md) first. Mint/burn
+restart, swap images recover persisted keys through `init`; configure
+[parent persistence and the KMS relay](docs/swap-kms-persistence.md) first. Mint/burn
 and CCD-only images retain initialization or peer cloning after restart.
 
 ### Debug mode
@@ -385,7 +385,7 @@ RGB swap custody (measured into swap EIFs; other flows do not require these):
 
 Startup reuses existing ciphertext or conditionally creates it after confirmed
 absence. No creation-mode setting is required. See the [deployment and recovery
-procedure](docs/swap-kms-persistence.md) for host broker/relay configuration.
+procedure](docs/swap-kms-persistence.md) for parent storage and relay configuration.
 
 Data sources and transport:
 

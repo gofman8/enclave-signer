@@ -7,7 +7,7 @@ its existing key derivation. Signing stays inside the enclave; it does not use
 KMS Sign. `rgb-mint-burn` generation, cloning and signing remain unchanged.
 
 Only a confirmed missing S3 object with no expected identity pin permits
-`GenerateDataKey(NumberOfBytes=64)`. The broker writes with `If-None-Match: *`,
+`GenerateDataKey(NumberOfBytes=64)`. The parent writes with `If-None-Match: *`,
 then reads the committed object. Concurrent initializers recover that same
 winner. Storage errors, invalid ciphertext and decryption failures never fall
 back to a new seed. Swap cloning is replaced by recovery from the saved blob.
@@ -38,28 +38,32 @@ permissions. These endpoint settings support the standard AWS commercial partiti
 
 ## Parent integration
 
-The [Python broker](../deploy/swap-seed-broker.py) is the only additional host
-application. It returns AWS credentials and reads/conditionally creates one S3
-object; it never receives the plaintext seed. Use Python 3.10 or newer and the
-locked runtime dependencies:
+The existing [Rust parent](../parent/src/swap_persistence.rs) returns AWS
+credentials and reads/conditionally creates one S3 object. It never receives
+the plaintext seed. Configure persistence on the parent process that serves
+this signer:
 
 ```bash
-python3 -m venv .venv-swap-kms
-.venv-swap-kms/bin/pip install -r deploy/requirements-swap-kms.txt
 export AWS_REGION=eu-central-1
 export SWAP_KMS_SEED_ID=swap-mainnet-signer-1
 export SWAP_KMS_S3_BUCKET=YOUR_SEED_BUCKET
 export SWAP_KMS_S3_KEY=swaps/signer-1/seed.kms
-export SWAP_KMS_ALLOWED_CIDS=18
-.venv-swap-kms/bin/python deploy/swap-seed-broker.py
+export USE_VSOCK=true
+export ENCLAVE_VSOCK_CID=18
+./utexo-bridge-parent
 ```
 
-Use a dedicated EC2 instance role with IMDSv2; boto3 obtains and refreshes its
-credentials. Every allowed CID receives that **full role**, so give it only this
-signer's KMS/S3 permissions. Comma-separated CIDs may share the same logical
-signer; a CID is a routing address, not attested image identity. Run one broker
-for this configured object on the parent. The enclave connects directly to
-parent CID `3`, vsock port `8004`. TCP mode is for local development/tests only.
+With storage settings absent, the parent retains its existing behavior. The
+official AWS Rust SDK obtains and refreshes credentials; use a dedicated EC2
+instance role with IMDSv2. The custody listener admits `ENCLAVE_VSOCK_CID` by
+default. `SWAP_KMS_ALLOWED_CIDS` can explicitly allow comma-separated replica
+CIDs sharing the same logical signer. Every allowed CID receives the **full
+role**, so give it only this signer's KMS/S3 permissions. A CID is a routing
+address, not attested image identity.
+
+Enable the custody listener in only one parent process per host. The enclave
+connects to parent CID `3`, vsock port `8004`. Local development can instead set
+`SWAP_KMS_BROKER_TCP=127.0.0.1:3446` with `USE_VSOCK=false`.
 
 In another terminal, or through your existing host supervisor, run AWS's
 standard `vsock-proxy` for the same KMS region. Its configuration and invocation
@@ -83,29 +87,29 @@ provided by this feature.
 
 ## AWS permissions and persistence
 
-Use a dedicated KMS key and protected S3 bucket. The manually configured
-[key usage example](../deploy/swap-kms-key-policy.json) and
-[bucket policy example](../deploy/swap-seed-bucket-policy.json) contain
-`REPLACE_*` placeholders. Replace all values and merge the key usage statements
-into the key's existing administrator policy; the example is not a complete
-administrator policy. Apply the bucket example to the dedicated bucket. Keep
-the signer role free of unrelated policies, policy-management privileges,
-object/version deletion and KMS key deletion permissions.
+Use a dedicated KMS key and protected S3 bucket. Configure the signer role and
+resource policies with these permissions:
 
-Set `REPLACE_APPROVED_PCR0` to the actual production EIF's PCR0 from
-`nitro-cli describe-eif --eif-path YOUR_IMAGE.eif`; never use a debug image or
-zero PCR. The key example permits only recipient-attested requests with this
-exact public encryption context (the enclave supplies it automatically):
+| Permission | Scope and restriction |
+| --- | --- |
+| `kms:GenerateDataKey` | The configured KMS key, during first bootstrap only. |
+| `kms:Decrypt` | The same key, for recovery. |
+| `s3:GetObject`, `s3:PutObject` | The exact seed object; require HTTPS and `If-None-Match: *` for writes. |
+| `s3:ListBucket` | The containing bucket, so an absent object is distinguishable from access denial. |
+
+Both KMS operations must require recipient attestation with the approved
+production PCR0 from `nitro-cli describe-eif --eif-path YOUR_IMAGE.eif` and this
+exact public encryption context, supplied automatically by the enclave:
 
 ```json
 {"application":"utexo-enclave-signer","flow":"rgb-swap","seed_id":"YOUR_SEED_ID","bitcoin_network":"bitcoin"}
 ```
 
-Use the actual network: `bitcoin`, `testnet`, `signet`, or `regtest`. The explicit
-key denies reject missing/wrong PCRs, changed/missing/extra context and alternate
-seed-encryption APIs. The bucket example grants one-object reads and conditional
-writes, denies overwrite/deletion, and requires HTTPS. `s3:ListBucket` is needed
-so a missing object produces a 404 rather than an ambiguous permission error.
+Use the actual network: `bitcoin`, `testnet`, `signet`, or `regtest`. Reject
+unattested requests, wrong PCRs and changed/missing/extra context, including when
+another identity policy grants broader access. Keep the signer role free of
+unrelated policies, policy-management privileges, object/version deletion and
+KMS key deletion permissions. Do not authorize debug images or zero PCRs.
 See AWS's [recipient-attestation conditions](https://docs.aws.amazon.com/kms/latest/developerguide/conditions-attestation.html)
 and [conditional S3 writes](https://docs.aws.amazon.com/AmazonS3/latest/userguide/conditional-writes.html).
 
@@ -118,7 +122,7 @@ recovery before funding the signer.
 
 ## Bootstrap, restart and recovery
 
-1. Build a new signer's EIF without an address pin. Configure the broker, relay,
+1. Build a new signer's EIF without an address pin. Configure the parent, relay,
    key and bucket policies for its actual CID, PCR0 and context.
 2. Run the enclave without debug mode and issue
    `utexo-bridge-parent-cli --addr vsock://18:5000 init`. Supply no seed or cloning
@@ -134,7 +138,7 @@ recovery before funding the signer.
    upgrades authorize the new measured image for decryption of the same seed.
 
 A timeout leaves initialization inactive; a conditional PUT may still complete.
-Retry after service recovery to load the committed winner. Broker calls are
+Retry after service recovery to load the committed winner. Custody calls are
 bounded and per-CID quotas/rate limits reject excess work. Never delete the blob,
 change its seed ID/key, or remove the address pin to fix a funded signer.
 Recover the original ciphertext/version from backup, using an administrator and
