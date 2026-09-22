@@ -14,7 +14,7 @@ flowchart TB
         Parent[utexo-bridge-parent<br/>tonic gRPC, GRPC_HOST:GRPC_PORT<br/>―<br/>Default 127.0.0.1:5000.<br/>Deployed hosts: 0.0.0.0:50051-50053,<br/>one parent per enclave CID 16 / 18 / 20.<br/>30 s timeout per enclave RPC.<br/>USE_VSOCK=true in production.]
         Cli[utexo-bridge-parent-cli<br/>attest-verify CLI]
         VP[vsock-proxy port 8001<br/>―<br/>Allowlist → Electrum ssl:// or Esplora.]
-        KmsRelay["Swap KMS relay :8003<br/>Standard host vsock-proxy<br/>TLS terminates inside enclave"]
+        KmsRelay["KMS relay :8003<br/>Standard host vsock-proxy<br/>TLS terminates inside enclave"]
         VPe["vsock-proxy 8002<br/>―<br/>evm-rpc builds only.<br/>8002 → EVM JSON-RPC via host nginx.<br/>Allowlisted upstream."]
 
         subgraph ENCL [AWS Nitro Enclave — TRUSTED, PCR-pinned]
@@ -46,8 +46,8 @@ flowchart TB
     KmsTool --> NSM
     KmsTool -->|"vsock CID 3:8003; TLS"| KmsRelay
     KmsRelay --> KMS
-    Bin -->|"swaps: vsock CID 3:8004<br/>credentials and encrypted seed"| Parent
-    Parent -->|"swaps: conditional ciphertext storage"| SeedObject
+    Bin -->|"kms-persistence: vsock CID 3:8004<br/>credentials and encrypted seed"| Parent
+    Parent -->|"KMS persistence: conditional ciphertext storage"| SeedObject
     Bin --> Replay
     Bin --> Headers
     Bin --> RgbVal
@@ -83,7 +83,7 @@ Clones provide replicas of one signing identity. Independent quorum members
 need independently initialized seeds.
 
 Optional `helios` builds use execution and consensus forwarders on host vsock
-ports 8005/8006 for RGB swaps and 8003/8004 for other flows (enclave loopback
-18545/18550) when Helios is selected. Swaps reserve 8003/8004 for KMS custody
+ports 8005/8006 with `kms-persistence` and 8003/8004 otherwise (enclave loopback
+18545/18550) when Helios is selected. KMS custody reserves 8003/8004
 and reject Helios overrides that collide with those ports. These
 replace the raw receipt provider and require a pinned beacon checkpoint.

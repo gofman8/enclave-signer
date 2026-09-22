@@ -14,7 +14,7 @@ struct aws_nitro_enclaves_rest_client *__real_aws_nitro_enclaves_rest_client_new
 
 struct aws_nitro_enclaves_rest_client *__wrap_aws_nitro_enclaves_rest_client_new(
     struct aws_nitro_enclaves_rest_client_configuration *configuration) {
-    const char *port_text = getenv("SWAP_KMS_E2E_PORT");
+    const char *port_text = getenv("KMS_E2E_PORT");
     char *end = NULL;
     long port = port_text == NULL ? 0 : strtol(port_text, &end, 10);
     if (port < 1 || port > 65535 || end == NULL || *end != '\0') return NULL;
@@ -40,7 +40,7 @@ void __real_aws_tls_ctx_options_init_default_client(
 void __wrap_aws_tls_ctx_options_init_default_client(
     struct aws_tls_ctx_options *options, struct aws_allocator *allocator) {
     __real_aws_tls_ctx_options_init_default_client(options, allocator);
-    const char *ca = getenv("SWAP_KMS_E2E_CA_PEM");
+    const char *ca = getenv("KMS_E2E_CA_PEM");
     if (ca != NULL && *ca != '\0' &&
         aws_tls_ctx_options_override_default_trust_store_from_path(options, NULL, ca) != AWS_OP_SUCCESS) {
         /* A broken local trust fixture must never silently fall back. */

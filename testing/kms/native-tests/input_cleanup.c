@@ -1,8 +1,8 @@
 /* Exercise credential erasure against the exact installed json-c dependency.
  * Including the adapter makes its private cleanup function testable without
  * exposing another production API or replacing any SDK behavior. */
-#define main swap_kms_tool_main
-#include "../../../enclave/kms-tool/main.c"
+#define main kms_tool_main
+#include KMS_HELPER_SOURCE
 #undef main
 
 #define CHECK(expression) do { \
@@ -40,8 +40,10 @@ static bool accepts_input(const char *raw) {
     return accepted;
 }
 
-#define INPUT_FIELDS "\"region\":\"eu-west-1\",\"key_arn\":\"public-key-arn\",\"seed_id\":\"seed\"," \
+#define COMMON_FIELDS "\"region\":\"eu-west-1\",\"key_arn\":\"public-key-arn\",\"seed_id\":\"seed\"," \
                      "\"bitcoin_network\":\"bitcoin\",\"access_key_id\":\"AKID\",\"secret_access_key\":\"secret\""
+
+#define INPUT_FIELDS "\"flow\":\"rgb-swap\"," COMMON_FIELDS
 
 int main(void) {
     const int lengths[] = {0, 1, 64, 16384, MESSAGE_LIMIT};
@@ -99,6 +101,23 @@ int main(void) {
         {"{\"operation\":\"generate\"," INPUT_FIELDS ",\"session_token\":\"\\ud83d\\ude00\"}", false},
         {"{\"operation\":\"generate\"," INPUT_FIELDS ",\"session_token\":\"\\u0000\"}", false},
         {"{\"operation\":\"generate\"," INPUT_FIELDS ",\"session_token\":\"\\u000a\"}", false},
+        {"{\"operation\":\"generate\"," COMMON_FIELDS ",\"session_token\":\"\"}", false},
+        {"{\"operation\":\"decrypt\"," COMMON_FIELDS ",\"session_token\":\"\",\"ciphertext\":\"AA==\"}", false},
+        {"{\"operation\":\"generate\"," INPUT_FIELDS ",\"flow\":\"rgb-swap\",\"session_token\":\"\"}", false},
+        {"{\"operation\":\"generate\"," INPUT_FIELDS ",\"\\u0066low\":\"rgb-swap\",\"session_token\":\"\"}", false},
+        {"{\"operation\":\"generate\",\"flow\":\"\"," COMMON_FIELDS ",\"session_token\":\"\"}", false},
+        {"{\"operation\":\"generate\",\"flow\":42," COMMON_FIELDS ",\"session_token\":\"\"}", false},
+        {"{\"operation\":\"generate\",\"flow\":\"rgb swap\"," COMMON_FIELDS ",\"session_token\":\"\"}", false},
+        {"{\"operation\":\"generate\",\"flow\":\"rgb.swap\"," COMMON_FIELDS ",\"session_token\":\"\"}", false},
+        {"{\"operation\":\"generate\",\"flow\":\"rgb/swap\"," COMMON_FIELDS ",\"session_token\":\"\"}", false},
+        {"{\"operation\":\"generate\",\"flow\":\"\\u00e9\"," COMMON_FIELDS ",\"session_token\":\"\"}", false},
+        {"{\"operation\":\"generate\",\"flow\":\"\\u0000\"," COMMON_FIELDS ",\"session_token\":\"\"}", false},
+        {"{\"operation\":\"generate\",\"flow\":\"\\u000a\"," COMMON_FIELDS ",\"session_token\":\"\"}", false},
+        {"{\"operation\":\"generate\",\"flow\":\"abcdefghijklmnopqrstuvwxyz1234567\"," COMMON_FIELDS ",\"session_token\":\"\"}", false},
+        {"{\"operation\":\"generate\",\"flow\":\"a\"," COMMON_FIELDS ",\"session_token\":\"\"}", true},
+        {"{\"operation\":\"generate\",\"flow\":\"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123_-\"," COMMON_FIELDS ",\"session_token\":\"\"}", true},
+        {"{\"operation\":\"generate\",\"flow\":\"future_scope-1\"," COMMON_FIELDS ",\"session_token\":\"\"}", true},
+        {"{\"operation\":\"decrypt\",\"flow\":\"future_scope-1\"," COMMON_FIELDS ",\"session_token\":\"\",\"ciphertext\":\"AA==\"}", true},
     };
     for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
         CHECK(accepts_input(cases[i].raw) == cases[i].accepted);
@@ -112,8 +131,51 @@ int main(void) {
         aws_byte_cursor_from_c_str(""), UINT64_MAX);
     CHECK(credentials != NULL && aws_credentials_get_session_token(credentials).len == 0);
     aws_credentials_release(credentials);
+    const char *flows[] = {"rgb-swap", "future_scope-1"};
+    for (size_t i = 0; i < sizeof(flows) / sizeof(flows[0]); i++) {
+        struct input input = {.flow = flows[i], .seed_id = "seed", .network = "bitcoin"};
+        for (int operation = 0; operation < 2; operation++) {
+            struct aws_string *serialized = NULL;
+            if (operation == 0) {
+                struct aws_kms_generate_data_key_request *request = aws_kms_generate_data_key_request_new(allocator);
+                CHECK(request != NULL);
+                request->key_id = aws_string_new_from_c_str(allocator, "public-key-arn");
+                request->number_of_bytes = SEED_BYTES;
+                request->key_spec = AWS_KS_UNINITIALIZED;
+                CHECK(add_context(allocator, &request->encryption_context, &input));
+                serialized = aws_kms_generate_data_key_request_to_json(request);
+                aws_kms_generate_data_key_request_destroy(request);
+            } else {
+                struct aws_kms_decrypt_request *request = aws_kms_decrypt_request_new(allocator);
+                CHECK(request != NULL);
+                request->key_id = aws_string_new_from_c_str(allocator, "public-key-arn");
+                request->encryption_algorithm = AWS_EA_SYMMETRIC_DEFAULT;
+                struct aws_byte_cursor fixture = aws_byte_cursor_from_c_str("public-ciphertext-fixture");
+                CHECK(aws_byte_buf_init_copy_from_cursor(&request->ciphertext_blob, allocator, fixture) == 0);
+                CHECK(add_context(allocator, &request->encryption_context, &input));
+                serialized = aws_kms_decrypt_request_to_json(request);
+                aws_kms_decrypt_request_destroy(request);
+            }
+            CHECK(serialized != NULL);
+            struct json_object *json = parse_json((const char *)aws_string_bytes(serialized), serialized->len);
+            CHECK(json != NULL);
+            struct json_object *context = NULL;
+            CHECK(json_object_object_get_ex(json, "EncryptionContext", &context));
+            CHECK(json_object_object_length(context) == 4);
+            const char *keys[] = {"application", "flow", "seed_id", "bitcoin_network"};
+            const char *values[] = {"utexo-enclave-signer", flows[i], "seed", "bitcoin"};
+            for (size_t entry = 0; entry < 4; entry++) {
+                struct json_object *value = NULL;
+                CHECK(json_object_object_get_ex(context, keys[entry], &value));
+                CHECK(json_object_is_type(value, json_type_string));
+                CHECK(strcmp(json_object_get_string(value), values[entry]) == 0);
+            }
+            json_object_put(json);
+            aws_string_destroy(serialized);
+        }
+    }
     aws_nitro_enclaves_library_clean_up();
-    printf("credential cleanup, %zu strict IPC cases and optional AWS session-token checks passed\n",
+    printf("credential cleanup, %zu strict IPC cases, optional AWS session token and 4 serialized flow-context checks passed\n",
            sizeof(cases) / sizeof(cases[0]));
     return EXIT_SUCCESS;
 }

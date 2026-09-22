@@ -32,14 +32,14 @@ ENV PATH="/usr/local/go/bin:${PATH}" GOTOOLCHAIN=local
 WORKDIR /build
 # Resolve only public native sources in this stage. Rust/application edits do
 # not invalidate the dependency build, and private source arrives later.
-COPY build/build-swap-kms-tool.sh build/swap-kms-dependencies.tsv build/swap-kms-nsm.Cargo.lock /build/build/
-RUN SWAP_KMS_DEPENDENCIES_ONLY=1 sh /build/build/build-swap-kms-tool.sh
+COPY build/build-kms-tool.sh build/kms-dependencies.tsv build/kms-nsm.Cargo.lock /build/build/
+RUN KMS_DEPENDENCIES_ONLY=1 sh /build/build/build-kms-tool.sh
 COPY enclave/kms-tool /build/enclave/kms-tool/
 
 # Official AWS Nitro SDK with security-updated, immutable AWS dependency pins.
 # This helper is included only in the swap images. It keeps KMS TLS, SigV4,
 # attestation and recipient-envelope processing inside the enclave.
-RUN sh /build/build/build-swap-kms-tool.sh
+RUN sh /build/build/build-kms-tool.sh
 
 FROM kms-tool-builder AS builder
 COPY . /build/
@@ -75,7 +75,7 @@ RUN --mount=type=secret,id=github_token \
     --mount=type=secret,id=consensus_key \
     --mount=type=secret,id=ops_key \
     --mount=type=secret,id=schemas_key \
-    sh /build/build/with-private-deps.sh enclave cargo build --release --locked --features vsock,rgb,rgb-swap,ccd,evm-rpc
+    sh /build/build/with-private-deps.sh enclave cargo build --release --locked --features vsock,rgb,rgb-swap,ccd,bfa-validation
 
 
 # --- Runtime ---
@@ -98,9 +98,9 @@ RUN dnf install -y socat iproute ca-certificates libgcc \
 
 WORKDIR /app
 COPY --from=builder /build/target/release/utexo-bridge-enclave /app/utexo-bridge-enclave
-COPY --from=kms-tool-builder /opt/swap-kms/bin/swap-kms-tool /usr/local/bin/swap-kms-tool
-COPY --from=kms-tool-builder /opt/swap-kms/lib/libnsm.so.0 /usr/lib64/libnsm.so.0
-COPY --from=kms-tool-builder /opt/swap-kms/share/swap-kms /usr/share/swap-kms
+COPY --from=kms-tool-builder /opt/kms/bin/kms-tool /usr/local/bin/kms-tool
+COPY --from=kms-tool-builder /opt/kms/lib/libnsm.so.0 /usr/lib64/libnsm.so.0
+COPY --from=kms-tool-builder /opt/kms/share/kms /usr/share/kms
 COPY build/entrypoint.sh /app/entrypoint.sh
 
 RUN chmod +x /app/utexo-bridge-enclave /app/entrypoint.sh
@@ -121,9 +121,11 @@ RUN chmod +x /app/utexo-bridge-enclave /app/entrypoint.sh
 # *entry* contract that emits FundsIn (FUNDS_IN_CONTRACT, set below). The listener
 # stamps EVM_PROXY_CONTRACT_ADDRESS into every funds-out request; the enclave
 # cross-checks it (see enclave/src/config.rs + networks/evm/validation.rs).
+ARG RGB_ASSET_ID=""
+RUN test -n "$RGB_ASSET_ID"
 ENV EVM_CHAIN_ID=42161 \
     EVM_PROXY_CONTRACT_ADDRESS=0xC985c12bbCECe96A13A72A62FD75d8aB9381ef5A \
-    RGB_ASSET_ID=rgb:lJFja2kw-h_azlEd-7CNPxwf-UsvIDhH-UD0Y1f9-8f26jLk \
+    RGB_ASSET_ID=${RGB_ASSET_ID} \
     BITCOIN_NETWORK=bitcoin \
     ELECTRUM_URL=ssl://electrs-mainnet.utexo.com:50002
 
@@ -166,15 +168,15 @@ ENV EVM_RPC_URL=http://127.0.0.1:3444 \
 # `--debug-mode`, which zeroes the PCRs anyway.
 # Public KMS identity/recovery pins. Nitro does not inherit the parent host's
 # environment: pass these build arguments when producing the swap EIF.
-ARG SWAP_KMS_KEY_ARN
-ARG SWAP_KMS_REGION
-ARG SWAP_KMS_SEED_ID
-ARG SWAP_KMS_EXPECTED_EVM_ADDRESS=
-ENV SWAP_KMS_KEY_ARN=${SWAP_KMS_KEY_ARN} \
-    SWAP_KMS_REGION=${SWAP_KMS_REGION} \
-    SWAP_KMS_SEED_ID=${SWAP_KMS_SEED_ID} \
-    SWAP_KMS_EXPECTED_EVM_ADDRESS=${SWAP_KMS_EXPECTED_EVM_ADDRESS}
-RUN test -n "$SWAP_KMS_KEY_ARN" && test -n "$SWAP_KMS_REGION" && test -n "$SWAP_KMS_SEED_ID"
+ARG KMS_KEY_ARN
+ARG KMS_REGION
+ARG KMS_SEED_ID
+ARG KMS_EXPECTED_EVM_ADDRESS=
+ENV KMS_KEY_ARN=${KMS_KEY_ARN} \
+    KMS_REGION=${KMS_REGION} \
+    KMS_SEED_ID=${KMS_SEED_ID} \
+    KMS_EXPECTED_EVM_ADDRESS=${KMS_EXPECTED_EVM_ADDRESS}
+RUN test -n "$KMS_KEY_ARN" && test -n "$KMS_REGION" && test -n "$KMS_SEED_ID"
 
 ENV RUST_LOG=info
 ENTRYPOINT ["/app/entrypoint.sh"]

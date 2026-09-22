@@ -36,6 +36,7 @@ dev_feature_release_guard!(
     "`dev-mode` must not be enabled in a release build (debug_assertions off): \
      it skips all signing cross-checks."
 );
+
 dev_feature_release_guard!(
     "local-kms-e2e",
     "`local-kms-e2e` must not be enabled in a release build: it trusts a local test CA and mock KMS Recipient PCRs."
@@ -80,6 +81,13 @@ compile_error!(
      may sign, and refusing to build is safer than defaulting to either"
 );
 
+// A new flow needs its own explicit encryption context before enabling custody.
+// In particular, the current combined mint/burn image must retain its lifecycle.
+#[cfg(all(feature = "kms-persistence", not(feature = "rgb-swap")))]
+compile_error!(
+    "kms-persistence is currently supported only by rgb-swap; a new flow requires its own custody context"
+);
+
 pub mod attestation;
 pub mod cloning;
 // Disciplines CLOCK_REALTIME from the hypervisor PTP source (`/dev/ptp0`) so a
@@ -92,14 +100,14 @@ pub mod conn;
 pub mod error;
 pub mod framing;
 pub mod keys;
+#[cfg(feature = "kms-persistence")]
+pub mod kms;
 pub mod networks;
 pub mod policy;
+#[cfg(feature = "kms-persistence")]
+pub mod seed_persistence;
 pub mod server;
 pub mod state;
-#[cfg(feature = "rgb-swap")]
-pub mod swap_kms;
-#[cfg(feature = "rgb-swap")]
-pub mod swap_persistence;
 
 #[cfg(all(feature = "vsock", target_os = "linux"))]
 pub mod vsock_forwarder;

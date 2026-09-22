@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-project(swap_kms_input_sanitizers C)
+project(kms_input_sanitizers C)
 find_package(json-c CONFIG REQUIRED)
 if(NOT TARGET LibJsonC::Json)
   add_library(LibJsonC::Json ALIAS json-c::json-c)

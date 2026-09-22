@@ -65,7 +65,7 @@ docker build --target kms-tool-builder \
   -f build/Dockerfile.enclave.rgb .
 mkdir -p .artifacts/kms-sdk/prefix
 container_id=$(docker create codex-swap-kms-sdk-builder:security-review)
-docker cp "$container_id:/opt/swap-kms/." .artifacts/kms-sdk/prefix/
+docker cp "$container_id:/opt/kms/." .artifacts/kms-sdk/prefix/
 docker rm "$container_id"
 python3.12 -m venv .artifacts/kms-e2e/venv
 .artifacts/kms-e2e/venv/bin/python -m pip install pip==26.2.1
@@ -76,13 +76,13 @@ npm ci --prefix testing/kms
 ```
 
 The production Docker stage builds the exact pinned libraries listed in
-`build/swap-kms-dependencies.tsv`. The runner then compiles the production helper
+`build/kms-dependencies.tsv`. The runner then compiles the production helper
 source with only the test linker wrappers and mock NSM library. It builds both
 enclave/client binaries and both parent/client binaries
 with locked Cargo dependencies, starts the local services, runs the assertions,
 and stops its processes even on failure. It returns nonzero on the first failure.
 The emulator, clients, and broker bind only to loopback. The runner starts the
-parent broker with `SWAP_KMS_BROKER_TCP` and the fixture CA in `SSL_CERT_FILE`;
+parent broker with `KMS_BROKER_TCP` and the fixture CA in `SSL_CERT_FILE`;
 production uses VSOCK. Its unused gRPC listener gets a separate ephemeral port. The container connects
 through Docker Desktop/Colima's `host.docker.internal`; native Linux uses host
 networking to reach loopback. It refuses occupied ports
@@ -272,13 +272,20 @@ for the pinned tools, artifact hashes, runtime compatibility checks, and limits.
 
 ## Focused testing-only checks
 
-The Rust broker tests in `parent/src/swap_persistence/tests.rs` cover the actual
+The generic helper requires an explicit application flow; current signers still send
+`rgb-swap`. The helper contract checks missing/malformed/duplicate flow fields and
+proves a valid foreign flow reaches the unchanged policy denial boundary.
+The immutable legacy Rust client alone retains its original `SWAP_KMS_*` settings
+to verify old ciphertext recovery; current processes use only `KMS_*`. Each parent
+fixture receives a distinct loopback health port.
+
+The Rust broker tests in `parent/src/seed_persistence/tests.rs` cover the actual
 SDK client, framing, cancellation, quotas, and conditional S3 writes. They replace
 the retired Python-broker implementation tests; older reports retain those
 historical Python counts.
 
 ```sh
-cargo test --locked --manifest-path parent/Cargo.toml swap_persistence
+cargo test --locked --manifest-path parent/Cargo.toml seed_persistence
 .artifacts/kms-e2e/venv/bin/python testing/kms/policy-checks.py
 ```
 

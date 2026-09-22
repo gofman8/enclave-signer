@@ -4,7 +4,8 @@ pub mod config;
 pub mod error;
 pub mod framing;
 pub mod grpc_server;
-pub mod swap_persistence;
+pub mod health;
+pub mod seed_persistence;
 
 pub mod grpc_proto {
     pub use federated_signer_proto::parent::*;

@@ -1,5 +1,5 @@
 /* Deterministic malformed-input stress under ASan/UBSan. Never calls AWS/NSM. */
-#define main swap_kms_tool_main
+#define main kms_tool_main
 #include "../../../enclave/kms-tool/main.c"
 #undef main
 
@@ -15,7 +15,7 @@ static void exercise(const char *data, size_t size) {
     struct json_object *parsed = parse_json(data, size);
     if (parsed) {
         const char *names[] = {"access_key_id", "secret_access_key", "session_token",
-                              "operation", "region", "key_arn", "seed_id", "bitcoin_network"};
+                              "operation", "region", "key_arn", "seed_id", "flow", "bitcoin_network"};
         for (size_t i = 0; i < sizeof(names) / sizeof(names[0]); i++) {
             (void)string_field(parsed, names[i], 0, MESSAGE_LIMIT);
         }

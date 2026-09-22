@@ -1,7 +1,7 @@
 use thiserror::Error;
 
 /// Fixed custody diagnostics. Host/provider error strings never enter this API.
-#[cfg(feature = "rgb-swap")]
+#[cfg(feature = "kms-persistence")]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Error)]
 pub enum CustodyFailure {
     #[error("configuration_error; verify custody configuration")]
@@ -22,8 +22,8 @@ pub enum CustodyFailure {
 
 #[derive(Debug, Error)]
 pub enum EnclaveError {
-    #[cfg(feature = "rgb-swap")]
-    #[error("swap custody {service}: {failure}")]
+    #[cfg(feature = "kms-persistence")]
+    #[error("seed custody {service}: {failure}")]
     Custody {
         service: &'static str,
         failure: CustodyFailure,
@@ -104,7 +104,7 @@ impl EnclaveError {
     /// Map error to a proto error code.
     pub fn error_code(&self) -> u32 {
         match self {
-            #[cfg(feature = "rgb-swap")]
+            #[cfg(feature = "kms-persistence")]
             EnclaveError::Custody {
                 failure: CustodyFailure::Unavailable,
                 ..

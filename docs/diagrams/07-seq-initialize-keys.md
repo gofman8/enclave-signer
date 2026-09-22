@@ -1,7 +1,7 @@
 # Initialize keys — first enclave in a cluster, from OS entropy
 
 This lifecycle applies to mint/burn and CCD-only builds. RGB swaps use
-[attested KMS generation and persistence](../swap-kms-persistence.md);
+[attested KMS generation and persistence](../kms-persistence.md);
 swap replicas recover the same seed and reject peer cloning.
 
 ```mermaid

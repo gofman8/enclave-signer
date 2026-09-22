@@ -1,4 +1,4 @@
-#![cfg(feature = "rgb-swap")]
+#![cfg(feature = "kms-persistence")]
 
 mod common;
 
@@ -8,7 +8,7 @@ use std::sync::{
     Arc,
 };
 use utexo_bridge_enclave::proto::{enclave_request::Request, enclave_response::Response, *};
-use utexo_bridge_enclave::swap_persistence::SwapSeedSource;
+use utexo_bridge_enclave::seed_persistence::SeedSource;
 use utexo_bridge_enclave::{
     error::{EnclaveError, Result},
     keys::KeyManager,
@@ -16,7 +16,7 @@ use utexo_bridge_enclave::{
 };
 
 struct RetrySource(Arc<AtomicUsize>);
-impl SwapSeedSource for RetrySource {
+impl SeedSource for RetrySource {
     fn load_keys(&self, network: Network, _deadline: std::time::Instant) -> Result<KeyManager> {
         if self.0.fetch_add(1, Ordering::SeqCst) == 0 {
             return Err(EnclaveError::Internal("persistence unavailable".into()));
@@ -28,7 +28,7 @@ impl SwapSeedSource for RetrySource {
 #[test]
 fn missing_configuration_never_falls_back_to_ephemeral_generation() {
     let state = EnclaveState::new(Network::Bitcoin);
-    assert!(state.initialize_from_swap_kms().is_err());
+    assert!(state.initialize_from_persistence().is_err());
     assert_eq!(state.phase_name(), "initial");
     assert!(matches!(
         state.sign_evm(&[1; 32]),
@@ -40,11 +40,11 @@ fn missing_configuration_never_falls_back_to_ephemeral_generation() {
 fn failed_recovery_stays_initial_and_retry_activates_only_once() {
     let attempts = Arc::new(AtomicUsize::new(0));
     let state = EnclaveState::new(Network::Bitcoin)
-        .with_swap_seed_source(Box::new(RetrySource(attempts.clone())));
-    assert!(state.initialize_from_swap_kms().is_err());
+        .with_seed_source(Box::new(RetrySource(attempts.clone())));
+    assert!(state.initialize_from_persistence().is_err());
     assert_eq!(state.phase_name(), "initial");
     assert!(state.get_keys().is_err());
-    state.initialize_from_swap_kms().unwrap();
+    state.initialize_from_persistence().unwrap();
     assert_eq!(state.phase_name(), "active");
     let expected = KeyManager::from_seed([42; 64], Network::Bitcoin).unwrap();
     assert_eq!(
@@ -52,14 +52,14 @@ fn failed_recovery_stays_initial_and_retry_activates_only_once() {
         expected.sign_evm(&[1; 32]).unwrap()
     );
     assert!(matches!(
-        state.initialize_from_swap_kms(),
+        state.initialize_from_persistence(),
         Err(EnclaveError::AlreadyInitialized)
     ));
     assert_eq!(attempts.load(Ordering::SeqCst), 2);
 }
 
 #[test]
-fn swap_wire_rejects_every_peer_cloning_entrypoint() {
+fn persistence_wire_rejects_every_peer_cloning_entrypoint() {
     let port = common::start_test_server();
     for request in [
         Request::InitiateCloning(InitiateCloningRequest::default()),
@@ -87,7 +87,7 @@ fn swap_wire_rejects_every_peer_cloning_entrypoint() {
 }
 
 #[test]
-fn swap_initialize_rejects_cloning_secret_before_activating() {
+fn persistence_initialize_rejects_cloning_secret_before_activating() {
     let port = common::start_test_server();
     let response = common::send_request(
         port,
@@ -119,7 +119,7 @@ fn recovery_reservation_does_not_block_other_workers_or_allow_overwrite() {
         started: mpsc::Sender<()>,
         release: Mutex<mpsc::Receiver<()>>,
     }
-    impl SwapSeedSource for BlockingSource {
+    impl SeedSource for BlockingSource {
         fn load_keys(&self, network: Network, _: std::time::Instant) -> Result<KeyManager> {
             self.started.send(()).unwrap();
             self.release.lock().unwrap().recv().unwrap();
@@ -129,20 +129,20 @@ fn recovery_reservation_does_not_block_other_workers_or_allow_overwrite() {
     let (started_tx, started_rx) = mpsc::channel();
     let (release_tx, release_rx) = mpsc::channel();
     let state = Arc::new(
-        EnclaveState::new(Network::Bitcoin).with_swap_seed_source(Box::new(BlockingSource {
+        EnclaveState::new(Network::Bitcoin).with_seed_source(Box::new(BlockingSource {
             started: started_tx,
             release: Mutex::new(release_rx),
         })),
     );
     let initializing = state.clone();
-    let worker = std::thread::spawn(move || initializing.initialize_from_swap_kms());
+    let worker = std::thread::spawn(move || initializing.initialize_from_persistence());
     started_rx.recv_timeout(Duration::from_secs(2)).unwrap();
     let (probe_tx, probe_rx) = mpsc::channel();
     let probing = state.clone();
     let probe = std::thread::spawn(move || {
         let phase = probing.phase_name();
         let keys = probing.get_keys();
-        let init = probing.initialize_from_swap_kms();
+        let init = probing.initialize_from_persistence();
         let overwrite = probing.initialize_from_seed([17; 64]);
         probe_tx.send((phase, keys, init, overwrite)).unwrap();
     });
@@ -168,7 +168,7 @@ fn recovery_reservation_does_not_block_other_workers_or_allow_overwrite() {
 fn successful_recovery_after_deadline_never_activates() {
     use std::time::{Duration, Instant};
     struct LateSource;
-    impl SwapSeedSource for LateSource {
+    impl SeedSource for LateSource {
         fn load_keys(&self, network: Network, deadline: Instant) -> Result<KeyManager> {
             std::thread::sleep(
                 deadline.saturating_duration_since(Instant::now()) + Duration::from_millis(10),
@@ -176,9 +176,9 @@ fn successful_recovery_after_deadline_never_activates() {
             KeyManager::from_seed([42; 64], network)
         }
     }
-    let state = EnclaveState::new(Network::Bitcoin).with_swap_seed_source(Box::new(LateSource));
+    let state = EnclaveState::new(Network::Bitcoin).with_seed_source(Box::new(LateSource));
     assert!(state
-        .initialize_from_swap_kms_until(Instant::now() + Duration::from_millis(30))
+        .initialize_from_persistence_until(Instant::now() + Duration::from_millis(30))
         .is_err());
     assert_eq!(state.phase_name(), "initial");
     assert!(state.get_keys().is_err());
@@ -187,10 +187,10 @@ fn successful_recovery_after_deadline_never_activates() {
 #[test]
 fn expired_request_never_starts_custody_io() {
     let calls = Arc::new(AtomicUsize::new(0));
-    let state = EnclaveState::new(Network::Bitcoin)
-        .with_swap_seed_source(Box::new(RetrySource(calls.clone())));
+    let state =
+        EnclaveState::new(Network::Bitcoin).with_seed_source(Box::new(RetrySource(calls.clone())));
     assert!(state
-        .initialize_from_swap_kms_until(std::time::Instant::now())
+        .initialize_from_persistence_until(std::time::Instant::now())
         .is_err());
     assert_eq!(calls.load(Ordering::SeqCst), 0);
     assert_eq!(state.phase_name(), "initial");
@@ -199,7 +199,7 @@ fn expired_request_never_starts_custody_io() {
 #[test]
 fn panicking_recovery_releases_reservation_for_retry() {
     struct PanicOnce(AtomicUsize);
-    impl SwapSeedSource for PanicOnce {
+    impl SeedSource for PanicOnce {
         fn load_keys(&self, network: Network, _: std::time::Instant) -> Result<KeyManager> {
             assert_ne!(
                 self.0.fetch_add(1, Ordering::SeqCst),
@@ -210,13 +210,13 @@ fn panicking_recovery_releases_reservation_for_retry() {
         }
     }
     let state = EnclaveState::new(Network::Bitcoin)
-        .with_swap_seed_source(Box::new(PanicOnce(AtomicUsize::new(0))));
+        .with_seed_source(Box::new(PanicOnce(AtomicUsize::new(0))));
     assert!(std::panic::catch_unwind(std::panic::AssertUnwindSafe(
-        || state.initialize_from_swap_kms()
+        || state.initialize_from_persistence()
     ))
     .is_err());
     assert_eq!(state.phase_name(), "initial");
-    state.initialize_from_swap_kms().unwrap();
+    state.initialize_from_persistence().unwrap();
     assert_eq!(state.phase_name(), "active");
 }
 
@@ -251,8 +251,8 @@ fn ingress_time_is_subtracted_before_custody_dispatch() {
         }
     }
     let calls = Arc::new(AtomicUsize::new(0));
-    let state = EnclaveState::new(Network::Bitcoin)
-        .with_swap_seed_source(Box::new(RetrySource(calls.clone())));
+    let state =
+        EnclaveState::new(Network::Bitcoin).with_seed_source(Box::new(RetrySource(calls.clone())));
     let ctx = server::ServerContext::new(
         state,
         BridgeConfig::default(),

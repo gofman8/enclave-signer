@@ -1,4 +1,4 @@
-//! RGB-swap seed custody through the official AWS Nitro Enclaves SDK for C.
+//! Seed custody through the official AWS Nitro Enclaves SDK for C.
 //!
 //! The measured enclave-local helper uses the same AWS libraries as
 //! kmstool_enclave_cli for HTTPS, SigV4, NSM attestation and Recipient CMS.
@@ -18,29 +18,47 @@ use zeroize::Zeroizing;
 
 use crate::error::{CustodyFailure, EnclaveError, Result};
 
-const HELPER_PATH: &str = "/usr/local/bin/swap-kms-tool";
+const HELPER_PATH: &str = "/usr/local/bin/kms-tool";
 const HELPER_TIMEOUT: Duration = Duration::from_secs(12);
 pub(crate) const MAX_MESSAGE_BYTES: usize = 64 * 1024;
 pub const MAX_CIPHERTEXT_BYTES: usize = 6144;
 const SEED_BYTES: usize = 64;
 
-/// Public configuration measured into the RGB-swap image. Never accept an
+/// Application-selected custody domain, compiled into the measured image.
+/// Add a distinct domain when another signing flow adopts KMS persistence;
+/// existing ciphertext must keep its original context value.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CustodyFlow {
+    RgbSwap,
+}
+
+impl CustodyFlow {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::RgbSwap => "rgb-swap",
+        }
+    }
+}
+
+/// Public configuration measured into the enclave image. Never accept an
 /// arbitrary KMS endpoint, key ARN or seed identifier from a host request.
 #[derive(Debug, Clone)]
-pub struct SwapKmsConfig {
+pub struct KmsConfig {
+    pub flow: CustodyFlow,
     pub key_arn: String,
     pub region: String,
     pub seed_id: String,
 }
 
-impl SwapKmsConfig {
-    pub fn from_env() -> Result<Self> {
+impl KmsConfig {
+    pub fn from_env(flow: CustodyFlow) -> Result<Self> {
         let read =
             |name: &str| std::env::var(name).map_err(|_| fail(format!("{name} is required")));
         let config = Self {
-            key_arn: read("SWAP_KMS_KEY_ARN")?,
-            region: read("SWAP_KMS_REGION")?,
-            seed_id: read("SWAP_KMS_SEED_ID")?,
+            flow,
+            key_arn: read("KMS_KEY_ARN")?,
+            region: read("KMS_REGION")?,
+            seed_id: read("KMS_SEED_ID")?,
         };
         config.validate()?;
         Ok(config)
@@ -60,7 +78,7 @@ impl SwapKmsConfig {
             || self.region.starts_with("us-gov-")
             || self.region.starts_with("us-iso")
         {
-            return Err(fail("SWAP_KMS_REGION must be a commercial AWS region"));
+            return Err(fail("KMS_REGION must be a commercial AWS region"));
         }
         let parts: Vec<_> = self.key_arn.split(':').collect();
         if parts.len() != 6
@@ -72,7 +90,9 @@ impl SwapKmsConfig {
             || !parts[4].bytes().all(|b| b.is_ascii_digit())
             || !parts[5].starts_with("key/")
         {
-            return Err(fail("SWAP_KMS_KEY_ARN must be a full key ARN in SWAP_KMS_REGION (aliases are not accepted)"));
+            return Err(fail(
+                "KMS_KEY_ARN must be a full key ARN in KMS_REGION (aliases are not accepted)",
+            ));
         }
         let key_id = &parts[5][4..];
         let uuid = key_id.len() == 36
@@ -87,7 +107,7 @@ impl SwapKmsConfig {
             .strip_prefix("mrk-")
             .is_some_and(|id| id.len() == 32 && id.bytes().all(|b| b.is_ascii_hexdigit()));
         if !uuid && !multi_region {
-            return Err(fail("SWAP_KMS_KEY_ARN has an invalid key identifier"));
+            return Err(fail("KMS_KEY_ARN has an invalid key identifier"));
         }
         if self.seed_id.is_empty()
             || self.seed_id.len() > 128
@@ -96,7 +116,9 @@ impl SwapKmsConfig {
                 .bytes()
                 .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'-' | b'_' | b'.'))
         {
-            return Err(fail("SWAP_KMS_SEED_ID must be 1-128 ASCII letters, digits, dots, underscores or hyphens"));
+            return Err(fail(
+                "KMS_SEED_ID must be 1-128 ASCII letters, digits, dots, underscores or hyphens",
+            ));
         }
         Ok(())
     }
@@ -159,8 +181,8 @@ impl AwsCredentials {
     }
 }
 
-pub struct SwapKmsClient {
-    config: SwapKmsConfig,
+pub struct KmsClient {
+    config: KmsConfig,
     credentials: AwsCredentials,
     network: Network,
 }
@@ -168,6 +190,7 @@ pub struct SwapKmsClient {
 #[derive(Serialize)]
 struct HelperRequest<'a> {
     operation: &'a str,
+    flow: &'a str,
     region: &'a str,
     key_arn: &'a str,
     seed_id: &'a str,
@@ -200,12 +223,8 @@ pub(crate) fn deserialize_secret<'de, D: serde::Deserializer<'de>>(
     String::deserialize(deserializer).map(Zeroizing::new)
 }
 
-impl SwapKmsClient {
-    pub fn new(
-        config: SwapKmsConfig,
-        credentials: AwsCredentials,
-        network: Network,
-    ) -> Result<Self> {
+impl KmsClient {
+    pub fn new(config: KmsConfig, credentials: AwsCredentials, network: Network) -> Result<Self> {
         config.validate()?;
         Ok(Self {
             config,
@@ -245,6 +264,7 @@ impl SwapKmsClient {
         // intermediate JSON Value containing additional unprotected copies.
         let request = HelperRequest {
             operation,
+            flow: self.config.flow.as_str(),
             region: &self.config.region,
             key_arn: &self.config.key_arn,
             seed_id: &self.config.seed_id,
@@ -272,18 +292,14 @@ fn helper_command() -> Command {
     #[cfg(not(feature = "local-kms-e2e"))]
     let path = std::ffi::OsString::from(HELPER_PATH);
     #[cfg(feature = "local-kms-e2e")]
-    let path = std::env::var_os("SWAP_KMS_E2E_HELPER")
-        .unwrap_or_else(|| std::ffi::OsString::from(HELPER_PATH));
+    let path =
+        std::env::var_os("KMS_E2E_HELPER").unwrap_or_else(|| std::ffi::OsString::from(HELPER_PATH));
     let mut command = Command::new(path);
     command.env_clear();
     // Testing branch only; lib.rs prohibits release builds of this feature.
     // Keep credentials on stdin and forward only the local fixture settings.
     #[cfg(feature = "local-kms-e2e")]
-    for name in [
-        "SWAP_KMS_E2E_PCR0",
-        "SWAP_KMS_E2E_CA_PEM",
-        "SWAP_KMS_E2E_PORT",
-    ] {
+    for name in ["KMS_E2E_PCR0", "KMS_E2E_CA_PEM", "KMS_E2E_PORT"] {
         if let Some(value) = std::env::var_os(name) {
             command.env(name, value);
         }
@@ -455,7 +471,7 @@ fn decode_ciphertext(encoded: &str) -> Result<Vec<u8>> {
 }
 
 fn fail(message: impl Into<String>) -> EnclaveError {
-    EnclaveError::Internal(format!("RGB swap KMS: {}", message.into()))
+    EnclaveError::Internal(format!("KMS custody: {}", message.into()))
 }
 
 #[cfg(test)]
@@ -463,8 +479,9 @@ mod tests {
     use super::*;
     use serde_json::json;
 
-    fn config() -> SwapKmsConfig {
-        SwapKmsConfig {
+    fn config() -> KmsConfig {
+        KmsConfig {
+            flow: CustodyFlow::RgbSwap,
             key_arn: "arn:aws:kms:eu-west-1:123456789012:key/12345678-1234-1234-1234-123456789012"
                 .into(),
             region: "eu-west-1".into(),

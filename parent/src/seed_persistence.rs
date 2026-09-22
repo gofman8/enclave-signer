@@ -1,5 +1,5 @@
-//! Optional RGB-swap host bridge. Only credentials and KMS ciphertext cross it;
-//! the enclave still performs recipient-attested KMS calls and all signing.
+//! Optional seed storage bridge for AWS credentials and opaque KMS ciphertext.
+//! The enclave chooses the flow, performs recipient-attested KMS calls and signs.
 //! This is a separate, bounded JSON protocol, not the parent protobuf framing.
 
 use std::{
@@ -87,14 +87,14 @@ impl Settings {
                 .filter(|v| !v.is_empty() && v.trim() == v)
                 .ok_or(Error::Configuration)
         };
-        let seed_id = required("SWAP_KMS_SEED_ID")?;
-        let bucket = required("SWAP_KMS_S3_BUCKET")?;
-        let key = required("SWAP_KMS_S3_KEY")?;
+        let seed_id = required("KMS_SEED_ID")?;
+        let bucket = required("KMS_S3_BUCKET")?;
+        let key = required("KMS_S3_KEY")?;
         let region = required("AWS_REGION")?;
         if seed_id.len() > 256 || bucket.len() > 255 || key.len() > 1024 || region.len() > 64 {
             return Err(Error::Configuration);
         }
-        let tcp = get("SWAP_KMS_BROKER_TCP")
+        let tcp = get("KMS_BROKER_TCP")
             .map(|value| {
                 let addr: SocketAddr = value.parse().map_err(|_| Error::Configuration)?;
                 if parent.use_vsock
@@ -109,7 +109,7 @@ impl Settings {
         if tcp.is_none() && !parent.use_vsock {
             return Err(Error::Configuration);
         }
-        let cids = if let Some(raw) = get("SWAP_KMS_ALLOWED_CIDS") {
+        let cids = if let Some(raw) = get("KMS_ALLOWED_CIDS") {
             if raw.len() > 4096 {
                 return Err(Error::Configuration);
             }
@@ -135,7 +135,7 @@ impl Settings {
             }
             vec![parent.enclave_vsock_cid]
         };
-        if get("SWAP_KMS_BROKER_PORT").is_some_and(|port| port != "8004") {
+        if get("KMS_BROKER_PORT").is_some_and(|port| port != "8004") {
             return Err(Error::Configuration);
         }
         Ok(Some(Self {
@@ -150,11 +150,11 @@ impl Settings {
 }
 
 const CONFIG_KEYS: [&str; 5] = [
-    "SWAP_KMS_SEED_ID",
-    "SWAP_KMS_S3_BUCKET",
-    "SWAP_KMS_S3_KEY",
-    "SWAP_KMS_ALLOWED_CIDS",
-    "SWAP_KMS_BROKER_TCP",
+    "KMS_SEED_ID",
+    "KMS_S3_BUCKET",
+    "KMS_S3_KEY",
+    "KMS_ALLOWED_CIDS",
+    "KMS_BROKER_TCP",
 ];
 
 /// Shared activation predicate for configuration and safe startup logging.
@@ -458,7 +458,7 @@ impl Broker {
             Err(error) => Err(error),
         };
         let payload = result.unwrap_or_else(|error| {
-            tracing::warn!(code = %error, "swap persistence request failed");
+            tracing::warn!(code = %error, "seed persistence request failed");
             Zeroizing::new(format!("{{\"error\":\"{error}\"}}").into_bytes())
         });
         let _ = timeout_at(
@@ -570,7 +570,7 @@ async fn serve(listener: Listener, broker: Arc<Broker>) {
         let (stream, cid) = match listener.accept().await {
             Ok(accepted) => accepted,
             Err(_) => {
-                tracing::warn!("swap persistence accept failed");
+                tracing::warn!("seed persistence accept failed");
                 tokio::time::sleep(Duration::from_millis(100)).await;
                 continue;
             }
@@ -590,8 +590,8 @@ async fn serve(listener: Listener, broker: Arc<Broker>) {
     }
 }
 
-/// Bind before starting gRPC, so a partial swap configuration fails startup.
-/// With no swap storage environment variables this performs no AWS work.
+/// Bind before starting gRPC, so a partial persistence configuration fails startup.
+/// With no seed storage environment variables this performs no AWS work.
 pub async fn start(parent: &Config) -> Result<Option<JoinHandle<()>>, Error> {
     if !configured() {
         return Ok(None);
@@ -624,7 +624,7 @@ pub async fn start(parent: &Config) -> Result<Option<JoinHandle<()>>, Error> {
         Client::from_conf(s3_config),
         credentials,
     ));
-    tracing::info!("swap persistence bridge ready");
+    tracing::info!("seed persistence bridge ready");
     Ok(Some(tokio::spawn(serve(listener, broker))))
 }
 

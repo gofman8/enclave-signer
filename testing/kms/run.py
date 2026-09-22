@@ -47,8 +47,8 @@ LEGACY_COMMIT = "3d5086558faba04d589ddc63abc6bfc43a8743b9"
 
 def isolated_env():
     env = {k: v for k, v in os.environ.items() if not (
-        k.startswith(("AWS_", "SWAP_", "EVM_", "GAS_", "RGB_", "BITCOIN_", "HELIOS_"))
-        or k in {"ELECTRUM_URL", "ESPLORA_URL"}
+        k.startswith(("AWS_", "KMS_", "SWAP_", "EVM_", "GAS_", "RGB_", "BITCOIN_", "HELIOS_"))
+        or k in {"ELECTRUM_URL", "ESPLORA_URL", "HEALTH_HOST", "HEALTH_PORT"}
         or k.lower() in {"http_proxy", "https_proxy", "all_proxy", "no_proxy"}
     )}
     env.update(AWS_EC2_METADATA_DISABLED="true", AWS_CONFIG_FILE=os.devnull,
@@ -122,6 +122,7 @@ class Suite:
         self.processes = []
         self.results = []
         self.counter = 0
+        self.health_ports = set()
         self.fixture = None
         self.sdk_helper = None
         self.broker_process = None
@@ -196,6 +197,18 @@ class Suite:
             "bucket": "local-swap-kms-e2e", "object_key": f"seeds/{suffix}.kms"})
         return self.fixture
 
+    def parent_health_env(self, *reserved_ports):
+        # Each actual parent starts a health listener, including broker-only
+        # fixtures. Never inherit or reuse another scenario's health port.
+        for _ in range(100):
+            with socket.socket() as sock:
+                sock.bind(("127.0.0.1", 0))
+                port = sock.getsockname()[1]
+            if port not in self.health_ports and port not in reserved_ports:
+                self.health_ports.add(port)
+                return {"HEALTH_HOST": "127.0.0.1", "HEALTH_PORT": str(port)}
+        raise AssertionError("could not allocate a distinct parent health port")
+
     def broker(self, **overrides):
         f = self.fixture
         env = isolated_env()
@@ -204,17 +217,18 @@ class Suite:
             AWS_SECRET_ACCESS_KEY=creds["secret_access_key"], AWS_SESSION_TOKEN=creds["session_token"],
             AWS_REGION=f["region"], AWS_DEFAULT_REGION=f["region"],
             AWS_ENDPOINT_URL_S3=f["aws_tls_endpoint"], AWS_CA_BUNDLE=str(self.certs["ca.pem"]),
-            SWAP_KMS_SEED_ID=f["seed_id"], SWAP_KMS_S3_BUCKET=f["bucket"],
-            SWAP_KMS_S3_KEY=f["object_key"])
+            KMS_SEED_ID=f["seed_id"], KMS_S3_BUCKET=f["bucket"],
+            KMS_S3_KEY=f["object_key"])
         # Exercise the actual parent binary's optional Rust broker. Its gRPC
         # listener uses a separate unused port; normal parent gRPC tests below
-        # keep all SWAP_* settings absent.
+        # keep all KMS_* settings absent.
         with socket.socket() as sock:
             sock.bind(("127.0.0.1", 0))
             grpc_port = sock.getsockname()[1]
         env.update(GRPC_HOST="127.0.0.1", GRPC_PORT=str(grpc_port), USE_VSOCK="0",
-            SWAP_KMS_BROKER_TCP=f"127.0.0.1:{self.args.broker_port}",
+            KMS_BROKER_TCP=f"127.0.0.1:{self.args.broker_port}",
             SSL_CERT_FILE=str(self.certs["ca.pem"]))
+        env.update(self.parent_health_env(grpc_port, self.args.broker_port))
         env.update(overrides)
         env = {key: value for key, value in env.items() if value is not None}
         self.broker_process = self.start("broker", [self.parent], env, self.args.broker_port)
@@ -226,13 +240,13 @@ class Suite:
             sock.bind(("127.0.0.1", 0))
             port = sock.getsockname()[1]
         env = isolated_env()
-        env.update(SWAP_KMS_KEY_ARN=f["key_arn"], SWAP_KMS_REGION=f["region"],
-            SWAP_KMS_SEED_ID=f["seed_id"],
-            SWAP_KMS_E2E_HELPER=str(self.sdk_helper.wrapper),
-            SWAP_KMS_E2E_CA_PEM=str(self.certs["ca.pem"]),
-            SWAP_KMS_E2E_PCR0=RESTORE if restore_address else BOOTSTRAP,
-            SWAP_KMS_E2E_PORT=str(self.args.kms_port),
-            SWAP_KMS_E2E_BROKER_PORT=str(self.args.broker_port),
+        env.update(KMS_KEY_ARN=f["key_arn"], KMS_REGION=f["region"],
+            KMS_SEED_ID=f["seed_id"],
+            KMS_E2E_HELPER=str(self.sdk_helper.wrapper),
+            KMS_E2E_CA_PEM=str(self.certs["ca.pem"]),
+            KMS_E2E_PCR0=RESTORE if restore_address else BOOTSTRAP,
+            KMS_E2E_PORT=str(self.args.kms_port),
+            KMS_E2E_BROKER_PORT=str(self.args.broker_port),
             ENCLAVE_LISTEN_ADDR=f"127.0.0.1:{port}", BITCOIN_NETWORK="regtest",
             EVM_CHAIN_ID="1", EVM_PROXY_CONTRACT_ADDRESS="0x" + "bb" * 20,
             RGB_ASSET_ID="rgb:test", GAS_TX_ALLOWED_TO="0x" + "aa" * 20,
@@ -242,9 +256,11 @@ class Suite:
             # Only the immutable pre-migration client reads this retired setting.
             # Current signers always decide from S3 state and the identity pin.
             assert restore_address is None
+            env = {(f"SWAP_{key}" if key.startswith("KMS_") else key): value
+                   for key, value in env.items()}
             env["SWAP_KMS_ALLOW_CREATE"] = "1"
         if restore_address:
-            env["SWAP_KMS_EXPECTED_EVM_ADDRESS"] = restore_address
+            env["KMS_EXPECTED_EVM_ADDRESS"] = restore_address
         env.update(overrides)
         env = {key: value for key, value in env.items() if value is not None}
         process = self.start("legacy-enclave" if legacy else "enclave",
@@ -279,7 +295,7 @@ class Suite:
         }
         assert failure["error"] == {
             "code": 2 if category == "unavailable" else 1,
-            "message": f"swap custody {service}: {messages[category]}",
+            "message": f"seed custody {service}: {messages[category]}",
         }, "custody diagnostic lost its fixed category or retryability"
 
     def broker_request(self, request):
@@ -338,6 +354,7 @@ class Suite:
             port = sock.getsockname()[1]
         env = isolated_env()
         env.update(GRPC_HOST="127.0.0.1", GRPC_PORT=str(port), ENCLAVE_ADDR=address, USE_VSOCK="0")
+        env.update(self.parent_health_env(port))
         parent = self.start("parent", [self.parent], env, port)
         try:
             result = subprocess.run([str(self.grpc_client), "--addr", f"http://127.0.0.1:{port}",
@@ -742,13 +759,13 @@ class Suite:
                 raise AssertionError("S3 conditional creation overwrote an existing object")
             assert base64.b64decode(self.object()) == b"first"
         for name, overrides in (
-            ("unapproved PCR0", {"SWAP_KMS_E2E_PCR0": "cc" * 48}),
-            ("restore PCR0 cannot generate", {"SWAP_KMS_E2E_PCR0": RESTORE}),
+            ("unapproved PCR0", {"KMS_E2E_PCR0": "cc" * 48}),
+            ("restore PCR0 cannot generate", {"KMS_E2E_PCR0": RESTORE}),
             ("encryption context mismatch", {"BITCOIN_NETWORK": "bitcoin"}),
-            ("untrusted TLS certificate", {"SWAP_KMS_E2E_CA_PEM": None}),
-            ("wrong TLS hostname", {"SWAP_KMS_REGION": "eu-central-1",
-                "SWAP_KMS_KEY_ARN": f["key_arn"].replace("eu-west-1", "eu-central-1")}),
-            ("plaintext HTTP endpoint", {"SWAP_KMS_E2E_PORT": str(self.args.aws_port)}),
+            ("untrusted TLS certificate", {"KMS_E2E_CA_PEM": None}),
+            ("wrong TLS hostname", {"KMS_REGION": "eu-central-1",
+                "KMS_KEY_ARN": f["key_arn"].replace("eu-west-1", "eu-central-1")}),
+            ("plaintext HTTP endpoint", {"KMS_E2E_PORT": str(self.args.aws_port)}),
         ):
             self.fixture_reset(name.replace(" ", "-"))
             broker = self.broker()
@@ -800,12 +817,12 @@ class Suite:
             "parent_binary_sha256": binary_hash(self.parent),
             "broker_implementation": "optional Rust broker in the parent-service binary",
             "broker_binary_sha256": binary_hash(self.parent),
-            "sdk_helper_binary_sha256": binary_hash(self.artifacts / "sdk-helper-build/bin/swap-kms-tool"),
-            "production_helper_binary_sha256": binary_hash(self.args.sdk_prefix / "bin/swap-kms-tool"),
+            "sdk_helper_binary_sha256": binary_hash(self.artifacts / "sdk-helper-build/bin/kms-tool"),
+            "production_helper_binary_sha256": binary_hash(self.args.sdk_prefix / "bin/kms-tool"),
             "sdk_image": self.args.sdk_image,
             "sdk_image_id": self.sdk_helper.image_id if self.sdk_helper is not None else None,
             "sdk_source_provenance": self.sdk_helper.source_provenance if self.sdk_helper is not None else None,
-            "dependency_manifest_sha256": binary_hash(ROOT / "build/swap-kms-dependencies.tsv"),
+            "dependency_manifest_sha256": binary_hash(ROOT / "build/kms-dependencies.tsv"),
             "policy_fixture_sha256": {name: binary_hash(HERE / "policies" / name)
                 for name in ("swap-kms-key-policy.json", "swap-seed-bucket-policy.json")},
             "production_helper_source_sha256": binary_hash(ROOT / "enclave/kms-tool/main.c"),

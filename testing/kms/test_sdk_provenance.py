@@ -14,11 +14,11 @@ class SdkProvenanceTests(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name) / "repo"
         self.prefix = Path(self.temp.name) / "prefix"
-        self.installed = self.prefix / "share/swap-kms"
+        self.installed = self.prefix / "share/kms"
         (self.root / "build").mkdir(parents=True)
         self.installed.mkdir(parents=True)
         self.manifest = "aws-nitro-enclaves-sdk-c v0.4.5 " + UNMODIFIED_SDK_SOURCE["upstream_commit"] + " https://example.invalid\n"
-        (self.root / "build/swap-kms-dependencies.tsv").write_text(self.manifest)
+        (self.root / "build/kms-dependencies.tsv").write_text(self.manifest)
         (self.installed / "dependencies.tsv").write_text(self.manifest)
         self.provenance = dict(UNMODIFIED_SDK_SOURCE)
         self.write_provenance()
@@ -59,7 +59,7 @@ class SdkProvenanceTests(unittest.TestCase):
 
     def test_unreviewed_sdk_upgrade_is_rejected(self):
         manifest = self.manifest.replace(UNMODIFIED_SDK_SOURCE["upstream_commit"], "c" * 40)
-        (self.root / "build/swap-kms-dependencies.tsv").write_text(manifest)
+        (self.root / "build/kms-dependencies.tsv").write_text(manifest)
         (self.installed / "dependencies.tsv").write_text(manifest)
         self.provenance["upstream_commit"] = "c" * 40
         self.write_provenance()

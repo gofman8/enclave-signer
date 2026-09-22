@@ -12,7 +12,7 @@ use crate::proto::enclave_request::Request;
 use crate::proto::enclave_response::Response;
 use crate::proto::sign_request::{DestinationNetwork, SourceNetwork};
 use crate::proto::*;
-use crate::state::EnclaveState;
+use crate::state::{EnclaveState, ReplayReservation};
 
 /// Shared context passed to every request handler.
 pub struct ServerContext {
@@ -173,7 +173,7 @@ pub fn handle_connection(stream: impl Read + Write, ctx: &ServerContext) {
     );
 }
 
-/// Preserve the ingress socket deadline through swap custody initialization.
+/// Preserve the ingress socket deadline through persistent seed initialization.
 pub fn handle_connection_until(
     stream: impl Read + Write,
     ctx: &ServerContext,
@@ -192,10 +192,16 @@ fn process_connection(
     tracing::debug!("reading request");
     let request: EnclaveRequest = framing::read_message(&mut stream)?;
 
-    let response = dispatch(request, ctx, deadline);
+    let (response, reservation) = dispatch(request, ctx, deadline);
 
     framing::write_message(&mut stream, &response)?;
     tracing::debug!("response written");
+
+    // Commit the replay key only after the write succeeds. A failed write drops
+    // the reservation and rolls the key back.
+    if let Some(reservation) = reservation {
+        reservation.commit();
+    }
     Ok(())
 }
 
@@ -211,17 +217,21 @@ fn unsupported_build(network: &str) -> EnclaveError {
     ))
 }
 
+/// Dispatch one request. A sign that reserved a replay key hands the
+/// reservation back un-committed, so the caller commits it only after the
+/// response is written.
 fn dispatch(
     request: EnclaveRequest,
     ctx: &ServerContext,
     deadline: std::time::Instant,
-) -> EnclaveResponse {
+) -> (EnclaveResponse, Option<ReplayReservation<'_>>) {
+    let mut reservation = None;
     let result = match request.request {
         Some(Request::InitializeKey(req)) => {
             let path = if !req.mnemonic.is_empty() {
                 "mnemonic-import"
             } else if req.seed.is_empty() {
-                if cfg!(feature = "rgb-swap") {
+                if cfg!(feature = "kms-persistence") {
                     "kms"
                 } else {
                     "entropy"
@@ -236,7 +246,10 @@ fn dispatch(
             tracing::info!("request: GetPublicKey");
             handle_get_public_key(ctx, req)
         }
-        Some(Request::Sign(req)) => handle_sign(ctx, req),
+        Some(Request::Sign(req)) => handle_sign(ctx, req).map(|(response, reserved)| {
+            reservation = reserved;
+            response
+        }),
         Some(Request::SignBtc(req)) => {
             tracing::info!("request: SignBtc");
             handle_sign_btc(ctx, req)
@@ -267,28 +280,36 @@ fn dispatch(
                 Err(unsupported_build("ccd"))
             }
         }
-        Some(Request::ProxyFederation(req)) => {
+        Some(Request::ProxyFederation(_req)) => {
             tracing::info!("request: ProxyFederation");
-            handle_proxy_federation(req)
+            return (
+                EnclaveResponse {
+                    response: Some(Response::Error(ErrorResponse {
+                        code: 1,
+                        message: "unsupported request".into(),
+                    })),
+                },
+                None,
+            );
         }
-        #[cfg(feature = "rgb-swap")]
+        #[cfg(feature = "kms-persistence")]
         Some(Request::InitiateCloning(_) | Request::GetClone(_) | Request::SetClone(_)) => {
             Err(EnclaveError::InvalidRequest(
-                "RGB swap cloning is disabled; initialize each replica from the same KMS seed"
+                "cloning is disabled with KMS persistence; initialize each replica from its configured seed"
                     .into(),
             ))
         }
-        #[cfg(not(feature = "rgb-swap"))]
+        #[cfg(not(feature = "kms-persistence"))]
         Some(Request::InitiateCloning(req)) => {
             tracing::info!("request: InitiateCloning");
             handle_initiate_cloning(&ctx.state, req)
         }
-        #[cfg(not(feature = "rgb-swap"))]
+        #[cfg(not(feature = "kms-persistence"))]
         Some(Request::GetClone(req)) => {
             tracing::info!("request: GetClone");
             handle_get_clone(&ctx.state, req)
         }
-        #[cfg(not(feature = "rgb-swap"))]
+        #[cfg(not(feature = "kms-persistence"))]
         Some(Request::SetClone(req)) => {
             tracing::info!("request: SetClone");
             handle_set_clone(&ctx.state, req)
@@ -325,18 +346,27 @@ fn dispatch(
             tracing::info!("request: GetAttestedPublicKey");
             handle_get_attested_public_key(ctx, req)
         }
+        // Not feature-gated: every build must answer the readiness probe, and a
+        // build without `spv` reports SPV readiness vacuously.
+        Some(Request::Health(_)) => {
+            tracing::debug!("request: Health");
+            handle_health(ctx)
+        }
         None => {
             tracing::warn!("received empty request (no oneof variant set)");
-            return EnclaveResponse {
-                response: Some(Response::Error(ErrorResponse {
-                    code: 1,
-                    message: "empty request".into(),
-                })),
-            };
+            return (
+                EnclaveResponse {
+                    response: Some(Response::Error(ErrorResponse {
+                        code: 1,
+                        message: "empty request".into(),
+                    })),
+                },
+                None,
+            );
         }
     };
 
-    match result {
+    let response = match result {
         Ok(resp) => resp,
         Err(e) => {
             tracing::warn!("handler error: {}", e);
@@ -347,14 +377,15 @@ fn dispatch(
                 })),
             }
         }
-    }
+    };
+    (response, reservation)
 }
 
 /// The EVM tx hash the listener claims backs `mint_opid`.
 ///
 /// Fails closed: an unlisted mint, or one listed with a malformed hash, aborts
 /// the burn rather than validating with that mint's lock unchecked.
-#[cfg(feature = "bfa-mint")]
+#[cfg(feature = "bfa-validation")]
 fn ancestor_tx_hash(
     mint_opid: &[u8; 32],
     ancestors: &[enclave_proto::MintAncestor],
@@ -386,7 +417,7 @@ fn ancestor_tx_hash(
 /// Pure, so the rule that decides which lock pays for which mint is testable
 /// without an EVM client - it is the one place a spent lock could be
 /// substituted for the one being paid now.
-#[cfg(feature = "bfa-mint")]
+#[cfg(all(feature = "bfa-validation", feature = "rgb-mint-burn"))]
 fn mint_lock_plan(
     mint_opids: &[[u8; 32]],
     terminal_opid: &[u8; 32],
@@ -428,7 +459,7 @@ fn mint_lock_plan(
 ///
 /// `unavailable` names, in the rejection, what the missing EVM client would
 /// have been used to authorise.
-#[cfg(feature = "bfa-mint")]
+#[cfg(feature = "bfa-validation")]
 fn verify_mint_locks(
     ctx: &ServerContext,
     plan: &[([u8; 32], [u8; 32])],
@@ -460,7 +491,7 @@ fn verify_mint_locks(
 
 /// The `cea` events RGB consensus checks the mints against: one per verified
 /// lock, `(mint OpId, minted amount)`, in plan order.
-#[cfg(feature = "bfa-mint")]
+#[cfg(feature = "bfa-validation")]
 fn cea_events(
     locks: &[crate::networks::evm::evm_event::VerifiedLock],
 ) -> Vec<rgbstd::vm::ether_extension::Event> {
@@ -476,7 +507,7 @@ fn cea_events(
 /// The contract pin both directions apply before any log is trusted: the
 /// extension never checks which contract an event came from, so this is the
 /// only thing between a mint or a redemption and an attacker's contract.
-#[cfg(feature = "bfa-mint")]
+#[cfg(feature = "bfa-validation")]
 fn bfa_binding_for(
     ctx: &ServerContext,
     consignment: &[u8],
@@ -509,7 +540,7 @@ fn bfa_binding_for(
 /// [`verify_mint_locks`], and a mint with no pair - or with one whose log does
 /// not bind to it - fails the whole validation. That is the point: a burn may
 /// only release funds that a real, verified lock once created.
-#[cfg(feature = "bfa-mint")]
+#[cfg(feature = "bfa-validation")]
 fn bfa_burn_ancestry_events(
     ctx: &ServerContext,
     source: &enclave_proto::RgbSource,
@@ -542,7 +573,7 @@ fn bfa_burn_ancestry_events(
 ///
 /// Empty vec when this is not an EVM-to-RGB request or the consignment is not a
 /// BFA one, so the swap path is unaffected.
-#[cfg(feature = "bfa-mint")]
+#[cfg(all(feature = "bfa-validation", feature = "rgb-mint-burn"))]
 fn bfa_mint_events(
     ctx: &ServerContext,
     source: &enclave_proto::EvmSource,
@@ -579,7 +610,37 @@ fn bfa_mint_events(
     )
 }
 
-fn handle_sign(ctx: &ServerContext, req: SignRequest) -> Result<EnclaveResponse> {
+/// A swap transfer spends previously minted BFA allocations. Verify every
+/// mint in its consignment history before running the consensus extension.
+#[cfg(all(feature = "bfa-validation", feature = "rgb-swap"))]
+fn bfa_transfer_ancestry_events(
+    ctx: &ServerContext,
+    destination: &enclave_proto::RgbDestination,
+) -> Result<Vec<crate::networks::evm::evm_event::VerifiedLock>> {
+    if cfg!(feature = "dev-mode") {
+        return Ok(Vec::new());
+    }
+    let Some(binding) = bfa_binding_for(ctx, &destination.consignment, "send-RGB")? else {
+        return Ok(Vec::new());
+    };
+    let plan = binding
+        .mint_opids
+        .iter()
+        .map(|opid| Ok((*opid, ancestor_tx_hash(opid, &destination.mint_ancestors)?)))
+        .collect::<Result<Vec<_>>>()?;
+    verify_mint_locks(
+        ctx,
+        &plan,
+        "BFA transfer requires independent verification of its mint ancestry",
+    )
+}
+
+/// Sign one bridge request. Returns the response and the replay reservation,
+/// un-committed.
+fn handle_sign(
+    ctx: &ServerContext,
+    req: SignRequest,
+) -> Result<(EnclaveResponse, Option<ReplayReservation<'_>>)> {
     let source_ref = req
         .source_network
         .as_ref()
@@ -623,37 +684,45 @@ fn handle_sign(ctx: &ServerContext, req: SignRequest) -> Result<EnclaveResponse>
             )));
         };
         let script = txout.script_pubkey.as_bytes().to_vec();
-        ctx.state.with_keys(|keys| {
-            // `None` scope: bridge change sits on the Colored account. This
-            // widens what counts as ours, never what gets signed.
-            Ok(
-                btc_ownership::self_controlled_input_scripts_scoped(psbt, keys, None)
-                    .contains(&script),
-            )
-        })
+        ctx.state
+            .with_keys(|keys| Ok(btc_ownership::asset_change_scripts(psbt, keys).contains(&script)))
     };
 
     // Before destination validation, not after: a BFA mint's consignment cannot
     // be validated at all until the lock it commits to has been verified.
-    #[cfg(feature = "bfa-mint")]
+    #[cfg(feature = "bfa-validation")]
     let bfa_locks = match (source_ref, destination_ref) {
         // A burn: the events prove the locks behind the mints it descends from.
         (SourceNetwork::RgbSource(rgb), _) => bfa_burn_ancestry_events(ctx, rgb)?,
         // A mint: the events prove the locks it and its ancestry were minted
         // against.
         (SourceNetwork::EvmSource(evm), DestinationNetwork::RgbDestination(rgb)) => {
-            bfa_mint_events(ctx, evm, rgb)?
+            #[cfg(feature = "rgb-mint-burn")]
+            {
+                bfa_mint_events(ctx, evm, rgb)?
+            }
+            #[cfg(feature = "rgb-swap")]
+            {
+                let _ = evm;
+                bfa_transfer_ancestry_events(ctx, rgb)?
+            }
         }
         // No BFA consignment on either side, so nothing for `cea` to check.
         _ => Vec::new(),
     };
-    #[cfg(feature = "bfa-mint")]
+    #[cfg(feature = "bfa-validation")]
     let bfa_bridge_events = cea_events(&bfa_locks);
     // Not gated on `bfa-mint`: `validate_consignment` takes the events
     // unconditionally, so an empty set is already how "no BFA here" is spelled
     // and every call site is spared a `#[cfg]` pair.
-    #[cfg(all(feature = "rgb-validation", not(feature = "bfa-mint")))]
+    #[cfg(all(feature = "rgb-validation", not(feature = "bfa-validation")))]
     let bfa_bridge_events: Vec<rgbstd::vm::ether_extension::Event> = Vec::new();
+
+    // Holds every Bitcoin block the SPV checks below use. Each check drops the
+    // header-chain lock at return. `assert_chain_pins_unchanged` reads these
+    // blocks again just before the key is used (F05-NEW-AF-08).
+    #[cfg(feature = "spv")]
+    let chain_pins = crate::networks::rgb::spv_validation::ChainPins::new();
 
     let validation_ctx = ValidationContext {
         bridge_config: &ctx.bridge_config,
@@ -661,6 +730,8 @@ fn handle_sign(ctx: &ServerContext, req: SignRequest) -> Result<EnclaveResponse>
         rgb_validator: ctx.rgb_validator.as_ref(),
         #[cfg(feature = "spv")]
         header_chain: &ctx.header_chain,
+        #[cfg(feature = "spv")]
+        chain_pins: &chain_pins,
         #[cfg(feature = "rgb-validation")]
         self_owned_psbt_outputs: Some(&self_owned_psbt_outputs),
         #[cfg(feature = "rgb-validation")]
@@ -772,9 +843,10 @@ fn handle_sign(ctx: &ServerContext, req: SignRequest) -> Result<EnclaveResponse>
     // resubmission inside the TTL window. Defense in depth only - the guard is
     // in-memory, per-instance, and volatile. The key is reserved before signing
     // (so a concurrent duplicate is rejected up front) and committed only after
-    // it succeeds, so a transient error does not self-block a retry.
+    // the response reaches the caller, so neither a transient error nor a lost
+    // response self-blocks a retry.
     #[cfg(not(feature = "dev-mode"))]
-    let _op_reservation = if let (
+    let op_reservation = if let (
         SourceNetwork::EvmSource(source),
         DestinationNetwork::RgbDestination(destination),
     ) = (source_ref, destination_ref)
@@ -828,26 +900,33 @@ fn handle_sign(ctx: &ServerContext, req: SignRequest) -> Result<EnclaveResponse>
                     destination_proof.evm_funds_out.as_ref(),
                     source_validated.rgb_consignment.as_ref(),
                     &rgb_source.merkle_proofs,
+                    #[cfg(feature = "spv")]
+                    &chain_pins,
                     #[cfg(feature = "bfa-mint")]
                     &bfa_locks,
                 )?;
             }
-            handle_sign_evm(ctx, destination, destination_proof.evm_funds_out.as_ref())
+            handle_sign_evm(
+                ctx,
+                destination,
+                destination_proof.evm_funds_out.as_ref(),
+                #[cfg(feature = "spv")]
+                &chain_pins,
+            )
         }
-        DestinationNetwork::RgbDestination(destination) => handle_sign_psbt(ctx, destination),
+        DestinationNetwork::RgbDestination(destination) => handle_sign_psbt(
+            ctx,
+            destination,
+            #[cfg(feature = "spv")]
+            &chain_pins,
+        ),
     };
 
-    // Commit the soft-guard reservation only once signing has succeeded. On
-    // error `_op_reservation` drops here un-committed and rolls the key back, so
-    // a transient signing failure does not consume it.
-    #[cfg(not(feature = "dev-mode"))]
-    if result.is_ok() {
-        if let Some(reservation) = _op_reservation {
-            reservation.commit();
-        }
-    }
+    #[cfg(feature = "dev-mode")]
+    let op_reservation = None;
 
-    result
+    // On error the reservation drops here and rolls the key back.
+    result.map(|response| (response, op_reservation))
 }
 
 /// Bind an RGB->EVM `fundsOut` calldata to the validated consignment before the
@@ -860,6 +939,7 @@ fn apply_funds_out_binding(
     params: Option<&crate::networks::evm::validation::FundsOutParams>,
     validated: Option<&crate::networks::rgb::validation::ValidatedConsignment>,
     merkle_proofs: &[crate::proto::MerkleProofEntry],
+    #[cfg(feature = "spv")] pins: &crate::networks::rgb::spv_validation::ChainPins,
     #[cfg(feature = "bfa-mint")] locks: &[crate::networks::evm::evm_event::VerifiedLock],
 ) -> Result<()> {
     use crate::networks::evm::crosscheck;
@@ -900,7 +980,7 @@ fn apply_funds_out_binding(
             .header_chain
             .lock()
             .map_err(|e| EnclaveError::Internal(format!("SPV header chain lock poisoned: {e}")))?;
-        crosscheck::verify_btc_relay_agreement(params, validated, merkle_proofs, &chain)?;
+        crosscheck::verify_btc_relay_agreement(params, validated, merkle_proofs, &chain, pins)?;
     }
     #[cfg(not(feature = "spv"))]
     let _ = (ctx, merkle_proofs);
@@ -936,10 +1016,10 @@ fn handle_initialize(
     _deadline: std::time::Instant,
 ) -> Result<EnclaveResponse> {
     let state = &ctx.state;
-    #[cfg(feature = "rgb-swap")]
+    #[cfg(feature = "kms-persistence")]
     if !req.cloning_secret.is_empty() {
         return Err(EnclaveError::InvalidRequest(
-            "RGB swap cloning_secret is not supported; use KMS persistence".into(),
+            "cloning_secret is not supported with KMS persistence".into(),
         ));
     }
     if !req.mnemonic.is_empty() {
@@ -956,17 +1036,17 @@ fn handle_initialize(
             ));
         }
     } else if req.seed.is_empty() {
-        #[cfg(feature = "rgb-swap")]
+        #[cfg(feature = "kms-persistence")]
         {
             let deadline = _deadline
-                .checked_sub(crate::swap_persistence::RESPONSE_RESERVE)
+                .checked_sub(crate::seed_persistence::RESPONSE_RESERVE)
                 .ok_or_else(|| {
                     EnclaveError::InvalidRequest("initialization request deadline exceeded".into())
                 })?;
-            state.initialize_from_swap_kms_until(deadline)?;
-            tracing::info!("swap keys initialized from KMS persistence");
+            state.initialize_from_persistence_until(deadline)?;
+            tracing::info!("keys initialized from KMS persistence");
         }
-        #[cfg(not(feature = "rgb-swap"))]
+        #[cfg(not(feature = "kms-persistence"))]
         {
             // Existing mint/burn and CCD generation path.
             let mut entropy = [0u8; 32];
@@ -1158,6 +1238,29 @@ fn handle_get_attested_public_key(
     })
 }
 
+/// Check that every pinned Bitcoin block still has the same hash. Takes a
+/// fresh header-chain lock. Call it just before the signing key is used.
+///
+/// Each SPV check drops the lock at return. Another worker can accept a reorg
+/// in that gap (F05-NEW-AF-08). An extension leaves the pinned heights alone
+/// and still signs. A reorg that replaces one refuses here.
+#[cfg(feature = "spv")]
+fn assert_chain_pins_unchanged(
+    ctx: &ServerContext,
+    pins: &crate::networks::rgb::spv_validation::ChainPins,
+) -> Result<()> {
+    if pins.is_empty() {
+        return Ok(());
+    }
+    // Fail on a poisoned lock, like the validation checks do. A poisoned
+    // header chain can be mid-reorg.
+    let chain = ctx
+        .header_chain
+        .lock()
+        .map_err(|e| EnclaveError::Internal(format!("SPV header chain lock poisoned: {e}")))?;
+    pins.assert_unchanged(&chain)
+}
+
 /// `params` comes from destination validation, so the digest commits to exactly
 /// the fields cross-checked there. `None` in dev-mode, which skips
 /// validation and therefore decodes here, and on the LayerZero route, whose
@@ -1166,6 +1269,7 @@ fn handle_sign_evm(
     ctx: &ServerContext,
     req: EvmDestination,
     params: Option<&crate::networks::evm::validation::FundsOutParams>,
+    #[cfg(feature = "spv")] pins: &crate::networks::rgb::spv_validation::ChainPins,
 ) -> Result<EnclaveResponse> {
     // Domain name/version are pinned to the deployed MultisigProxy and
     // regression-guarded by `test_domain_separator_matches_deployed_contract`.
@@ -1217,6 +1321,12 @@ fn handle_sign_evm(
         "EVM digest computed"
     );
 
+    // Last gate before the key. The chain the checks read must still be the
+    // chain the enclave holds. Both routes use it. The LayerZero digest skips
+    // the `fundsOut` binding, so the source check is its only SPV evidence.
+    #[cfg(feature = "spv")]
+    assert_chain_pins_unchanged(ctx, pins)?;
+
     let signature = ctx.state.sign_evm(&digest)?;
 
     tracing::info!(
@@ -1233,7 +1343,11 @@ fn handle_sign_evm(
     })
 }
 
-fn handle_sign_psbt(ctx: &ServerContext, req: RgbDestination) -> Result<EnclaveResponse> {
+fn handle_sign_psbt(
+    ctx: &ServerContext,
+    req: RgbDestination,
+    #[cfg(feature = "spv")] pins: &crate::networks::rgb::spv_validation::ChainPins,
+) -> Result<EnclaveResponse> {
     // Sats gate: every other send-RGB bind is in RGB asset units, so without
     // this a witness tx can satisfy the ledger and still sweep the Bitcoin
     // backing. dev-mode keeps the unbounded path.
@@ -1248,6 +1362,12 @@ fn handle_sign_psbt(ctx: &ServerContext, req: RgbDestination) -> Result<EnclaveR
             )
         })?;
     }
+
+    // Same gate as the EVM route. An RGB source's SPV evidence must still hold
+    // on the chain the enclave holds now. No-op when nothing is pinned. An EVM
+    // source carries no Bitcoin proof.
+    #[cfg(feature = "spv")]
+    assert_chain_pins_unchanged(ctx, pins)?;
 
     // Colored account only: an unscoped sign co-signs every input the enclave
     // can derive a key for, including vanilla inputs no send-RGB bind examines.
@@ -1407,16 +1527,6 @@ fn handle_sign_ccd(state: &EnclaveState, req: SignCcdRequest) -> Result<EnclaveR
     })
 }
 
-fn handle_proxy_federation(_req: ProxyFederationRequest) -> Result<EnclaveResponse> {
-    // Stub: federation proxy requires Listener integration (not yet wired)
-    Ok(EnclaveResponse {
-        response: Some(Response::Error(ErrorResponse {
-            code: 2, // NOT_READY
-            message: "federation proxy not yet connected to Listener".into(),
-        })),
-    })
-}
-
 // SPV header sync handlers. The chain itself lives in `ctx.header_chain`,
 // initialised at boot from the compile-time checkpoint for the active
 // network (see main.rs).
@@ -1487,18 +1597,94 @@ fn handle_get_last_saved_block(
     })
 }
 
+/// SPV half of the readiness answer:
+/// `(synced, tip_height, tip_time, tip_age_secs, max_tip_age_secs)`.
+#[cfg(feature = "spv")]
+fn spv_health(ctx: &ServerContext) -> (bool, u32, u32, u32, u32) {
+    use crate::networks::rgb::spv_validation::{assert_chain_ready, SPV_MAX_TIP_AGE_SECS};
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    let now = SystemTime::now();
+    let chain = ctx
+        .header_chain
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+
+    let synced = assert_chain_ready(&chain, now).is_ok();
+    let (tip_height, tip_time) = (chain.tip_height(), chain.tip_time());
+    drop(chain);
+
+    let age = now
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0)
+        .saturating_sub(u64::from(tip_time));
+
+    (
+        synced,
+        tip_height,
+        tip_time,
+        u32::try_from(age).unwrap_or(u32::MAX),
+        SPV_MAX_TIP_AGE_SECS as u32,
+    )
+}
+
+/// A `ccd`-only build carries no header chain and rejects SubmitHeaders, so
+/// there is nothing to sync. The zeroed heights say "not applicable here".
+#[cfg(not(feature = "spv"))]
+fn spv_health(_ctx: &ServerContext) -> (bool, u32, u32, u32, u32) {
+    (true, 0, 0, 0, 0)
+}
+
+/// Readiness probe for deploy orchestration: answers "could I sign right now?".
+///
+/// Ready means the key is loaded *and* the header chain passes
+/// `assert_chain_ready` - the same precondition signing applies - so a caller
+/// that sees `ready` will not immediately hit an SPV refusal.
+fn handle_health(ctx: &ServerContext) -> Result<EnclaveResponse> {
+    let key_loaded = ctx.state.is_initialized();
+    let phase = ctx.state.phase_name().to_string();
+    let (spv_synced, spv_tip_height, spv_tip_time, spv_tip_age_secs, spv_max_tip_age_secs) =
+        spv_health(ctx);
+
+    let ready = key_loaded && spv_synced;
+
+    tracing::debug!(
+        ready,
+        key_loaded,
+        spv_synced,
+        %phase,
+        spv_tip_height,
+        spv_tip_age_secs,
+        "Health"
+    );
+
+    Ok(EnclaveResponse {
+        response: Some(Response::Health(HealthResponse {
+            ready,
+            key_loaded,
+            spv_synced,
+            phase,
+            spv_tip_height,
+            spv_tip_time,
+            spv_tip_age_secs,
+            spv_max_tip_age_secs,
+        })),
+    })
+}
+
 // Cloning handshake
 //
 // See proto/enclave.proto for the full protocol description.
 
-#[cfg(not(feature = "rgb-swap"))]
+#[cfg(not(feature = "kms-persistence"))]
 use crate::attestation;
-#[cfg(not(feature = "rgb-swap"))]
+#[cfg(not(feature = "kms-persistence"))]
 use crate::cloning::{self, CloneSession};
-#[cfg(not(feature = "rgb-swap"))]
+#[cfg(not(feature = "kms-persistence"))]
 use crate::state::CloningSession;
 
-#[cfg(not(feature = "rgb-swap"))]
+#[cfg(not(feature = "kms-persistence"))]
 fn fresh_nonce() -> Result<[u8; 32]> {
     let mut n = [0u8; 32];
     getrandom::fill(&mut n)
@@ -1510,7 +1696,7 @@ fn fresh_nonce() -> Result<[u8; 32]> {
 /// ephemeral X25519 keypair, binds it into an NSM attestation together
 /// with the HMAC digest of (cloning_secret, pubkey), and returns the
 /// three fields the parent needs to relay to the donor.
-#[cfg(not(feature = "rgb-swap"))]
+#[cfg(not(feature = "kms-persistence"))]
 fn handle_initiate_cloning(
     state: &EnclaveState,
     req: InitiateCloningRequest,
@@ -1559,7 +1745,7 @@ fn handle_initiate_cloning(
 /// attestation, matches PCRs, records the nonce against replay, checks
 /// pubkey + digest binding, verifies the digest against the configured
 /// donor-side cloning secret, and only then seals the seed.
-#[cfg(not(feature = "rgb-swap"))]
+#[cfg(not(feature = "kms-persistence"))]
 fn handle_get_clone(state: &EnclaveState, req: GetCloneRequest) -> Result<EnclaveResponse> {
     let req_cluster_pk: [u8; 20] = req.cluster_public_key.as_slice().try_into().map_err(|_| {
         EnclaveError::InvalidRequest(format!(
@@ -1664,7 +1850,7 @@ fn handle_get_clone(state: &EnclaveState, req: GetCloneRequest) -> Result<Enclav
 /// Requester side. Transitions `Cloning -> Active`. Verifies the donor's
 /// attestation, unseals the ciphertext, and commits the derived keys
 /// only if the resulting EVM address matches `cluster_public_key`.
-#[cfg(not(feature = "rgb-swap"))]
+#[cfg(not(feature = "kms-persistence"))]
 fn handle_set_clone(state: &EnclaveState, req: SetCloneRequest) -> Result<EnclaveResponse> {
     let donor_pubkey: [u8; 32] = req.donor_pubkey.as_slice().try_into().map_err(|_| {
         EnclaveError::InvalidRequest(format!(
@@ -1879,6 +2065,479 @@ mod tests {
             let mut near = ancestor(1, 0xaa);
             near.op_id[31] = 2;
             assert!(ancestor_tx_hash(&[1u8; 32], &[near]).is_err());
+        }
+    }
+
+    /// A connection that aged out in the queue is not dispatched. Its first
+    /// read fails.
+    mod expired_pickup {
+        use std::io::{self, Cursor, Read, Write};
+        use std::sync::atomic::{AtomicUsize, Ordering};
+        use std::sync::Arc;
+        use std::time::Duration;
+
+        use crate::config::BridgeConfig;
+        use crate::conn::{DeadlineStream, SocketTimeout, IO_IDLE_TIMEOUT};
+        use crate::framing;
+        use crate::networks::rgb::spv::{checkpoint_for, HeaderChain, Network};
+        use crate::proto::enclave_request::Request;
+        use crate::proto::*;
+        use crate::server::{process_connection, ServerContext};
+        use crate::state::EnclaveState;
+
+        /// Counts every read and write that reaches the socket.
+        struct CountingSock {
+            request: Cursor<Vec<u8>>,
+            io_calls: Arc<AtomicUsize>,
+        }
+
+        impl Read for CountingSock {
+            fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+                self.io_calls.fetch_add(1, Ordering::SeqCst);
+                self.request.read(buf)
+            }
+        }
+
+        impl Write for CountingSock {
+            fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+                self.io_calls.fetch_add(1, Ordering::SeqCst);
+                Ok(buf.len())
+            }
+            fn flush(&mut self) -> io::Result<()> {
+                Ok(())
+            }
+        }
+
+        impl SocketTimeout for CountingSock {
+            fn set_read_timeout(&self, _dur: Option<Duration>) -> io::Result<()> {
+                Ok(())
+            }
+            fn set_write_timeout(&self, _dur: Option<Duration>) -> io::Result<()> {
+                Ok(())
+            }
+        }
+
+        #[test]
+        fn a_connection_whose_budget_ran_out_is_not_dispatched() {
+            let mut request = Vec::new();
+            framing::write_message(
+                &mut request,
+                &EnclaveRequest {
+                    request: Some(Request::Health(HealthRequest {})),
+                },
+            )
+            .expect("frame request");
+
+            let io_calls = Arc::new(AtomicUsize::new(0));
+            let stream = DeadlineStream::new(
+                CountingSock {
+                    request: Cursor::new(request),
+                    io_calls: Arc::clone(&io_calls),
+                },
+                Duration::from_millis(20),
+                IO_IDLE_TIMEOUT,
+            );
+
+            // The wait a busy worker pool imposes.
+            std::thread::sleep(Duration::from_millis(200));
+
+            let ctx = ServerContext::new(
+                EnclaveState::new(bitcoin::Network::Bitcoin),
+                BridgeConfig::default(),
+                std::sync::Mutex::new(HeaderChain::new(
+                    Network::Regtest,
+                    checkpoint_for(Network::Regtest),
+                )),
+            );
+
+            assert!(process_connection(
+                stream,
+                &ctx,
+                std::time::Instant::now() + crate::conn::TOTAL_REQUEST_TIMEOUT,
+            )
+            .is_err());
+            assert_eq!(io_calls.load(Ordering::SeqCst), 0);
+        }
+    }
+
+    /// A signature the caller never received must not consume the replay key,
+    /// so its retry is signed. `bfa-validation` is excluded: it needs EVM lock events.
+    #[cfg(all(
+        feature = "evm-rpc",
+        feature = "rgb-swap",
+        not(feature = "bfa-validation"),
+        not(feature = "dev-mode")
+    ))]
+    mod bridge_operation_retry {
+        use std::io::{Cursor, Read, Write};
+
+        use sha3::{Digest, Keccak256};
+
+        use crate::config::{BridgeConfig, EvmRpcConfig};
+        use crate::error::Result;
+        use crate::framing;
+        use crate::networks::evm::evm_event::{EvmReceiptProvider, LogEntry, ReceiptData};
+        use crate::networks::rgb::spv::{checkpoint_for, HeaderChain, Network};
+        use crate::networks::rgb::validation::{
+            bfa, OutputSeal, RgbValidator, TransitionOutput, TransitionSummary,
+            ValidatedConsignment,
+        };
+        use crate::policy::{BuildContext, EvmDataSource, SecurityPolicy};
+        use crate::proto::enclave_request::Request;
+        use crate::proto::enclave_response::Response;
+        use crate::proto::sign_request::{DestinationNetwork, SourceNetwork};
+        use crate::proto::*;
+        use crate::server::{handle_connection, ServerContext, SubmitRateLimiter};
+        use crate::state::EnclaveState;
+
+        /// Fixed seed, so every derived key and every txid is the same on each
+        /// run.
+        const SEED: [u8; 64] = [0x21; 64];
+        const ASSET_ID: &str = "rgb:test-asset";
+        const BRIDGE_CONTRACT: [u8; 20] = [0xAA; 20];
+        const FUNDS_IN_CONTRACT: [u8; 20] = [0xBB; 20];
+        const DEPOSIT_TX: [u8; 32] = [0xCC; 32];
+        const OPERATION_ID: [u8; 32] = [0x33; 32];
+        const DEPOSIT_BLOCK: u64 = 100;
+        const GROSS: u64 = 100_000;
+        const COMMISSION: u64 = 1_000;
+        const NET: u64 = GROSS - COMMISSION;
+
+        /// Canonical `BridgeFundsIn` signature, as the deposit verifier selects
+        /// logs by.
+        const FUNDS_IN_SIG: &str = "BridgeFundsIn(bytes32,bytes32,address,uint256,uint256,\
+             uint256,uint256,uint256,uint256,uint256,string)";
+
+        /// The deposit's invoice and the blinded seal it names.
+        const INVOICE: &str =
+            "rgb:~/~/~/bc:utxob:dYwB28dy-yD6EBgm-MO~UKN_-FyEEdBL-E9hw8Oj-i9KxH5b-e9vZL";
+        const RECIPIENT_SEAL: &str = "utxob:dYwB28dy-yD6EBgm-MO~UKN_-FyEEdBL-E9hw8Oj-i9KxH5b-e9vZL";
+
+        /// NUMS internal key (BIP-341 unspendable key path), as the bridge's
+        /// taproot addresses use.
+        const NUMS_INTERNAL: [u8; 32] = [
+            0x50, 0x92, 0x9b, 0x74, 0xc1, 0xa0, 0x49, 0x54, 0xb7, 0x8b, 0x4b, 0x60, 0x35, 0xe9,
+            0x7a, 0x5e, 0x07, 0x8a, 0x5a, 0x0f, 0x28, 0xec, 0x96, 0xd5, 0x47, 0xbf, 0xee, 0x9a,
+            0xce, 0x80, 0x3a, 0xc0,
+        ];
+
+        /// A caller that is gone: the request still reads back, every write
+        /// fails.
+        struct DeadCaller(Cursor<Vec<u8>>);
+
+        impl Read for DeadCaller {
+            fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+                self.0.read(buf)
+            }
+        }
+
+        impl Write for DeadCaller {
+            fn write(&mut self, _buf: &[u8]) -> std::io::Result<usize> {
+                Err(std::io::Error::new(
+                    std::io::ErrorKind::BrokenPipe,
+                    "caller is gone",
+                ))
+            }
+            fn flush(&mut self) -> std::io::Result<()> {
+                Ok(())
+            }
+        }
+
+        /// Stands in for the EVM RPC: one confirmed `BridgeFundsIn` deposit.
+        struct StubDeposit;
+
+        impl EvmReceiptProvider for StubDeposit {
+            fn get_transaction_receipt(&self, _tx_hash: &[u8; 32]) -> Result<Option<ReceiptData>> {
+                Ok(Some(ReceiptData {
+                    status_success: true,
+                    block_number: DEPOSIT_BLOCK,
+                    logs: vec![LogEntry {
+                        address: FUNDS_IN_CONTRACT,
+                        topics: vec![
+                            Keccak256::digest(FUNDS_IN_SIG.as_bytes()).into(),
+                            OPERATION_ID,
+                        ],
+                        data: funds_in_data(),
+                    }],
+                }))
+            }
+
+            fn get_block_number(&self) -> Result<u64> {
+                Ok(DEPOSIT_BLOCK + EvmRpcConfig::default().min_confirmations)
+            }
+        }
+
+        fn word(value: u64) -> [u8; 32] {
+            let mut w = [0u8; 32];
+            w[24..].copy_from_slice(&value.to_be_bytes());
+            w
+        }
+
+        /// `BridgeFundsIn` data: senderNonce, amount, netAmount, tokenCommission,
+        /// nativeCommission, sourceChainId, destinationChainId, then the
+        /// `destinationAddress` head word and its tail. `operationId` is indexed.
+        fn funds_in_data() -> Vec<u8> {
+            let mut data = Vec::new();
+            data.extend_from_slice(&word(0));
+            data.extend_from_slice(&word(GROSS));
+            data.extend_from_slice(&word(NET));
+            data.extend_from_slice(&word(COMMISSION));
+            data.extend_from_slice(&[0u8; 32 * 3]);
+            data.extend_from_slice(&word(8 * 32));
+            data.extend_from_slice(&word(INVOICE.len() as u64));
+            let mut tail = INVOICE.as_bytes().to_vec();
+            tail.resize(tail.len().div_ceil(32) * 32, 0);
+            data.extend_from_slice(&tail);
+            data
+        }
+
+        fn foreign_xonly(b: u8) -> bitcoin::XOnlyPublicKey {
+            let secp = bitcoin::secp256k1::Secp256k1::new();
+            let sk = bitcoin::secp256k1::SecretKey::from_slice(&[b; 32]).unwrap();
+            bitcoin::XOnlyPublicKey::from_keypair(&bitcoin::secp256k1::Keypair::from_secret_key(
+                &secp, &sk,
+            ))
+            .0
+        }
+
+        /// A taproot address the enclave has no key in.
+        fn foreign_address() -> bitcoin::ScriptBuf {
+            let secp = bitcoin::secp256k1::Secp256k1::new();
+            bitcoin::ScriptBuf::new_p2tr(&secp, foreign_xonly(0xB1), None)
+        }
+
+        /// The witness transaction of the deposit: one input on the enclave's
+        /// colored address `m/86'/827166'/0'/0/0` (a 2-of-3 taproot address, the
+        /// federation shape), the recipient's output, and colored change.
+        fn deposit_psbt(state: &EnclaveState) -> Vec<u8> {
+            use bitcoin::bip32::ChildNumber;
+            use bitcoin::blockdata::opcodes::all::{OP_CHECKSIG, OP_CHECKSIGADD, OP_NUMEQUAL};
+            use bitcoin::blockdata::script::Builder;
+            use bitcoin::hashes::Hash;
+            use bitcoin::psbt::Psbt;
+            use bitcoin::taproot::{LeafVersion, TapLeafHash, TaprootBuilder};
+            use bitcoin::{
+                Amount, OutPoint, ScriptBuf, Sequence, Transaction, TxIn, TxOut, Txid, Witness,
+            };
+            use std::str::FromStr;
+
+            let keys = state.get_keys().expect("keys");
+            let account_xpub =
+                bitcoin::bip32::Xpub::from_str(&keys.account_xpub_colored).expect("colored xpub");
+            let secp = bitcoin::secp256k1::Secp256k1::new();
+            let child = [
+                ChildNumber::Normal { index: 0 },
+                ChildNumber::Normal { index: 0 },
+            ];
+            let ours = account_xpub
+                .derive_pub(&secp, &child.to_vec())
+                .expect("derive child xpub")
+                .to_x_only_pub();
+
+            let mut keyset = [ours, foreign_xonly(0xA1), foreign_xonly(0xA2)];
+            keyset.sort();
+            let leaf = Builder::new()
+                .push_x_only_key(&keyset[0])
+                .push_opcode(OP_CHECKSIG)
+                .push_x_only_key(&keyset[1])
+                .push_opcode(OP_CHECKSIGADD)
+                .push_x_only_key(&keyset[2])
+                .push_opcode(OP_CHECKSIGADD)
+                .push_int(2)
+                .push_opcode(OP_NUMEQUAL)
+                .into_script();
+            let leaf_hash = TapLeafHash::from_script(&leaf, LeafVersion::TapScript);
+            let internal = bitcoin::XOnlyPublicKey::from_slice(&NUMS_INTERNAL).unwrap();
+            let info = TaprootBuilder::new()
+                .add_leaf(0, leaf.clone())
+                .unwrap()
+                .finalize(&secp, internal)
+                .unwrap();
+            let spk = ScriptBuf::new_p2tr(&secp, internal, info.merkle_root());
+            let control = info
+                .control_block(&(leaf.clone(), LeafVersion::TapScript))
+                .unwrap();
+            let path = bitcoin::bip32::DerivationPath::from(vec![
+                ChildNumber::from_hardened_idx(86).unwrap(),
+                ChildNumber::from_hardened_idx(827166).unwrap(),
+                ChildNumber::from_hardened_idx(0).unwrap(),
+                child[0],
+                child[1],
+            ]);
+
+            let unsigned_tx = Transaction {
+                version: bitcoin::transaction::Version(2),
+                lock_time: bitcoin::absolute::LockTime::ZERO,
+                input: vec![TxIn {
+                    previous_output: OutPoint {
+                        txid: Txid::from_raw_hash(bitcoin::hashes::sha256d::Hash::from_byte_array(
+                            [0u8; 32],
+                        )),
+                        vout: 0,
+                    },
+                    script_sig: ScriptBuf::new(),
+                    sequence: Sequence::MAX,
+                    witness: Witness::new(),
+                }],
+                output: vec![
+                    TxOut {
+                        value: Amount::from_sat(1_000),
+                        script_pubkey: foreign_address(),
+                    },
+                    TxOut {
+                        value: Amount::from_sat(58_000),
+                        script_pubkey: spk.clone(),
+                    },
+                ],
+            };
+            let mut psbt = Psbt::from_unsigned_tx(unsigned_tx).expect("from_unsigned_tx");
+            psbt.inputs[0].witness_utxo = Some(TxOut {
+                value: Amount::from_sat(60_000),
+                script_pubkey: spk,
+            });
+            psbt.inputs[0].tap_internal_key = Some(internal);
+            psbt.inputs[0]
+                .tap_scripts
+                .insert(control, (leaf, LeafVersion::TapScript));
+            psbt.inputs[0].tap_key_origins.insert(
+                ours,
+                (
+                    vec![leaf_hash],
+                    (
+                        bitcoin::bip32::Fingerprint::from(keys.master_fingerprint),
+                        path,
+                    ),
+                ),
+            );
+            psbt.serialize()
+        }
+
+        /// One BFA transfer paying the deposit's invoice, anchored to `txid`.
+        fn validated_consignment(txid: bitcoin::Txid) -> ValidatedConsignment {
+            let transition = TransitionSummary {
+                op_id: "11".repeat(32),
+                transition_type: bfa::TS_TRANSFER,
+                total_output_amount: NET,
+                asset_output_amount: NET,
+                outputs: vec![TransitionOutput {
+                    assignment_type: bfa::OS_ASSET,
+                    amount: NET,
+                    seal: OutputSeal::Confidential {
+                        secret_seal: RECIPIENT_SEAL.into(),
+                    },
+                }],
+                burned_asset_amount: None,
+                burn_recipient: None,
+            };
+            ValidatedConsignment {
+                contract_id: ASSET_ID.into(),
+                chain_net: "bc".into(),
+                witness_txids: vec![],
+                all_op_ids: vec![transition.op_id.clone()],
+                mint_op_ids: vec![],
+                last_transition: Some(transition.clone()),
+                last_witness_txid: Some(txid),
+                last_transfer_witness_prevouts: None,
+                last_transfer_op_id: None,
+                non_mined_witness_txids: vec![],
+                transitions_by_witness: vec![(txid, vec![transition])],
+            }
+        }
+
+        fn deposit_request(psbt_bytes: Vec<u8>) -> EnclaveRequest {
+            let consignment = b"answered by the canned validator".to_vec();
+            EnclaveRequest {
+                request: Some(Request::Sign(SignRequest {
+                    amount: GROSS,
+                    source_network: Some(SourceNetwork::EvmSource(EvmSource {
+                        tx_hash: DEPOSIT_TX.to_vec(),
+                        event_valid: true,
+                        event_finalized: true,
+                        token: vec![],
+                        recipient: vec![],
+                        commission: COMMISSION,
+                        funds_in_operation_id: OPERATION_ID.to_vec(),
+                    })),
+                    destination_network: Some(DestinationNetwork::RgbDestination(RgbDestination {
+                        operation_idx: 0,
+                        psbt_bytes,
+                        psbt_output_amount: NET,
+                        asset_id: ASSET_ID.into(),
+                        consignment_hash: Keccak256::digest(&consignment).to_vec(),
+                        consignment,
+                        mint_ancestors: Vec::new(),
+                    })),
+                })),
+            }
+        }
+
+        fn framed(request: &EnclaveRequest) -> Vec<u8> {
+            let mut bytes = Vec::new();
+            framing::write_message(&mut bytes, request).expect("frame request");
+            bytes
+        }
+
+        /// Handle one request over a connection that stays up, and decode what
+        /// the caller received.
+        fn respond(ctx: &ServerContext, request: &EnclaveRequest) -> EnclaveResponse {
+            let request = framed(request);
+            let request_len = request.len();
+            let mut caller = Cursor::new(request);
+            handle_connection(&mut caller, ctx);
+            framing::read_message(&mut &caller.into_inner()[request_len..]).expect("response frame")
+        }
+
+        /// The caller never reads the first signature. The retry must be signed,
+        /// not refused as a duplicate.
+        #[test]
+        fn a_retry_is_signed_when_the_first_response_never_reached_the_caller() {
+            let bridge_config = BridgeConfig {
+                chain_id: 1,
+                bridge_contract: BRIDGE_CONTRACT,
+                funds_in_contract: FUNDS_IN_CONTRACT,
+                rgb_asset_id: ASSET_ID.into(),
+                rgb_max_unowned_sats: 5_000,
+                ..Default::default()
+            };
+            let policy = SecurityPolicy::resolve(
+                &BuildContext::current(),
+                &bridge_config,
+                EvmDataSource::Disabled,
+                None,
+            );
+            let state = EnclaveState::new(bitcoin::Network::Bitcoin);
+            state.initialize_from_seed(SEED).expect("initialize keys");
+
+            let psbt_bytes = deposit_psbt(&state);
+            let txid = bitcoin::psbt::Psbt::deserialize(&psbt_bytes)
+                .expect("psbt")
+                .unsigned_tx
+                .compute_txid();
+
+            let ctx = ServerContext {
+                state,
+                bridge_config,
+                policy,
+                rgb_validator: Some(RgbValidator::canned(validated_consignment(txid), 50.0)),
+                evm_rpc_client: Some(Box::new(StubDeposit)),
+                evm_rpc_config: EvmRpcConfig::default(),
+                header_chain: std::sync::Mutex::new(HeaderChain::new(
+                    Network::Regtest,
+                    checkpoint_for(Network::Regtest),
+                )),
+                submit_rate_limiter: std::sync::Mutex::new(SubmitRateLimiter::default()),
+            };
+
+            let request = deposit_request(psbt_bytes);
+            handle_connection(DeadCaller(Cursor::new(framed(&request))), &ctx);
+
+            match respond(&ctx, &request).response {
+                Some(Response::SignedPsbt(r)) => assert_eq!(r.inputs_signed, 1),
+                other => panic!(
+                    "the retry of an undelivered signature must be signed, got {:?}",
+                    other
+                ),
+            }
         }
     }
 

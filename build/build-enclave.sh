@@ -33,10 +33,10 @@
 #   GITHUB_TOKEN           token with read access to the private RGB dependencies
 #   PRIVATE_DEPS_DIR       alternatively, directory of per-repository key files
 #                          (consignment_key, consensus_key, ops_key, schemas_key)
-#   SWAP_KMS_KEY_ARN       required for combined/RGB swap images: full KMS key ARN
-#   SWAP_KMS_REGION        required for combined/RGB swap images: commercial AWS region
-#   SWAP_KMS_SEED_ID       required for combined/RGB swap images: stable seed identifier
-#   SWAP_KMS_EXPECTED_EVM_ADDRESS  optional existing signer identity pin; when set,
+#   KMS_KEY_ARN       required for combined/RGB swap images: full KMS key ARN
+#   KMS_REGION        required for combined/RGB swap images: commercial AWS region
+#   KMS_SEED_ID       required for combined/RGB swap images: stable seed identifier
+#   KMS_EXPECTED_EVM_ADDRESS  optional existing signer identity pin; when set,
 #                                  missing ciphertext fails instead of creating a new identity
 # NOTE: the donor cloning secret is NOT baked into the EIF. It is delivered at
 # runtime via the InitializeKey message (CLI: `init --cloning-secret <secret>`),
@@ -50,9 +50,8 @@ OUT_DIR="${OUT_DIR:-$SCRIPT_DIR}"
 IMAGE_TAG="${IMAGE_TAG:-utexo-bridge-enclave:latest}"
 # Which enclave image to build. Defaults to the combined (rgb+ccd) image; set
 # DOCKERFILE=Dockerfile.enclave.rgb (send/receive RGB flow),
-# Dockerfile.enclave.mint-burn (mint/burn RGB flow), Dockerfile.enclave.ccd for a
-# lean single-network EIF, or Dockerfile.enclave.bfa for the BFA mint EIF - which
-# is the mint/burn flow on the bridged schema. Every variant
+# Dockerfile.enclave.mint-burn (the BFA mint/burn EIF), or
+# Dockerfile.enclave.ccd for a lean single-network EIF. Every variant
 # needs private dependency credentials. EIF_NAME names the output .eif (and thus the SHA256SUMS
 # entry); default keeps the historical artifact name.
 DOCKERFILE="${DOCKERFILE:-Dockerfile.enclave}"
@@ -61,17 +60,17 @@ EIF_PATH="$OUT_DIR/$EIF_NAME"
 
 # Only swaps consume these public, measured pins. Do not change the other
 # variants' Docker environment or make mint/burn depend on KMS configuration.
-SWAP_KMS_ARGS=()
+KMS_ARGS=()
 case "${DOCKERFILE##*/}" in
     Dockerfile.enclave|Dockerfile.enclave.rgb)
-        : "${SWAP_KMS_KEY_ARN:?SWAP_KMS_KEY_ARN required for RGB swap builds}"
-        : "${SWAP_KMS_REGION:?SWAP_KMS_REGION required for RGB swap builds}"
-        : "${SWAP_KMS_SEED_ID:?SWAP_KMS_SEED_ID required for RGB swap builds}"
-        SWAP_KMS_ARGS=(
-            --build-arg "SWAP_KMS_KEY_ARN=$SWAP_KMS_KEY_ARN"
-            --build-arg "SWAP_KMS_REGION=$SWAP_KMS_REGION"
-            --build-arg "SWAP_KMS_SEED_ID=$SWAP_KMS_SEED_ID"
-            --build-arg "SWAP_KMS_EXPECTED_EVM_ADDRESS=${SWAP_KMS_EXPECTED_EVM_ADDRESS:-}"
+        : "${KMS_KEY_ARN:?KMS_KEY_ARN required for RGB swap builds}"
+        : "${KMS_REGION:?KMS_REGION required for RGB swap builds}"
+        : "${KMS_SEED_ID:?KMS_SEED_ID required for RGB swap builds}"
+        KMS_ARGS=(
+            --build-arg "KMS_KEY_ARN=$KMS_KEY_ARN"
+            --build-arg "KMS_REGION=$KMS_REGION"
+            --build-arg "KMS_SEED_ID=$KMS_SEED_ID"
+            --build-arg "KMS_EXPECTED_EVM_ADDRESS=${KMS_EXPECTED_EVM_ADDRESS:-}"
         )
         ;;
 esac
@@ -114,10 +113,15 @@ SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH:-$(git -C "$PROJECT_ROOT" log -1 --format
 export SOURCE_DATE_EPOCH
 
 echo "Building Docker image (buildx, SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH)..."
+RGB_ASSET_ARGS=()
+if [ -n "${RGB_ASSET_ID:-}" ]; then
+    RGB_ASSET_ARGS=(--build-arg "RGB_ASSET_ID=$RGB_ASSET_ID")
+fi
 # `${a[@]+...}`: bash 3.2 treats an empty array as unset under `set -u`.
 DOCKER_BUILDKIT=1 docker buildx build \
     --build-arg SOURCE_DATE_EPOCH="$SOURCE_DATE_EPOCH" \
-    ${SWAP_KMS_ARGS[@]+"${SWAP_KMS_ARGS[@]}"} \
+    ${RGB_ASSET_ARGS[@]+"${RGB_ASSET_ARGS[@]}"} \
+    ${KMS_ARGS[@]+"${KMS_ARGS[@]}"} \
     ${SECRET_ARGS[@]+"${SECRET_ARGS[@]}"} \
     -f "$SCRIPT_DIR/$DOCKERFILE" \
     -t "$IMAGE_TAG" \

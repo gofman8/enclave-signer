@@ -1,4 +1,4 @@
-//! RGB swap seed lifecycle. The parent holds only an opaque KMS ciphertext;
+//! Persistent seed lifecycle. The parent holds only an opaque KMS ciphertext;
 //! KMS responses are authenticated and decrypted inside the enclave.
 
 use std::io::{self, Read, Write};
@@ -15,8 +15,8 @@ use zeroize::Zeroizing;
 use crate::conn::{remaining_until, DeadlineStream};
 use crate::error::{CustodyFailure, EnclaveError, Result};
 use crate::keys::KeyManager;
-use crate::swap_kms::{
-    deserialize_secret, AwsCredentials, SwapKmsClient, SwapKmsConfig, MAX_CIPHERTEXT_BYTES,
+use crate::kms::{
+    deserialize_secret, AwsCredentials, CustodyFlow, KmsClient, KmsConfig, MAX_CIPHERTEXT_BYTES,
     MAX_MESSAGE_BYTES,
 };
 
@@ -35,12 +35,12 @@ pub(crate) const RESPONSE_RESERVE: Duration = Duration::from_secs(2);
 const BROKER_TIMEOUT: Duration = Duration::from_secs(8);
 
 fn failure(message: &str) -> EnclaveError {
-    EnclaveError::InvalidRequest(format!("swap persistence: {message}"))
+    EnclaveError::InvalidRequest(format!("seed persistence: {message}"))
 }
 
 /// Production installs a persistent source at boot. Tests can inject a source
 /// without teaching the production wire protocol to accept plaintext seeds.
-pub trait SwapSeedSource: Send + Sync {
+pub trait SeedSource: Send + Sync {
     /// Bound every external operation by this same absolute deadline. The state
     /// machine also checks it immediately before activating the returned keys.
     fn load_keys(&self, network: Network, deadline: Instant) -> Result<KeyManager>;
@@ -57,7 +57,7 @@ trait SeedKms {
     fn decrypt(&self, ciphertext: &[u8], deadline: Instant) -> Result<Zeroizing<[u8; 64]>>;
 }
 
-impl SeedKms for SwapKmsClient {
+impl SeedKms for KmsClient {
     fn generate(&self, deadline: Instant) -> Result<Vec<u8>> {
         self.generate_ciphertext(deadline)
     }
@@ -79,11 +79,11 @@ fn recover_seed(
     // neither KMS generation nor persistence can replace a lost pinned seed.
     let ciphertext = match store.load(deadline)? {
         Some(blob) => {
-            tracing::info!("RGB swap custody: loading saved identity");
+            tracing::info!("seed custody: loading saved identity");
             blob
         }
         None if expected_evm_address.is_none() => {
-            tracing::info!("RGB swap custody: no saved object; attempting conditional creation");
+            tracing::info!("seed custody: no saved object; attempting conditional creation");
             remaining_until(deadline)?;
             let blob = kms.generate(deadline)?;
             validate_ciphertext(&blob)?;
@@ -112,24 +112,24 @@ fn validate_ciphertext(blob: &[u8]) -> Result<()> {
     Ok(())
 }
 
-pub struct PersistentSwapSeed {
-    config: SwapKmsConfig,
+pub struct PersistentSeed {
+    config: KmsConfig,
     broker: SeedBroker,
     expected_evm_address: Option<[u8; 20]>,
 }
 
-impl PersistentSwapSeed {
+impl PersistentSeed {
     /// These nonsecret values belong in the measured EIF configuration.
-    pub fn from_env() -> Result<Self> {
-        let config = SwapKmsConfig::from_env()?;
-        let expected_evm_address = match std::env::var("SWAP_KMS_EXPECTED_EVM_ADDRESS") {
+    pub fn from_env(flow: CustodyFlow) -> Result<Self> {
+        let config = KmsConfig::from_env(flow)?;
+        let expected_evm_address = match std::env::var("KMS_EXPECTED_EVM_ADDRESS") {
             Err(std::env::VarError::NotPresent) => None,
             Ok(value) if value.is_empty() => None,
             Ok(value) => Some(
                 hex::decode(value.strip_prefix("0x").unwrap_or(&value))
                     .ok()
                     .and_then(|v| v.try_into().ok())
-                    .ok_or_else(|| failure("SWAP_KMS_EXPECTED_EVM_ADDRESS must be 20-byte hex"))?,
+                    .ok_or_else(|| failure("KMS_EXPECTED_EVM_ADDRESS must be 20-byte hex"))?,
             ),
             Err(_) => return Err(failure("invalid expected address configuration")),
         };
@@ -137,8 +137,7 @@ impl PersistentSwapSeed {
             #[cfg(not(all(feature = "vsock", target_os = "linux", not(test))))]
             address: {
                 #[cfg(feature = "local-kms-e2e")]
-                let port =
-                    crate::swap_kms::local_e2e_port("SWAP_KMS_E2E_BROKER_PORT", BROKER_LOCAL_PORT)?;
+                let port = crate::kms::local_e2e_port("KMS_E2E_BROKER_PORT", BROKER_LOCAL_PORT)?;
                 #[cfg(not(feature = "local-kms-e2e"))]
                 let port = BROKER_LOCAL_PORT;
                 SocketAddr::from((Ipv4Addr::LOCALHOST, port))
@@ -153,11 +152,11 @@ impl PersistentSwapSeed {
     }
 }
 
-impl SwapSeedSource for PersistentSwapSeed {
+impl SeedSource for PersistentSeed {
     fn load_keys(&self, network: Network, deadline: Instant) -> Result<KeyManager> {
         // Refresh short-lived instance-role credentials on every attempt.
         let credentials = self.broker.credentials(deadline)?;
-        let kms = SwapKmsClient::new(self.config.clone(), credentials, network)?;
+        let kms = KmsClient::new(self.config.clone(), credentials, network)?;
         let seed = recover_seed(&self.broker, &kms, self.expected_evm_address, deadline)?;
         restore_keys(seed, network, self.expected_evm_address)
     }

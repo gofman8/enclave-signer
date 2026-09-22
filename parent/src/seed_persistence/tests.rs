@@ -6,6 +6,8 @@ fn parent() -> Config {
     Config {
         grpc_host: "127.0.0.1".into(),
         grpc_port: 5000,
+        health_host: "127.0.0.1".into(),
+        health_port: 5001,
         enclave_addr: "127.0.0.1:5001".into(),
         enclave_vsock_cid: 16,
         enclave_vsock_port: 5000,
@@ -16,9 +18,9 @@ fn parent() -> Config {
 
 fn environment() -> HashMap<String, String> {
     [
-        ("SWAP_KMS_SEED_ID", "seed-1"),
-        ("SWAP_KMS_S3_BUCKET", "seed-bucket"),
-        ("SWAP_KMS_S3_KEY", "swaps/seed"),
+        ("KMS_SEED_ID", "seed-1"),
+        ("KMS_S3_BUCKET", "seed-bucket"),
+        ("KMS_S3_KEY", "signers/seed"),
         ("AWS_REGION", "eu-west-1"),
     ]
     .into_iter()
@@ -33,7 +35,7 @@ fn settings() -> Settings {
 }
 
 #[test]
-fn no_swap_configuration_does_not_enable_aws() {
+fn no_seed_configuration_does_not_enable_aws() {
     assert!(Settings::read(&parent(), |_| None).unwrap().is_none());
     assert!(Settings::read(&parent(), |key| (key == "AWS_REGION")
         .then(|| "eu-west-1".into()))
@@ -43,12 +45,7 @@ fn no_swap_configuration_does_not_enable_aws() {
 
 #[test]
 fn partial_or_invalid_configuration_is_rejected() {
-    for name in [
-        "SWAP_KMS_SEED_ID",
-        "SWAP_KMS_S3_BUCKET",
-        "SWAP_KMS_S3_KEY",
-        "AWS_REGION",
-    ] {
+    for name in ["KMS_SEED_ID", "KMS_S3_BUCKET", "KMS_S3_KEY", "AWS_REGION"] {
         let mut env = environment();
         env.remove(name);
         assert!(
@@ -57,19 +54,19 @@ fn partial_or_invalid_configuration_is_rejected() {
         );
     }
     for (key, value) in [
-        ("SWAP_KMS_SEED_ID", " "),
-        ("SWAP_KMS_SEED_ID", " trailing "),
-        ("SWAP_KMS_ALLOWED_CIDS", ""),
-        ("SWAP_KMS_ALLOWED_CIDS", "3"),
-        ("SWAP_KMS_ALLOWED_CIDS", "4294967295"),
-        ("SWAP_KMS_ALLOWED_CIDS", "16,"),
-        ("SWAP_KMS_ALLOWED_CIDS", "16,16"),
-        ("SWAP_KMS_ALLOWED_CIDS", "+16"),
-        ("SWAP_KMS_ALLOWED_CIDS", "-16"),
-        ("SWAP_KMS_BROKER_PORT", "8005"),
-        ("SWAP_KMS_BROKER_TCP", "0.0.0.0:3446"),
-        ("SWAP_KMS_BROKER_TCP", "[::1]:3446"),
-        ("SWAP_KMS_BROKER_TCP", "127.0.0.1:0"),
+        ("KMS_SEED_ID", " "),
+        ("KMS_SEED_ID", " trailing "),
+        ("KMS_ALLOWED_CIDS", ""),
+        ("KMS_ALLOWED_CIDS", "3"),
+        ("KMS_ALLOWED_CIDS", "4294967295"),
+        ("KMS_ALLOWED_CIDS", "16,"),
+        ("KMS_ALLOWED_CIDS", "16,16"),
+        ("KMS_ALLOWED_CIDS", "+16"),
+        ("KMS_ALLOWED_CIDS", "-16"),
+        ("KMS_BROKER_PORT", "8005"),
+        ("KMS_BROKER_TCP", "0.0.0.0:3446"),
+        ("KMS_BROKER_TCP", "[::1]:3446"),
+        ("KMS_BROKER_TCP", "127.0.0.1:0"),
     ] {
         let mut env = environment();
         env.insert(key.into(), value.into());
@@ -80,12 +77,12 @@ fn partial_or_invalid_configuration_is_rejected() {
     }
     let mut env = environment();
     env.insert(
-        "SWAP_KMS_ALLOWED_CIDS".into(),
+        "KMS_ALLOWED_CIDS".into(),
         (4..69).map(|v| v.to_string()).collect::<Vec<_>>().join(","),
     );
     assert!(Settings::read(&parent(), |key| env.get(key).cloned()).is_err());
     env = environment();
-    env.insert("SWAP_KMS_SEED_ID".into(), "x".repeat(257));
+    env.insert("KMS_SEED_ID".into(), "x".repeat(257));
     assert!(Settings::read(&parent(), |key| env.get(key).cloned()).is_err());
 }
 
@@ -93,7 +90,7 @@ fn partial_or_invalid_configuration_is_rejected() {
 fn default_cid_allowlist_and_explicit_dev_transport() {
     assert_eq!(settings().cids, [16]);
     let mut env = environment();
-    env.insert("SWAP_KMS_ALLOWED_CIDS".into(), "16, 17".into());
+    env.insert("KMS_ALLOWED_CIDS".into(), "16, 17".into());
     assert_eq!(
         Settings::read(&parent(), |key| env.get(key).cloned())
             .unwrap()
@@ -101,7 +98,7 @@ fn default_cid_allowlist_and_explicit_dev_transport() {
             .cids,
         [16, 17]
     );
-    env.insert("SWAP_KMS_BROKER_TCP".into(), "127.0.0.1:3446".into());
+    env.insert("KMS_BROKER_TCP".into(), "127.0.0.1:3446".into());
     let mut development = parent();
     development.use_vsock = false;
     assert!(Settings::read(&development, |key| env.get(key).cloned())
@@ -461,9 +458,8 @@ async fn successful_load_uses_only_configured_object_and_caps_ciphertext() {
             .await
             .unwrap()
             .unwrap();
-        assert!(
-            requests.lock().unwrap()[0].starts_with("GET /seed-bucket/swaps/seed?x-id=GetObject ")
-        );
+        assert!(requests.lock().unwrap()[0]
+            .starts_with("GET /seed-bucket/signers/seed?x-id=GetObject "));
     }
 }
 
@@ -485,11 +481,11 @@ async fn create_always_loads_committed_winner_and_never_overwrites() {
             .unwrap();
         let requests = requests.lock().unwrap();
         assert_eq!(requests.len(), 2);
-        assert!(requests[0].starts_with("PUT /seed-bucket/swaps/seed?x-id=PutObject "));
+        assert!(requests[0].starts_with("PUT /seed-bucket/signers/seed?x-id=PutObject "));
         assert!(requests[0]
             .to_ascii_lowercase()
             .contains("\r\nif-none-match: *\r\n"));
-        assert!(requests[1].starts_with("GET /seed-bucket/swaps/seed?x-id=GetObject "));
+        assert!(requests[1].starts_with("GET /seed-bucket/signers/seed?x-id=GetObject "));
     }
 }
 

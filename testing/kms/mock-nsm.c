@@ -63,7 +63,7 @@ ErrorCode nsm_get_attestation_doc(int32_t fd, const uint8_t *user_data,
     const uint8_t *public_key, uint32_t public_key_len,
     uint8_t *document, uint32_t *document_len) {
     (void)fd;
-    const char *hex = getenv("SWAP_KMS_E2E_PCR0");
+    const char *hex = getenv("KMS_E2E_PCR0");
     uint8_t pcr[48];
     if (hex == NULL || strlen(hex) != 96 || document == NULL || document_len == NULL ||
         public_key == NULL || public_key_len == 0 || public_key_len > 4096 ||

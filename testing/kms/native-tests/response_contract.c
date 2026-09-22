@@ -1,7 +1,7 @@
 /* Exercise the actual response gate, official SDK response parsers and output
  * encoder. No service, credentials, NSM replacement or crypto hooks are used. */
-#define main swap_kms_tool_main
-#include "../../../enclave/kms-tool/main.c"
+#define main kms_tool_main
+#include KMS_HELPER_SOURCE
 #undef main
 
 #define CHECK(expression) do { \

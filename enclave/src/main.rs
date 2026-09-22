@@ -94,28 +94,30 @@ fn main() {
 
     let state = EnclaveState::new(bitcoin_network);
 
-    #[cfg(feature = "rgb-swap")]
+    #[cfg(feature = "kms-persistence")]
     let state = {
         // Explicit development import builds can run without AWS. Empty init
         // still fails closed; there is no ephemeral-generation fallback. The
         // existing release guard forbids allow-seed-import in production.
         let import_only = cfg!(feature = "allow-seed-import")
             && [
-                "SWAP_KMS_KEY_ARN",
-                "SWAP_KMS_REGION",
-                "SWAP_KMS_SEED_ID",
-                "SWAP_KMS_EXPECTED_EVM_ADDRESS",
+                "KMS_KEY_ARN",
+                "KMS_REGION",
+                "KMS_SEED_ID",
+                "KMS_EXPECTED_EVM_ADDRESS",
             ]
             .iter()
             .all(|name| std::env::var_os(name).is_none());
         if import_only {
-            tracing::warn!("development import-only mode: swap KMS is unconfigured; empty InitializeKey requests will fail");
+            tracing::warn!("development import-only mode: KMS is unconfigured; empty InitializeKey requests will fail");
             state
         } else {
-            use utexo_bridge_enclave::swap_persistence::PersistentSwapSeed;
-            let source = PersistentSwapSeed::from_env()
-                .unwrap_or_else(|e| panic!("RGB swap KMS configuration is required: {e}"));
-            state.with_swap_seed_source(Box::new(source))
+            use utexo_bridge_enclave::{kms::CustodyFlow, seed_persistence::PersistentSeed};
+            // This application flow selects the measured custody namespace.
+            // The KMS client and native helper do not choose a default flow.
+            let source = PersistentSeed::from_env(CustodyFlow::RgbSwap)
+                .unwrap_or_else(|e| panic!("KMS persistence configuration is required: {e}"));
+            state.with_seed_source(Box::new(source))
         }
     };
 
@@ -204,7 +206,7 @@ fn main() {
     // never lands in the EIF or the PCRs. `UTEXO_CLONING_SECRET` is a legacy/dev
     // fallback only and must not be baked into a release EIF. Needed only by
     // enclaves that serve `GetClone`. Never logged; `SecretBox` zeroizes it.
-    #[cfg(not(feature = "rgb-swap"))]
+    #[cfg(not(feature = "kms-persistence"))]
     if let Ok(secret) = std::env::var("UTEXO_CLONING_SECRET") {
         if !secret.is_empty() {
             if let Err(e) = state.set_donor_cloning_secret(secret) {
@@ -291,7 +293,7 @@ fn main() {
             let exec_vsock: u32 = std::env::var("HELIOS_EXECUTION_VSOCK_PORT")
                 .ok()
                 .and_then(|s| s.parse().ok())
-                .unwrap_or(if cfg!(feature = "rgb-swap") {
+                .unwrap_or(if cfg!(feature = "kms-persistence") {
                     8005
                 } else {
                     8003
@@ -303,19 +305,19 @@ fn main() {
             let cons_vsock: u32 = std::env::var("HELIOS_CONSENSUS_VSOCK_PORT")
                 .ok()
                 .and_then(|s| s.parse().ok())
-                .unwrap_or(if cfg!(feature = "rgb-swap") {
+                .unwrap_or(if cfg!(feature = "kms-persistence") {
                     8006
                 } else {
                     8004
                 });
-            // Swap custody reserves 8003 for KMS and 8004 for the broker.
-            // Keep the non-swap defaults; fail early on an explicit collision.
-            #[cfg(feature = "rgb-swap")]
+            // KMS custody reserves 8003 for KMS and 8004 for the broker.
+            // Keep the non-custody defaults; fail early on an explicit collision.
+            #[cfg(feature = "kms-persistence")]
             assert!(
                 ![exec_vsock, cons_vsock]
                     .iter()
                     .any(|port| matches!(port, 8003 | 8004)),
-                "Helios vsock ports must not use the reserved swap KMS/broker ports 8003/8004"
+                "Helios vsock ports must not use the reserved KMS/broker ports 8003/8004"
             );
             tracing::info!(
                 exec_local,
@@ -513,12 +515,9 @@ fn main() {
     }
 }
 
-/// Accept loop with bounded concurrency and per-request deadlines.
-/// Each accepted socket is wrapped in a [`DeadlineStream`] (idle + total
-/// request timeouts) and handed to a fixed worker pool via a bounded queue;
-/// over-cap connections are dropped (closed) so one slow request can't starve
-/// the others. Generic over the socket type so the vsock and TCP branches share
-/// one implementation.
+/// Accept loop: a fixed worker pool behind a bounded queue. The deadline starts
+/// at accept, so queue wait counts and an expired connection fails its first
+/// read. Excess connections are dropped. Generic over the socket type.
 fn serve<I, S>(incoming: I, ctx: ServerContext)
 where
     I: IntoIterator<Item = std::io::Result<S>>,
@@ -555,13 +554,8 @@ where
             };
             match next {
                 Ok((stream, deadline)) => {
-                    // Custody includes queue wait; other flows retain their
-                    // existing budget starting when a worker dequeues them.
-                    let deadline = if cfg!(feature = "rgb-swap") {
-                        deadline
-                    } else {
-                        std::time::Instant::now() + TOTAL_REQUEST_TIMEOUT
-                    };
+                    // Preserve the accept-time budget through framing and
+                    // dispatch, including persistent seed initialization.
                     let stream = DeadlineStream::with_deadline(stream, deadline, IO_IDLE_TIMEOUT);
                     server::handle_connection_until(stream, &ctx, deadline);
                 }

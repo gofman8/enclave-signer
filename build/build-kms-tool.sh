@@ -4,25 +4,25 @@
 set -eu
 
 if [ "$(uname -s)" != Linux ]; then
-    echo "swap-kms-tool must be built on Linux (use a swap Dockerfile)." >&2
+    echo "kms-tool must be built on Linux (use a KMS-enabled Dockerfile)." >&2
     exit 1
 fi
 
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 repo_dir=$(dirname "$script_dir")
-build_dir=${SWAP_KMS_BUILD_DIR:-/opt/swap-kms-build}
-prefix=${SWAP_KMS_INSTALL_PREFIX:-/opt/swap-kms}
-jobs=${SWAP_KMS_BUILD_JOBS:-4}
-manifest="$script_dir/swap-kms-dependencies.tsv"
-mkdir -p "$build_dir/src" "$prefix/lib" "$prefix/include" "$prefix/share/swap-kms/licenses"
+build_dir=${KMS_BUILD_DIR:-/opt/kms-build}
+prefix=${KMS_INSTALL_PREFIX:-/opt/kms}
+jobs=${KMS_BUILD_JOBS:-4}
+manifest="$script_dir/kms-dependencies.tsv"
+mkdir -p "$build_dir/src" "$prefix/lib" "$prefix/include" "$prefix/share/kms/licenses"
 # Remove obsolete generated metadata when reusing an older install prefix.
-rm -rf "$prefix/share/swap-kms/patches"
+rm -rf "$prefix/share/kms/patches"
 
 # AWS libraries are static; only libnsm and platform libc libraries are shared.
 # Pin build paths in Cargo output as well as the enclave's release binary.
 export GIT_TERMINAL_PROMPT=0
 export CARGO_INCREMENTAL=0
-export RUSTFLAGS="${RUSTFLAGS:-} --remap-path-prefix=$build_dir=/swap-kms-build -C debuginfo=0"
+export RUSTFLAGS="${RUSTFLAGS:-} --remap-path-prefix=$build_dir=/kms-build -C debuginfo=0"
 
 # Keep the manifest on a separate descriptor: build tools must never consume
 # dependency records as stdin or prompt for credentials in an unattended build.
@@ -43,11 +43,11 @@ while read -r name version commit url <&3; do
         rest_sha=$(sha256sum "$source_dir/source/rest.c")
         rest_sha=${rest_sha%% *}
         printf '{"upstream_commit":"%s","rest_c_sha256":"%s","source_modified":false}\n' \
-            "$commit" "$rest_sha" > "$prefix/share/swap-kms/sdk-source.json"
+            "$commit" "$rest_sha" > "$prefix/share/kms/sdk-source.json"
     fi
 
     # Include upstream licensing and the exact provenance with the runtime.
-    license_dir="$prefix/share/swap-kms/licenses/$name"
+    license_dir="$prefix/share/kms/licenses/$name"
     mkdir -p "$license_dir"
     for license in "$source_dir"/LICENSE* "$source_dir"/NOTICE* "$source_dir"/COPYING*; do
         [ ! -f "$license" ] || cp "$license" "$license_dir/"
@@ -55,7 +55,7 @@ while read -r name version commit url <&3; do
 
     if [ "$name" = aws-nitro-enclaves-nsm-api ]; then
         # Use our resolved, checked-in workspace lock; NSM source is unchanged.
-        cp "$script_dir/swap-kms-nsm.Cargo.lock" "$source_dir/Cargo.lock"
+        cp "$script_dir/kms-nsm.Cargo.lock" "$source_dir/Cargo.lock"
         # NSM 0.5.2 sets its official libnsm.so.0 SONAME. Preserve it in
         # the runtime; the unversioned symlink is only for build-time discovery.
         (cd "$source_dir" && CARGO_TARGET_DIR="$source_dir/target" cargo build \
@@ -110,13 +110,13 @@ while read -r name version commit url <&3; do
     fi
 done 3< "$manifest" </dev/null
 
-cp "$manifest" "$prefix/share/swap-kms/dependencies.tsv"
-if [ "${SWAP_KMS_DEPENDENCIES_ONLY:-0}" = 1 ]; then
+cp "$manifest" "$prefix/share/kms/dependencies.tsv"
+if [ "${KMS_DEPENDENCIES_ONLY:-0}" = 1 ]; then
     exit 0
 fi
 
-cmake -GNinja -S "$repo_dir/enclave/kms-tool" -B "$build_dir/build/swap-kms-tool" \
+cmake -GNinja -S "$repo_dir/enclave/kms-tool" -B "$build_dir/build/kms-tool" \
     -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$prefix" \
     -DCMAKE_INSTALL_PREFIX="$prefix" -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF
-cmake --build "$build_dir/build/swap-kms-tool" --parallel "$jobs" --target install
-strip "$prefix/bin/swap-kms-tool" "$prefix/lib/libnsm.so.0"
+cmake --build "$build_dir/build/kms-tool" --parallel "$jobs" --target install
+strip "$prefix/bin/kms-tool" "$prefix/lib/libnsm.so.0"

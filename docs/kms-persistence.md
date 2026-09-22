@@ -1,10 +1,22 @@
-# RGB swap seed persistence
+# KMS seed persistence
 
 Production `rgb-swap` builds use AWS KMS to generate a 64-byte seed and S3 to
 persist its encrypted `CiphertextBlob`. On initialization the enclave loads the
 saved blob, decrypts it with KMS recipient attestation, and passes the seed to
 its existing key derivation. Signing stays inside the enclave; it does not use
 KMS Sign. `rgb-mint-burn` generation, cloning and signing remain unchanged.
+
+Custody is provided by the `kms-persistence` capability, which `rgb-swap`
+enables today. The KMS client, native helper and parent storage use flow-neutral
+interfaces. The application selects `CustodyFlow::RgbSwap`; its `rgb-swap`
+encryption context remains unchanged so existing ciphertext is recoverable.
+Neither a host request nor an environment variable selects the custody flow.
+
+After mint and burn are split, a mint-only build can use the same custody
+implementation with its own explicit `CustodyFlow`, seed ID, S3 object and KMS
+context permissions. That requires adding the flow and its build wiring;
+enabling `kms-persistence` without `rgb-swap` is currently rejected at compile
+time. The combined `rgb-mint-burn` build cannot opt into swap custody.
 
 Only a confirmed missing S3 object with no expected identity pin permits
 `GenerateDataKey(NumberOfBytes=64)`. The parent writes with `If-None-Match: *`,
@@ -25,10 +37,10 @@ combined `Dockerfile.enclave`; `build/build-enclave.sh` also forwards them:
 
 | Setting | Value |
 | --- | --- |
-| `SWAP_KMS_KEY_ARN` | Full symmetric `ENCRYPT_DECRYPT` KMS key ARN; no alias. |
-| `SWAP_KMS_REGION` | Region matching that key, for example `eu-central-1`. |
-| `SWAP_KMS_SEED_ID` | Stable signer ID: 1–128 ASCII letters, digits, `.`, `_`, `-`. |
-| `SWAP_KMS_EXPECTED_EVM_ADDRESS` | Empty for first bootstrap; then the verified EVM address, 40 hex digits with optional `0x`. |
+| `KMS_KEY_ARN` | Full symmetric `ENCRYPT_DECRYPT` KMS key ARN; no alias. |
+| `KMS_REGION` | Region matching that key, for example `eu-central-1`. |
+| `KMS_SEED_ID` | Stable signer ID: 1–128 ASCII letters, digits, `.`, `_`, `-`. |
+| `KMS_EXPECTED_EVM_ADDRESS` | Empty for first bootstrap; then the verified EVM address, 40 hex digits with optional `0x`. |
 
 Keep the key ARN, seed ID and Bitcoin network unchanged when recovering an
 existing identity. A configured address pin rejects a different recovered seed
@@ -36,18 +48,22 @@ and makes missing storage fail before generation. There is no creation switch.
 Configuration changes affect the image measurement and require updating KMS
 permissions. These endpoint settings support the standard AWS commercial partition.
 
+The configuration and build names use `KMS_*`. If upgrading an earlier draft,
+rename its `SWAP_KMS_*` settings to `KMS_*` and rebuild the image. Keep the same
+values, S3 object and encryption context; no seed migration is required.
+
 ## Parent integration
 
-The existing [Rust parent](../parent/src/swap_persistence.rs) returns AWS
+The existing [Rust parent](../parent/src/seed_persistence.rs) returns AWS
 credentials and reads/conditionally creates one S3 object. It never receives
 the plaintext seed. Configure persistence on the parent process that serves
 this signer:
 
 ```bash
 export AWS_REGION=eu-central-1
-export SWAP_KMS_SEED_ID=swap-mainnet-signer-1
-export SWAP_KMS_S3_BUCKET=YOUR_SEED_BUCKET
-export SWAP_KMS_S3_KEY=swaps/signer-1/seed.kms
+export KMS_SEED_ID=swap-mainnet-signer-1
+export KMS_S3_BUCKET=YOUR_SEED_BUCKET
+export KMS_S3_KEY=swaps/signer-1/seed.kms
 export USE_VSOCK=true
 export ENCLAVE_VSOCK_CID=18
 ./utexo-bridge-parent
@@ -56,14 +72,14 @@ export ENCLAVE_VSOCK_CID=18
 With storage settings absent, the parent retains its existing behavior. The
 official AWS Rust SDK obtains and refreshes credentials; use a dedicated EC2
 instance role with IMDSv2. The custody listener admits `ENCLAVE_VSOCK_CID` by
-default. `SWAP_KMS_ALLOWED_CIDS` can explicitly allow comma-separated replica
+default. `KMS_ALLOWED_CIDS` can explicitly allow comma-separated replica
 CIDs sharing the same logical signer. Every allowed CID receives the **full
 role**, so give it only this signer's KMS/S3 permissions. A CID is a routing
 address, not attested image identity.
 
 Enable the custody listener in only one parent process per host. The enclave
 connects to parent CID `3`, vsock port `8004`. Local development can instead set
-`SWAP_KMS_BROKER_TCP=127.0.0.1:3446` with `USE_VSOCK=false`.
+`KMS_BROKER_TCP=127.0.0.1:3446` with `USE_VSOCK=false`.
 
 In another terminal, or through your existing host supervisor, run AWS's
 standard `vsock-proxy` for the same KMS region. Its configuration and invocation
@@ -81,7 +97,7 @@ vsock-proxy 8003 "kms.${AWS_REGION}.amazonaws.com" 443 --config kms-vsock-proxy.
 Permit outbound HTTPS to KMS/S3 and role access to IMDS. KMS TLS terminates in
 the enclave; the proxy only forwards bytes. The standard proxy restricts the
 destination, not source CIDs; isolation and process supervision belong to the
-host deployment. Do not run a second listener on `8003` or `8004`. Swap Helios
+host deployment. Do not run a second listener on `8003` or `8004`. KMS-enabled Helios
 uses `8005`/`8006` when enabled. No systemd units or deployment automation are
 provided by this feature.
 
@@ -128,7 +144,7 @@ recovery before funding the signer.
    `utexo-bridge-parent-cli --addr vsock://18:5000 init`. Supply no seed or cloning
    secret. Verify the public identity/attestation and independently back up the
    saved S3 ciphertext. This does not import a legacy ephemeral seed.
-3. Rebuild with the verified `SWAP_KMS_EXPECTED_EVM_ADDRESS`. Update the key's
+3. Rebuild with the verified `KMS_EXPECTED_EVM_ADDRESS`. Update the key's
    approved PCR0 for the pinned image, start it, and verify identical keys after
    initialization and restart. During a rollout, approved PCR0 may be a list in
    both the allow and deny conditions; retire the bootstrap measurement afterward.
@@ -147,6 +163,6 @@ poisoned, quarantine it and provision a new signer namespace; do not reuse any
 identity from that failed attempt. Shared ciphertext preserves keys but does
 not coordinate replicas or authorize concurrent application-level signing.
 
-Local emulator tests remain on `kms-testing`. Before production use, test real
-AWS recipient-attestation denials, conditional-write races and restart/backup
+Before production use, test real AWS recipient-attestation denials,
+conditional-write races and restart/backup
 recovery on Nitro hardware; local builds do not prove those service boundaries.

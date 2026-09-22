@@ -38,8 +38,8 @@ pub fn start_test_server_with_config(
     let listener = TcpListener::bind("127.0.0.1:0").unwrap();
     let port = listener.local_addr().unwrap().port();
     let state = EnclaveState::new(bitcoin::Network::Bitcoin);
-    #[cfg(feature = "rgb-swap")]
-    let state = state.with_swap_seed_source(Box::new(TestSwapSeedSource));
+    #[cfg(feature = "kms-persistence")]
+    let state = state.with_seed_source(Box::new(TestSeedSource));
     configure(&state);
     // Tests run with the placeholder Regtest checkpoint. The header chain
     // is initialised but empty; tests that don't push headers leave it
@@ -92,13 +92,60 @@ pub fn send_request(port: u16, req: &EnclaveRequest) -> EnclaveResponse {
     framing::read_message(&mut stream).unwrap()
 }
 
+/// Build `count` synthetic regtest headers chained from `prev_hash`, the first
+/// carrying `prev_time + 1`. The test server runs `Network::Regtest`, where
+/// header validation is chain-linkage only, so no real PoW has to be satisfied
+/// and timestamps are free to choose.
+#[cfg(feature = "spv")]
+#[allow(dead_code)]
+pub fn synth_chain_from(prev_hash: [u8; 32], prev_time: u32, count: u32) -> Vec<Vec<u8>> {
+    use bitcoin::consensus::serialize;
+    use bitcoin::hashes::Hash;
+
+    let mut prev = bitcoin::BlockHash::from_raw_hash(
+        bitcoin::hashes::sha256d::Hash::from_byte_array(prev_hash),
+    );
+    let mut out = Vec::with_capacity(count as usize);
+    for i in 0..count {
+        let header = bitcoin::block::Header {
+            version: bitcoin::block::Version::ONE,
+            prev_blockhash: prev,
+            merkle_root: bitcoin::TxMerkleNode::all_zeros(),
+            time: prev_time + 1 + i,
+            bits: bitcoin::CompactTarget::from_consensus(0x207fffff),
+            nonce: i,
+        };
+        out.push(serialize(&header));
+        prev = header.block_hash();
+    }
+    out
+}
+
+/// Push a header batch and return the raw response, so callers can assert on
+/// either the success or the error shape.
+#[cfg(feature = "spv")]
+#[allow(dead_code)]
+pub fn submit_headers(port: u16, start_height: u32, headers: Vec<Vec<u8>>) -> EnclaveResponse {
+    send_request(
+        port,
+        &EnclaveRequest {
+            request: Some(enclave_request::Request::SubmitHeaders(
+                SubmitHeadersRequest {
+                    headers,
+                    start_height,
+                },
+            )),
+        },
+    )
+}
+
 // This source exists only in the test harness. Production empty InitializeKey
 // requests must complete KMS recovery and durable storage before activation.
-#[cfg(feature = "rgb-swap")]
-struct TestSwapSeedSource;
+#[cfg(feature = "kms-persistence")]
+struct TestSeedSource;
 
-#[cfg(feature = "rgb-swap")]
-impl utexo_bridge_enclave::swap_persistence::SwapSeedSource for TestSwapSeedSource {
+#[cfg(feature = "kms-persistence")]
+impl utexo_bridge_enclave::seed_persistence::SeedSource for TestSeedSource {
     fn load_keys(
         &self,
         network: bitcoin::Network,

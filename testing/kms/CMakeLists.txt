@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-project(swap-kms-sdk-local-e2e LANGUAGES C)
+project(kms-sdk-local-e2e LANGUAGES C)
 
 if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
   message(FATAL_ERROR "The official Nitro SDK helper runs on Linux; use the documented builder container")
@@ -29,12 +29,12 @@ foreach(LINK_LIBRARY IN LISTS SDK_LINK_LIBRARIES)
 endforeach()
 set_target_properties(AWS::aws-nitro-enclaves-sdk-c PROPERTIES
   INTERFACE_LINK_LIBRARIES "${RELOCATED_SDK_LINK_LIBRARIES}")
-target_sources(swap-kms-tool PRIVATE "${CMAKE_CURRENT_LIST_DIR}/sdk-test-adapter.c")
-target_link_options(swap-kms-tool PRIVATE
+target_sources(kms-tool PRIVATE "${CMAKE_CURRENT_LIST_DIR}/sdk-test-adapter.c")
+target_link_options(kms-tool PRIVATE
   "-Wl,--wrap=aws_nitro_enclaves_rest_client_new"
   "-Wl,--wrap=aws_tls_ctx_options_init_default_client"
   "-Wl,--wrap=ioctl")
-set_target_properties(swap-kms-tool PROPERTIES
+set_target_properties(kms-tool PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 find_path(NSM_INCLUDE_DIR nsm.h REQUIRED)

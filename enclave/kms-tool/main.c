@@ -1,4 +1,4 @@
-/* RGB-swap custody adapter for the official AWS Nitro Enclaves SDK for C. */
+/* Seed custody adapter for the official AWS Nitro Enclaves SDK for C. */
 #include <aws/common/hash_table.h>
 #include <aws/nitro_enclaves/kms.h>
 #include <aws/nitro_enclaves/nitro_enclaves.h>
@@ -58,6 +58,7 @@ struct aws_client_bootstrap *__wrap_aws_client_bootstrap_new(
 struct input {
     struct json_object *json;
     const char *operation;
+    const char *flow;
     const char *region;
     const char *key_arn;
     const char *seed_id;
@@ -137,7 +138,7 @@ static struct json_object *parse_json(const char *data, size_t length) {
 
 /* json-c replaces duplicate members. After its JSON validation, count structural
  * member separators without decoding names or values. Accepted IPC has exactly
- * eight/nine known string fields, so this raw count must equal the parsed count.
+ * nine/ten known string fields, so this raw count must equal the parsed count.
  * Escaped quotes/colons stay inside strings; duplicate escaped names are caught
  * as well. This is a flat-message shape check, not a second JSON parser. */
 static size_t json_member_separators(const char *data, size_t length) {
@@ -176,6 +177,7 @@ static bool read_input(struct input *input) {
         return false;
     }
     input->operation = string_field(input->json, "operation", 1, 8);
+    input->flow = string_field(input->json, "flow", 1, 32);
     input->region = string_field(input->json, "region", 3, 32);
     input->key_arn = string_field(input->json, "key_arn", 1, 128);
     input->seed_id = string_field(input->json, "seed_id", 1, 128);
@@ -183,15 +185,23 @@ static bool read_input(struct input *input) {
     input->access_key = string_field(input->json, "access_key_id", 1, 128);
     input->secret_key = string_field(input->json, "secret_access_key", 1, 256);
     input->session_token = string_field(input->json, "session_token", 0, 16 * 1024);
-    if (!input->operation || !input->region || !input->key_arn || !input->seed_id || !input->network ||
+    if (!input->operation || !input->flow || !input->region || !input->key_arn || !input->seed_id || !input->network ||
         !input->access_key || !input->secret_key || !input->session_token) {
         return false;
+    }
+    /* Rust chooses the scope from its compiled flow type. Enforce the IPC
+     * identifier shape here without adding a second flow-selection policy. */
+    for (const char *p = input->flow; *p; p++) {
+        if (!((*p >= 'a' && *p <= 'z') || (*p >= 'A' && *p <= 'Z') ||
+              (*p >= '0' && *p <= '9') || *p == '-' || *p == '_')) {
+            return false;
+        }
     }
     bool generate = !strcmp(input->operation, "generate");
     if (!generate && strcmp(input->operation, "decrypt")) {
         return false;
     }
-    size_t expected_members = generate ? 8 : 9;
+    size_t expected_members = generate ? 9 : 10;
     if ((size_t)json_object_object_length(input->json) != expected_members || raw_members != expected_members) {
         return false;
     }
@@ -213,7 +223,7 @@ static bool add_context(struct aws_allocator *allocator, struct aws_hash_table *
         return false;
     }
     const char *keys[] = {"application", "flow", "seed_id", "bitcoin_network"};
-    const char *values[] = {"utexo-enclave-signer", "rgb-swap", input->seed_id, input->network};
+    const char *values[] = {"utexo-enclave-signer", input->flow, input->seed_id, input->network};
     for (size_t i = 0; i < 4; i++) {
         struct aws_string *key = aws_string_new_from_c_str(allocator, keys[i]);
         struct aws_string *value = aws_string_new_from_c_str(allocator, values[i]);
