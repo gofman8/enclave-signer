@@ -1,0 +1,496 @@
+{
+  "production_commit": "e0f4dfa9ce62865c8f172c1980bbb894cf6e4e6f",
+  "previous_production_commit": "f253e9741883a0bfc8991b916f8c569ccfd93ea3",
+  "base_commit": "f274bae0054dc8fbc5f352511d637c0cfaae50a7",
+  "change": "Reusable KMS custody with explicit application-selected flow; enabled only by RGB swap builds.",
+  "compatibility": {
+    "swap_context": "rgb-swap",
+    "signing_and_derivation_unchanged": true,
+    "current_mint_burn_lifecycle_unchanged": true,
+    "configuration": "Rename SWAP_KMS_* settings to KMS_* and rebuild the image; stored ciphertext remains compatible."
+  },
+  "rust_profiles": {
+    "kms-flow-refactor-clippy-mint": {
+      "last_lines": [
+        "    Checking utexo-bridge-enclave v0.1.0 (/Users/gofman/Documents/Codex/2026-09-13/https-github-com-utexo-protocol-enclave/work/enclave-signer/enclave)",
+        "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.88s"
+      ]
+    },
+    "kms-flow-refactor-mint": {
+      "passed": 606,
+      "failed": 0,
+      "ignored": 9,
+      "test_binaries": 14
+    },
+    "kms-flow-refactor-build-tests": {
+      "last_lines": [
+        "Ran 7 tests in 1.109s",
+        "",
+        "OK"
+      ]
+    },
+    "kms-flow-refactor-swap": {
+      "passed": 608,
+      "failed": 0,
+      "ignored": 9,
+      "test_binaries": 14
+    },
+    "kms-flow-refactor-workspace": {
+      "passed": 565,
+      "failed": 0,
+      "ignored": 9,
+      "test_binaries": 19
+    },
+    "kms-flow-refactor-clippy-swap": {
+      "last_lines": [
+        "    Checking utexo-bridge-enclave v0.1.0 (/Users/gofman/Documents/Codex/2026-09-13/https-github-com-utexo-protocol-enclave/work/enclave-signer/enclave)",
+        "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.15s"
+      ]
+    },
+    "kms-flow-refactor-clippy-default": {
+      "last_lines": [
+        "    Checking utexo-bridge-enclave v0.1.0 (/Users/gofman/Documents/Codex/2026-09-13/https-github-com-utexo-protocol-enclave/work/enclave-signer/enclave)",
+        "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.41s"
+      ]
+    }
+  },
+  "native": {
+    "checks": [
+      {
+        "case": "bash syntax",
+        "pass": true
+      },
+      {
+        "case": "POSIX shell syntax",
+        "pass": true
+      },
+      {
+        "case": "YAML .github/workflows/ci.yml",
+        "pass": true
+      },
+      {
+        "case": "YAML .github/workflows/build-eif.yml",
+        "pass": true
+      },
+      {
+        "case": "kms-dependencies.tsv unchanged content",
+        "pass": true
+      },
+      {
+        "case": "kms-nsm.Cargo.lock unchanged content",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave only names changed",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave.rgb only names changed",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave.mint-burn unchanged",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave.ccd unchanged",
+        "pass": true
+      },
+      {
+        "case": "production diff whitespace",
+        "pass": true
+      },
+      {
+        "case": "native test diff whitespace",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave without asset stopped at mock docker",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave canonical pins False",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave upstream asset False",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave with asset stopped at mock docker",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave canonical pins True",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave upstream asset True",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave.rgb without asset stopped at mock docker",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave.rgb canonical pins False",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave.rgb upstream asset False",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave.rgb with asset stopped at mock docker",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave.rgb canonical pins True",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave.rgb upstream asset True",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave.mint-burn without asset stopped at mock docker",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave.mint-burn canonical pins False",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave.mint-burn upstream asset False",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave.mint-burn with asset stopped at mock docker",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave.mint-burn canonical pins True",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave.mint-burn upstream asset True",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave.ccd without asset stopped at mock docker",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave.ccd canonical pins False",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave.ccd upstream asset False",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave.ccd with asset stopped at mock docker",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave.ccd canonical pins True",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave.ccd upstream asset True",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave rejects missing KMS_KEY_ARN",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave rejects missing KMS_REGION",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave rejects missing KMS_SEED_ID",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave.rgb rejects missing KMS_KEY_ARN",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave.rgb rejects missing KMS_REGION",
+        "pass": true
+      },
+      {
+        "case": "Dockerfile.enclave.rgb rejects missing KMS_SEED_ID",
+        "pass": true
+      },
+      {
+        "case": "make build_enclave mocked successfully",
+        "pass": true
+      },
+      {
+        "case": "make build_enclave build args",
+        "pass": true
+      },
+      {
+        "case": "make build_enclave exported pins",
+        "pass": true
+      },
+      {
+        "case": "make build_enclave build args",
+        "pass": true
+      },
+      {
+        "case": "make build_enclave exported pins",
+        "pass": true
+      },
+      {
+        "case": "make build_enclave_rgb mocked successfully",
+        "pass": true
+      },
+      {
+        "case": "make build_enclave_rgb build args",
+        "pass": true
+      },
+      {
+        "case": "make build_enclave_rgb exported pins",
+        "pass": true
+      },
+      {
+        "case": "make build_enclave_rgb build args",
+        "pass": true
+      },
+      {
+        "case": "make build_enclave_rgb exported pins",
+        "pass": true
+      },
+      {
+        "case": "make build_enclave_ccd mocked successfully",
+        "pass": true
+      },
+      {
+        "case": "make build_enclave_ccd build args",
+        "pass": true
+      },
+      {
+        "case": "make build_enclave_ccd build args",
+        "pass": true
+      },
+      {
+        "case": "make build_enclave missing key rejected",
+        "pass": true
+      },
+      {
+        "case": "make build_enclave_rgb missing key rejected",
+        "pass": true
+      },
+      {
+        "case": "all SDK and NSM libraries unchanged",
+        "pass": true
+      },
+      {
+        "case": "pristine SDK source receipt preserved",
+        "pass": true
+      },
+      {
+        "case": "installed manifest matches production",
+        "pass": true
+      },
+      {
+        "case": "no source patch artifact",
+        "pass": true
+      },
+      {
+        "case": "old helper removed",
+        "pass": true
+      }
+    ],
+    "all_passed": true,
+    "helper_sha256": "bfb4e46ec1170cb400663265183a11cd9e7c0fac0fa7cfe675845a72bf36fb97",
+    "source_hashes": {
+      "enclave/kms-tool/main.c": "ef252818c7ae12efc04b31b9ebaebe6f7802bf4a064c077e9d2224121a55edb1",
+      "enclave/kms-tool/CMakeLists.txt": "b273d72ac92e6f7de0f7205dd351e41284067c963da7d668aacb9180f5a11c5d",
+      "build/build-kms-tool.sh": "721a35b4327d903a6c683d532353ad43a46e139c4151bd0e65f240bf9a49bc8c",
+      "build/kms-dependencies.tsv": "89fe837daba0de2a86ad691954c7ab975c1b97a2229b4270c8844bb335618dc6",
+      "build/kms-nsm.Cargo.lock": "02dce31c049455647f78a2315ade3d015564fce6d3ea6f03750b7c24ae4c8fc6",
+      "build/Dockerfile.enclave": "de306009df15ba418e47052d73d331e3d267ce6bdf5bf0df5e728c7a268e22a1",
+      "build/Dockerfile.enclave.rgb": "0f6a90b8271a38319261d787da207265da3ed73b984b25baa8321b3b97de367f",
+      "build/build-enclave.sh": "71ece0fbf6527dafdb796bb7fd9338bbe8017036f0487edd12cf31626c65a15e",
+      "Makefile": "930e535f00dc351f9c034aa0c619195eff793aae0c2b112e6b186b0b68f5a38f",
+      ".github/workflows/ci.yml": "8adb63591b882f405ec3d9cd51f73a021c092493a832fcd618fb2c1de75e8ad1",
+      ".github/workflows/build-eif.yml": "a43a8d05b63502a4daca85c2d35a603b02f77054999997182e874696799e3ad6"
+    },
+    "helper_build_log_sha256": "e9541a4c0b7b79af5ce8bd6339b572312b366a2cfd714a021f8476f4543e521b",
+    "library_files_compared": 14,
+    "sdk_source": {
+      "upstream_commit": "cd61b6187c8b20867ba4368d1ae62c5790c0269a",
+      "rest_c_sha256": "60655b9be64b730d333238b13be7846c0a6eba00b540b3dfb9eef35aef39522c",
+      "source_modified": false
+    },
+    "scope": "Helper rebuilt against byte-identical existing pristine SDK/NSM libraries. Production Dockerfiles statically checked for exact naming-only changes; no full Docker runtime/EIF build."
+  },
+  "negative_feature_guards": [
+    {
+      "features": "kms-persistence",
+      "command": [
+        "cargo",
+        "check",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--no-default-features",
+        "--features",
+        "kms-persistence"
+      ],
+      "exit_code": 101,
+      "expected_guard_found": true,
+      "pass": true,
+      "log_sha256": "6aec631a166f26c755dedbcfd54e4c44b541c0b650d1b1b6c0c0eb8d00b7de7f"
+    },
+    {
+      "features": "rgb-mint-burn,kms-persistence",
+      "command": [
+        "cargo",
+        "check",
+        "--locked",
+        "--offline",
+        "-p",
+        "utexo-bridge-enclave",
+        "--no-default-features",
+        "--features",
+        "rgb-mint-burn,kms-persistence"
+      ],
+      "exit_code": 101,
+      "expected_guard_found": true,
+      "pass": true,
+      "log_sha256": "8486d27aae34e87c7a673c690da966672a89e10d869fd60447b82f19cbf88727"
+    }
+  ],
+  "parent": {
+    "base_commit": "f253e9741883a0bfc8991b916f8c569ccfd93ea3",
+    "files": {
+      "parent/Cargo.toml": "89dcbba9d1c97d494e94c614cae6c0e829eca41196d62475dcd13405fa31d89c",
+      "parent/src/lib.rs": "d145d6c6a641048456191a8a4ab9c9cfe4a0633e1cb131c8da3c5ff16cf7f571",
+      "parent/src/main.rs": "a11f91a788e03679e39855464798e5e7e82f862d63eaa7c82a36192027574f2c",
+      "parent/src/seed_persistence.rs": "2c599a6e93146971d28bba843e49d898615083075a5265a24a292eeb59714d1a",
+      "parent/src/seed_persistence/tests.rs": "103a92df238d308037ca035154790d814f74cf3151787e07db1b579b6cacedcc"
+    },
+    "lock_unchanged": true,
+    "runtime_module_only_requested_naming_changes": true,
+    "verified_files_match": true,
+    "binary_sha256": "d773878c4a7318615e40772334f3529586d62d0a0f216282192c605cc6991883",
+    "tests": {
+      "command": "cargo test --manifest-path parent/Cargo.toml --locked",
+      "passed": 51,
+      "log": "parent-tests.log"
+    },
+    "build": {
+      "command": "cargo build --manifest-path parent/Cargo.toml --bin utexo-bridge-parent --locked",
+      "passed": true,
+      "log": "parent-build.log"
+    },
+    "clippy": {
+      "command": "cargo clippy --manifest-path parent/Cargo.toml --bin utexo-bridge-parent --locked -- -D warnings",
+      "passed": true,
+      "log": "parent-clippy.log"
+    },
+    "startup_smoke": "startup-smoke.json"
+  },
+  "linux_parent": {
+    "command": [
+      "docker",
+      "run",
+      "--rm",
+      "--network",
+      "none",
+      "--cap-drop",
+      "ALL",
+      "--security-opt",
+      "no-new-privileges",
+      "--mount",
+      "type=bind,source=/Users/gofman/Documents/Codex/2026-09-13/https-github-com-utexo-protocol-enclave/work/enclave-signer,target=/repo,readonly",
+      "--mount",
+      "type=bind,source=/Users/gofman/.cargo/registry,target=/cargo/registry,readonly",
+      "--mount",
+      "type=bind,source=/Users/gofman/.cargo/git,target=/cargo/git,readonly",
+      "--mount",
+      "type=bind,source=/Users/gofman/Documents/Codex/2026-09-13/https-github-com-utexo-protocol-enclave/work/kms-review-fixes/forwarder-linux-target,target=/target",
+      "--env",
+      "CARGO_HOME=/cargo",
+      "--env",
+      "CARGO_TARGET_DIR=/target",
+      "--env",
+      "CARGO_NET_OFFLINE=true",
+      "--workdir",
+      "/repo",
+      "codex-swap-kms-sdk-builder:unmodified-official",
+      "cargo",
+      "check",
+      "--locked",
+      "--offline",
+      "--manifest-path",
+      "parent/Cargo.toml",
+      "--features",
+      "vsock",
+      "--bin",
+      "utexo-bridge-parent"
+    ],
+    "exit_code": 0,
+    "source_hashes_before": {
+      "Cargo.toml": "f5b1f6d02d514f1d142967b4717938369b80f5408d9e8788570bb7823d0d2ed8",
+      "enclave/Cargo.toml": "66b85138a6724fece9ad6388729cb01bd73ce69327e938f96ab63ecc7fca609f",
+      "parent/Cargo.toml": "89dcbba9d1c97d494e94c614cae6c0e829eca41196d62475dcd13405fa31d89c",
+      "parent/Cargo.lock": "cf44a1a0c299439f318524a897d316c126509bbe525cc30babdcb01b9cb8a7b0",
+      "parent/src/attest_verify.rs": "b9ee096d4fe02c74f87197bfe448e77c3a847020a05491b35ea7f68d5e314681",
+      "parent/src/bin/attest_verify.rs": "876ad217e435e389e498065f1cc606aac9e41c9fc965b1b337c6216eea7b667b",
+      "parent/src/bin/cli.rs": "800253a72ea219b818976148beb1d841348bdec11c577220bdba57291dcf986a",
+      "parent/src/client.rs": "c9ce987003819eb1474ad0280b0668cb79ceea0e5f32068049e89a95e28d786e",
+      "parent/src/config.rs": "37b2f31f374d7530eea6e46f0b5c87029189f2032ab6762c218a0038511628ed",
+      "parent/src/error.rs": "09fe63f08c2baccaa5acf7e5d00755135afa879d253d2c1d795db6c783a6bfe4",
+      "parent/src/framing.rs": "b37e3a4052d8678a19ea530e318b481f575e7e82cffc3cf9c93a10e05a1264bb",
+      "parent/src/grpc_server.rs": "24fb50b1b2ddeee91ec7dab78c4adc9f3614e490cc98a25f3c1fab33a132800e",
+      "parent/src/health.rs": "a6ba3bd45486de1b86be09695ca5c5506d82885dcb55c88b5c2e5e40aeddd089",
+      "parent/src/lib.rs": "d145d6c6a641048456191a8a4ab9c9cfe4a0633e1cb131c8da3c5ff16cf7f571",
+      "parent/src/main.rs": "a11f91a788e03679e39855464798e5e7e82f862d63eaa7c82a36192027574f2c",
+      "parent/src/seed_persistence.rs": "2c599a6e93146971d28bba843e49d898615083075a5265a24a292eeb59714d1a",
+      "parent/src/seed_persistence/tests.rs": "103a92df238d308037ca035154790d814f74cf3151787e07db1b579b6cacedcc"
+    },
+    "source_hashes_after": {
+      "Cargo.toml": "f5b1f6d02d514f1d142967b4717938369b80f5408d9e8788570bb7823d0d2ed8",
+      "enclave/Cargo.toml": "66b85138a6724fece9ad6388729cb01bd73ce69327e938f96ab63ecc7fca609f",
+      "parent/Cargo.toml": "89dcbba9d1c97d494e94c614cae6c0e829eca41196d62475dcd13405fa31d89c",
+      "parent/Cargo.lock": "cf44a1a0c299439f318524a897d316c126509bbe525cc30babdcb01b9cb8a7b0",
+      "parent/src/attest_verify.rs": "b9ee096d4fe02c74f87197bfe448e77c3a847020a05491b35ea7f68d5e314681",
+      "parent/src/bin/attest_verify.rs": "876ad217e435e389e498065f1cc606aac9e41c9fc965b1b337c6216eea7b667b",
+      "parent/src/bin/cli.rs": "800253a72ea219b818976148beb1d841348bdec11c577220bdba57291dcf986a",
+      "parent/src/client.rs": "c9ce987003819eb1474ad0280b0668cb79ceea0e5f32068049e89a95e28d786e",
+      "parent/src/config.rs": "37b2f31f374d7530eea6e46f0b5c87029189f2032ab6762c218a0038511628ed",
+      "parent/src/error.rs": "09fe63f08c2baccaa5acf7e5d00755135afa879d253d2c1d795db6c783a6bfe4",
+      "parent/src/framing.rs": "b37e3a4052d8678a19ea530e318b481f575e7e82cffc3cf9c93a10e05a1264bb",
+      "parent/src/grpc_server.rs": "24fb50b1b2ddeee91ec7dab78c4adc9f3614e490cc98a25f3c1fab33a132800e",
+      "parent/src/health.rs": "a6ba3bd45486de1b86be09695ca5c5506d82885dcb55c88b5c2e5e40aeddd089",
+      "parent/src/lib.rs": "d145d6c6a641048456191a8a4ab9c9cfe4a0633e1cb131c8da3c5ff16cf7f571",
+      "parent/src/main.rs": "a11f91a788e03679e39855464798e5e7e82f862d63eaa7c82a36192027574f2c",
+      "parent/src/seed_persistence.rs": "2c599a6e93146971d28bba843e49d898615083075a5265a24a292eeb59714d1a",
+      "parent/src/seed_persistence/tests.rs": "103a92df238d308037ca035154790d814f74cf3151787e07db1b579b6cacedcc"
+    },
+    "source_unchanged": true,
+    "log_sha256": "e711c29281d52c6b120fe362e63e84f9b09ed9b9b245c2d73ceb82ffedd38ccb",
+    "scope": "Compile actual Linux parent with vsock feature, upstream health listener/fault isolation, KMS custody startup, and existing gRPC binary; offline, no Nitro VSOCK device is exercised."
+  },
+  "scope_limits": [
+    "Local E2E uses mock NSM attestation, local TLS and open-source AWS emulation.",
+    "No new EIF or real Nitro hardware/AWS recipient-attestation validation was run for this refactor.",
+    "Pinned upstream SDK sources remain unchanged; previously documented SDK limitations remain."
+  ],
+  "e2e": {
+    "test_source_commit": "d76ddd998fa1d079ba0f5c5b1e27268b010242f4",
+    "source_clean_before_and_after": true,
+    "scenarios": 44,
+    "status": "passed",
+    "report_sha256": "498309730ab88f6bad0e4ce491d2aa0f6ac35c48f14bd61c48c27e25c45bee47",
+    "legacy_client_commit": "3d5086558faba04d589ddc63abc6bfc43a8743b9",
+    "legacy_ciphertext_recovery": "Passed with identical public identity and signature."
+  }
+}
