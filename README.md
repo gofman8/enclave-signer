@@ -48,6 +48,12 @@ See the [component diagram](docs/diagrams/01-components.md) and
 
 ### Key management
 
+With `kms-persistence`, initialization generates or recovers a seed through
+attested AWS KMS and persists its encrypted ciphertext in S3. Replicas recover
+that seed; signing and HD derivation are unchanged. See the
+[KMS persistence guide](docs/kms-persistence.md). The generation and cloning
+lifecycle below applies without this capability.
+
 - Generates a BIP-39 mnemonic from OS entropy, derives the 64-byte seed and
   keeps it in a `SecretBox` (zeroize on drop). Mnemonic or raw-seed import
   exists only behind `allow-seed-import` (dev builds).
@@ -110,9 +116,14 @@ destination network. Accepted routes: RGB -> EVM, EVM -> RGB, CCD -> EVM.
   re-encode must byte-match), amount == declared, chain / contract pins,
   `destinationChainId` rule per route, deadline in the future, BtcRelay
   finality proof anchored to the consignment's block.
-- **Flow shape** - a `rgb-swap` build accepts IFA `Transfer` only; a
-  `rgb-mint-burn` build accepts `Inflation` / `Burn` (and BFA `Bridge` with
-  `bfa-mint`). Separate images, separate PCR0.
+- **Schema** - BFA (Bridged Fungible Asset) is the only RGB schema accepted.
+  Every other schema id is refused fail-closed.
+- **Flow shape** - a `rgb-swap` build accepts BFA `Transfer` only; a
+  `rgb-mint-burn` build accepts BFA `Bridge` / `Burn`. Separate images,
+  separate PCR0.
+  Production RGB images take the per-deployment BFA contract ID through the
+  `RGB_ASSET_ID` Docker build argument. The EIF workflow reads it from the
+  `BFA_RGB_ASSET_ID` repository variable and fails the image build if absent.
 - **Replay** - `fundsOut` replay is the on-chain nonce in the digest. EVM -> RGB
   requests get a soft in-memory dedup (24 h) keyed by the deposit.
 
@@ -145,7 +156,7 @@ request per connection, 4 MiB frame cap. Schema:
 
 | Request | Phase | Feature | Description |
 |---------|-------|---------|-------------|
-| `InitializeKey` | Initial | - | Generate keys from OS entropy. Optional donor `cloning_secret`. Mnemonic / seed import needs `allow-seed-import`. |
+| `InitializeKey` | Initial | - | Recover/create a persisted seed with `kms-persistence`; otherwise generate from OS entropy with optional donor `cloning_secret`. Dev seed imports require `allow-seed-import`. |
 | `GetPublicKey` | Active | - | EVM address + pubkeys, gas-tx key, BTC pubkey / xpub, fingerprint, account xpubs, CCD pubkey, boot pins. |
 | `GetAttestedPublicKey` | Active | - | Same bundle plus an NSM attestation document bound to nonce, pubkey and the policy commitment. |
 | `Sign` | Active | `rgb` / `ccd` | Bridge signing: RGB -> EVM, EVM -> RGB, CCD -> EVM. |
@@ -214,13 +225,22 @@ profile. CI asserts every guard fires.
 
 ### Enclave image (EIF)
 
+For images with KMS persistence, export `KMS_KEY_ARN`, `KMS_REGION`
+and `KMS_SEED_ID`. Set `KMS_EXPECTED_EVM_ADDRESS` when restoring a
+known identity. See [KMS setup](docs/kms-persistence.md) for the parent
+and policy requirements. Other images do not require these values.
+
 ```bash
 ./build/build-enclave.sh                                  # Dockerfile.enclave (combined)
 DOCKERFILE=Dockerfile.enclave.rgb       ./build/build-enclave.sh
 DOCKERFILE=Dockerfile.enclave.mint-burn ./build/build-enclave.sh
 DOCKERFILE=Dockerfile.enclave.ccd       ./build/build-enclave.sh
-DOCKERFILE=Dockerfile.enclave.bfa       ./build/build-enclave.sh
 ```
+
+`Dockerfile.enclave.mint-burn` is the shipped BFA mint/burn image: `bfa-mint`
+pulls in `rgb-mint-burn` and `bfa-validation`, and `bfa-validation` pulls in
+`evm-rpc`. It needs `--build-arg RGB_ASSET_ID=rgb:<contract id>`, which has no
+default because each BFA contract id is per-deployment.
 
 All Dockerfiles resolve private dependencies. Supply either a GitHub token
 with read access to those repositories, or the same per-repository deploy keys
@@ -273,22 +293,30 @@ measured into PCR0. The cloning secret is never baked.
 ### Local development (TCP)
 
 ```bash
-# Enclave on 127.0.0.1:5000
-RUST_LOG=debug cargo run -p utexo-bridge-enclave
+# Development-only imports on 127.0.0.1:5000 (never enable for a release)
+RUST_LOG=debug cargo run -p utexo-bridge-enclave --features allow-seed-import
 
 # Parent gRPC server (GRPC_PORT defaults to 5000; pick another port when both run on one host)
 RUST_LOG=debug GRPC_PORT=50051 cargo run --manifest-path parent/Cargo.toml
 
 # CLI (shell function works in bash and zsh)
 cli() { cargo run --manifest-path parent/Cargo.toml --bin utexo-bridge-parent-cli -- "$@"; }
-cli init
+# Public test mnemonic only; never fund this development identity.
+cli init-mnemonic "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
 cli get-keys
 cli get-last-saved-block
 cli --help
 ```
 
 `--addr host:port` or `--addr vsock://<cid>:<port>` selects the enclave.
-Initialize once: use `cli init --cloning-secret <secret>` instead of `cli init`
+For persisted keys, follow the [KMS setup guide](docs/kms-persistence.md) and use
+`cli init` for bootstrap or recovery.
+
+`Dockerfile.enclave-dev` uses the same development import-only mode: initialize
+it with `init-mnemonic` using a public test mnemonic. It intentionally has no
+KMS helper or persisted production seed, and empty `init` fails closed.
+
+For peer cloning, use `cli init --cloning-secret <secret>` instead of `cli init`
 to configure a donor. Use a fresh requester for `cli clone`; initialization
 and cloning are alternative ways to enter `Active`. Signing subcommands require
 complete proofs and configured pins; see their `--help` and the spec.
@@ -308,9 +336,10 @@ GRPC_HOST=0.0.0.0 GRPC_PORT=50051 USE_VSOCK=true ENCLAVE_VSOCK_CID=16 ./utexo-br
 
 `deploy/deploy-host.sh` installs the systemd units for a three-enclave host:
 CIDs 16 / 18 / 20 with parents on ports 50051 / 50052 / 50053. It verifies the
-EIF checksum and PCR0 against the S3 manifest before and after start. Keys
-live only in enclave memory; a restart wipes them and the enclave must be
-initialised or cloned again.
+EIF checksum and PCR0 against the S3 manifest before and after start. Keys live
+only in enclave memory. After restart, initialize or clone according to the
+configured custody lifecycle; `kms-persistence` recovers the saved seed through
+`init` after [parent and relay setup](docs/kms-persistence.md).
 
 ### Debug mode
 
@@ -351,6 +380,19 @@ Value bounds (fail closed while unset in a production build):
 
 The gas-tx rule is part of the attested policy. Unset pins commit as zero.
 
+KMS custody (measured into EIFs that enable persistence):
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `KMS_KEY_ARN` | required | Full symmetric KMS key ARN; aliases are rejected. |
+| `KMS_REGION` | required | Commercial AWS region matching the key ARN. |
+| `KMS_SEED_ID` | required | Stable signer identity used in the KMS encryption context and storage namespace. |
+| `KMS_EXPECTED_EVM_ADDRESS` | empty | Optional first-start identity pin: 40 hex digits with optional `0x`. Pin the verified signer before funding; missing ciphertext then fails without replacement. |
+
+Startup reuses existing ciphertext or conditionally creates it after confirmed
+absence. No creation-mode setting is required. See the [deployment and recovery
+procedure](docs/kms-persistence.md) for parent storage and relay configuration.
+
 Data sources and transport:
 
 | Variable | Default | Description |
@@ -373,8 +415,8 @@ Optional Helios configuration (`--features helios`, with one RGB flow):
 | `HELIOS_NETWORK` | `mainnet` | Code accepts `mainnet`, `sepolia`, `holesky`; must match pinned `EVM_CHAIN_ID`. |
 | `HELIOS_CHECKPOINT` | unset | Required 32-byte beacon block root, hex; committed in the production policy. |
 | `HELIOS_STRICT_CHECKPOINT_AGE` | `true` | `false` or `0` disables strict checkpoint-age checking. |
-| `HELIOS_EXECUTION_LOCAL_PORT` / `HELIOS_EXECUTION_VSOCK_PORT` | `18545` / `8003` | Execution RPC forwarder ports. |
-| `HELIOS_CONSENSUS_LOCAL_PORT` / `HELIOS_CONSENSUS_VSOCK_PORT` | `18550` / `8004` | Consensus RPC forwarder ports. |
+| `HELIOS_EXECUTION_LOCAL_PORT` / `HELIOS_EXECUTION_VSOCK_PORT` | `18545` / `8005` with `kms-persistence`, `8003` otherwise | Execution RPC forwarder ports. KMS persistence reserves vsock ports `8003`/`8004` for KMS and seed storage. |
+| `HELIOS_CONSENSUS_LOCAL_PORT` / `HELIOS_CONSENSUS_VSOCK_PORT` | `18550` / `8006` with `kms-persistence`, `8004` otherwise | Consensus RPC forwarder ports. KMS-enabled builds reject custody-port collisions. |
 
 Selected Helios initialization/sync failure leaves the provider unavailable;
 receipt-dependent signing refuses instead of falling back to raw RPC.
@@ -387,7 +429,7 @@ Limits and dev knobs:
 | `MAX_MERKLE_PROOFS` | `256` | Proof-count cap per request. |
 | `MAX_TOTAL_PROOF_BYTES` | 128 KiB | Aggregate proof-bytes cap per request. |
 | `SPV_CHECKPOINT` | unset | Dev builds only: `height:hash[:bits:time]` moves the SPV anchor forward. A production-shaped build refuses to boot when set. |
-| `UTEXO_CLONING_SECRET` | unset | Legacy donor secret. Prefer `init --cloning-secret` at runtime. |
+| `UTEXO_CLONING_SECRET` | unset | Legacy donor secret; ignored with `kms-persistence`, which rejects cloning. Otherwise prefer `init --cloning-secret` at runtime. |
 
 ### Parent
 
@@ -399,8 +441,42 @@ Limits and dev knobs:
 | `USE_VSOCK` | `false` | `true` / `1` selects vsock (Linux only). |
 | `ENCLAVE_VSOCK_CID` | `16` | Enclave CID. |
 | `ENCLAVE_VSOCK_PORT` | `5000` | Enclave vsock port. |
+| `HEALTH_HOST` | `127.0.0.1` | Bind host for `GET /health`. Keep on loopback - unlike `GRPC_HOST`, do not set to `0.0.0.0` |
+| `HEALTH_PORT` | `5001` | Port for `GET /health` |
 | `EVM_NETWORK_IDS` | empty | Comma-separated network ids that count as EVM destinations for `Sign`. Empty rejects every EVM-destination transaction. |
 | `RUST_LOG` | unset | Log filter. |
+
+#### Readiness endpoint
+
+Deploy restarts the three enclaves one at a time to keep the 2-of-3 signing
+quorum. `GET /health` on the parent replaces the fixed sleep between them with a
+real signal:
+
+```bash
+curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:5001/health
+```
+
+- `200` - the enclave's signing key is loaded **and** its Bitcoin header chain
+  passes the same staleness gate signing applies (`SPV_MAX_TIP_AGE_SECS`), so a
+  signing request would not bounce off a stale chain.
+- `503` - anything else: still starting, still catching up, key not initialized,
+  or the enclave is unreachable. "Not ready" and "cannot tell" are one answer to
+  a caller that is waiting, so the poller never has to special-case a `5xx`.
+
+The body carries the same fields as diagnostics (`key_loaded`, `spv_synced`,
+`phase`, `spv_tip_height`, `spv_tip_age_secs`), so a stuck deploy is debuggable
+from the poll log. Production binds it per parent on `50061` / `50062` /
+`50063` (`deploy/deploy-host.sh`); the Docker image wires the same probe into a
+`HEALTHCHECK`, so `docker inspect` reports it.
+
+This is an operations probe, not part of the signing API. It is loopback-only
+and must not be exposed off-host.
+
+The same answer is available from the CLI, for debugging from the host shell:
+
+```bash
+utexo-bridge-parent-cli --addr vsock://16 health
+```
 
 ## Testing
 
@@ -426,9 +502,11 @@ provenance. `build/smoke-test.sh` drives a live enclave through the CLI.
 |---------|---------|-------------|
 | `rgb` | `spv` | RGB / Bitcoin bridge stack. |
 | `ccd` | - | Concordium stack (Ed25519 is always compiled; this gates the handlers). |
-| `rgb-swap` | `rgb` | RGB flow: send/receive with IFA `Transfer`. In the default set. |
-| `rgb-mint-burn` | `rgb` | RGB flow: deposits mint with IFA `Inflation`, withdrawals `Burn`. Needs `--no-default-features`. |
-| `bfa-mint` | `rgb-mint-burn`, `evm-rpc` | Bridged Fungible Asset schema: `Bridge` transitions verified against the enclave's own `FundsIn` reads. |
+| `rgb-swap` | `rgb`, `kms-persistence` | RGB flow: send/receive with BFA `Transfer`. In the default set. |
+| `kms-persistence` | - | Attested KMS seed generation/recovery with encrypted S3 persistence. Requires an explicitly supported custody flow. |
+| `rgb-mint-burn` | `rgb` | RGB flow: deposits mint with BFA `Bridge`, withdrawals `Burn`. Needs `--no-default-features`. |
+| `bfa-mint` | `rgb-mint-burn`, `bfa-validation` | Mint/burn flow with BFA consensus and settlement checks against verified `FundsIn` locks. |
+| `bfa-validation` | `evm-rpc` | Runs BFA consensus with verified mint ancestry in either RGB flow. Required for BFA swaps and implied by `bfa-mint`. |
 | `spv` | `rgb-validation` | In-enclave Bitcoin header chain and witness inclusion proofs. |
 | `rgb-validation` | rgb crates | In-enclave consignment validation. Requires `spv`. |
 | `evm-rpc` | `rgb-validation` | In-enclave `FundsIn` verification over host-relayed JSON-RPC. Without it the enclave refuses every bridge PSBT. |
@@ -471,8 +549,9 @@ Re-syncing changes PCR0. Procedure in
   connection limits are compiled in. `EVM_MIN_CONFIRMATIONS` and request-size
   caps are read from environment; image-baked values are measured with the EIF.
 - **Key custody.** Seed and keys in `SecretBox`, zeroized on drop.
-  `#![deny(unsafe_code)]`. No persistence: keys exist only in enclave memory.
-- **Cloning.** X25519 + HKDF-SHA256 + ChaCha20-Poly1305, mutual attestation
+  `#![deny(unsafe_code)]`. With `kms-persistence`, seeds persist as KMS ciphertext
+  in S3; plaintext signing keys exist only in enclave memory.
+- **Cloning (without KMS persistence).** X25519 + HKDF-SHA256 + ChaCha20-Poly1305, mutual attestation
   with PCR equality, shared secret, replay guard recorded only after
   authentication.
 - **Release hardening.** `opt-level = "z"`, LTO, stripped, `panic = "abort"`,
