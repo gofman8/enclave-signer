@@ -1,28 +1,22 @@
 # KMS seed persistence
 
-Production `rgb-swap` builds use AWS KMS to generate a 64-byte seed and S3 to
+The `kms-persistence` capability uses AWS KMS to generate a 64-byte seed and S3 to
 persist its encrypted `CiphertextBlob`. On initialization the enclave loads the
 saved blob, decrypts it with KMS recipient attestation, and passes the seed to
 its existing key derivation. Signing stays inside the enclave; it does not use
-KMS Sign. `rgb-mint-burn` generation, cloning and signing remain unchanged.
+KMS Sign.
 
-Custody is provided by the `kms-persistence` capability, which `rgb-swap`
-enables today. The KMS client, native helper and parent storage use flow-neutral
-interfaces. The application selects `CustodyFlow::RgbSwap`; its `rgb-swap`
-encryption context remains unchanged so existing ciphertext is recoverable.
-Neither a host request nor an environment variable selects the custody flow.
-
-After mint and burn are split, a mint-only build can use the same custody
-implementation with its own explicit `CustodyFlow`, seed ID, S3 object and KMS
-context permissions. That requires adding the flow and its build wiring;
-enabling `kms-persistence` without `rgb-swap` is currently rejected at compile
-time. The combined `rgb-mint-burn` build cannot opt into swap custody.
+The application selects a supported `CustodyFlow` at build time. Neither a
+host request nor an environment variable selects the custody flow. Each flow
+requires its own context, seed ID, S3 object and KMS permissions; unsupported
+build combinations are rejected at compile time. Preserve the original context
+when recovering existing ciphertext.
 
 Only a confirmed missing S3 object with no expected identity pin permits
 `GenerateDataKey(NumberOfBytes=64)`. The parent writes with `If-None-Match: *`,
 then reads the committed object. Concurrent initializers recover that same
 winner. Storage errors, invalid ciphertext and decryption failures never fall
-back to a new seed. Swap cloning is replaced by recovery from the saved blob.
+back to a new seed. Replicas recover the saved seed instead of using peer cloning.
 
 The [native adapter](../enclave/kms-tool) uses the official AWS Nitro Enclaves
 SDK for TLS, AWS request signing, NSM attestation and recipient decryption.
@@ -48,10 +42,6 @@ and makes missing storage fail before generation. There is no creation switch.
 Configuration changes affect the image measurement and require updating KMS
 permissions. These endpoint settings support the standard AWS commercial partition.
 
-The configuration and build names use `KMS_*`. If upgrading an earlier draft,
-rename its `SWAP_KMS_*` settings to `KMS_*` and rebuild the image. Keep the same
-values, S3 object and encryption context; no seed migration is required.
-
 ## Parent integration
 
 The existing [Rust parent](../parent/src/seed_persistence.rs) returns AWS
@@ -61,9 +51,9 @@ this signer:
 
 ```bash
 export AWS_REGION=eu-central-1
-export KMS_SEED_ID=swap-mainnet-signer-1
+export KMS_SEED_ID=mainnet-signer-1
 export KMS_S3_BUCKET=YOUR_SEED_BUCKET
-export KMS_S3_KEY=swaps/signer-1/seed.kms
+export KMS_S3_KEY=signers/signer-1/seed.kms
 export USE_VSOCK=true
 export ENCLAVE_VSOCK_CID=18
 ./utexo-bridge-parent
@@ -114,12 +104,16 @@ resource policies with these permissions:
 | `s3:ListBucket` | The containing bucket, so an absent object is distinguishable from access denial. |
 
 Both KMS operations must require recipient attestation with the approved
-production PCR0 from `nitro-cli describe-eif --eif-path YOUR_IMAGE.eif` and this
-exact public encryption context, supplied automatically by the enclave:
+production PCR0 from `nitro-cli describe-eif --eif-path YOUR_IMAGE.eif` and
+exactly these public encryption-context fields:
 
 ```json
-{"application":"utexo-enclave-signer","flow":"rgb-swap","seed_id":"YOUR_SEED_ID","bitcoin_network":"bitcoin"}
+{"application":"utexo-enclave-signer","flow":"COMPILED_FLOW","seed_id":"YOUR_SEED_ID","bitcoin_network":"bitcoin"}
 ```
+
+Replace `COMPILED_FLOW` with the application's compiled
+[`CustodyFlow` value](../enclave/src/kms.rs) and `YOUR_SEED_ID` with `KMS_SEED_ID`.
+The enclave supplies this context automatically; policies must match it exactly.
 
 Use the actual network: `bitcoin`, `testnet`, `signet`, or `regtest`. Reject
 unattested requests, wrong PCRs and changed/missing/extra context, including when

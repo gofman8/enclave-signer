@@ -1,8 +1,7 @@
 # Enclave-to-enclave seed cloning — three-message handshake
 
-This lifecycle applies to mint/burn and CCD-only builds. RGB swaps use
-[attested KMS generation and persistence](../kms-persistence.md);
-swap replicas recover the same seed and reject peer cloning.
+This lifecycle applies without `kms-persistence`. See
+[KMS seed persistence](../kms-persistence.md) for the alternative lifecycle.
 
 ```mermaid
 sequenceDiagram

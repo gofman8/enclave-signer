@@ -48,19 +48,11 @@ See the [component diagram](docs/diagrams/01-components.md) and
 
 ### Key management
 
-**RGB swaps:** keys now initialize through attested AWS KMS generation/recovery,
-with the encrypted 64-byte seed persisted in S3. Configure the swap EIF and parent
-using [the KMS persistence guide](docs/kms-persistence.md). Initialization
-loads existing ciphertext or creates it atomically after confirmed absence.
-Swap replicas restore the same seed instead of using peer cloning. Signing and
-HD derivation remain unchanged. RGB mint/burn and CCD-only builds retain the
-existing generation and cloning lifecycle described below.
-
-The reusable `kms-persistence` capability is enabled by `rgb-swap` today.
-Custody interfaces and `KMS_*` settings are independent of the signing flow;
-the application supplies its own encryption-context namespace. Future mint-only
-support requires an explicit namespace and build wiring after mint and burn are
-split; the current combined mint/burn feature cannot enable KMS persistence.
+With `kms-persistence`, initialization generates or recovers a seed through
+attested AWS KMS and persists its encrypted ciphertext in S3. Replicas recover
+that seed; signing and HD derivation are unchanged. See the
+[KMS persistence guide](docs/kms-persistence.md). The generation and cloning
+lifecycle below applies without this capability.
 
 - Generates a BIP-39 mnemonic from OS entropy, derives the 64-byte seed and
   keeps it in a `SecretBox` (zeroize on drop). Mnemonic or raw-seed import
@@ -164,7 +156,7 @@ request per connection, 4 MiB frame cap. Schema:
 
 | Request | Phase | Feature | Description |
 |---------|-------|---------|-------------|
-| `InitializeKey` | Initial | - | Swaps: recover/create through KMS persistence. Other builds: OS entropy, optional donor `cloning_secret`. Dev seed imports require `allow-seed-import`. |
+| `InitializeKey` | Initial | - | Recover/create a persisted seed with `kms-persistence`; otherwise generate from OS entropy with optional donor `cloning_secret`. Dev seed imports require `allow-seed-import`. |
 | `GetPublicKey` | Active | - | EVM address + pubkeys, gas-tx key, BTC pubkey / xpub, fingerprint, account xpubs, CCD pubkey, boot pins. |
 | `GetAttestedPublicKey` | Active | - | Same bundle plus an NSM attestation document bound to nonce, pubkey and the policy commitment. |
 | `Sign` | Active | `rgb` / `ccd` | Bridge signing: RGB -> EVM, EVM -> RGB, CCD -> EVM. |
@@ -233,7 +225,7 @@ profile. CI asserts every guard fires.
 
 ### Enclave image (EIF)
 
-For combined and RGB-swap builds, export `KMS_KEY_ARN`, `KMS_REGION`
+For images with KMS persistence, export `KMS_KEY_ARN`, `KMS_REGION`
 and `KMS_SEED_ID`. Set `KMS_EXPECTED_EVM_ADDRESS` when restoring a
 known identity. See [KMS setup](docs/kms-persistence.md) for the parent
 and policy requirements. Other images do not require these values.
@@ -317,14 +309,14 @@ cli --help
 ```
 
 `--addr host:port` or `--addr vsock://<cid>:<port>` selects the enclave.
-For swaps, follow the [KMS setup guide](docs/kms-persistence.md) and use
-`cli init` for bootstrap or recovery. The commands below describe the other builds.
+For persisted keys, follow the [KMS setup guide](docs/kms-persistence.md) and use
+`cli init` for bootstrap or recovery.
 
 `Dockerfile.enclave-dev` uses the same development import-only mode: initialize
 it with `init-mnemonic` using a public test mnemonic. It intentionally has no
 KMS helper or persisted production seed, and empty `init` fails closed.
 
-Initialize once: use `cli init --cloning-secret <secret>` instead of `cli init`
+For peer cloning, use `cli init --cloning-secret <secret>` instead of `cli init`
 to configure a donor. Use a fresh requester for `cli clone`; initialization
 and cloning are alternative ways to enter `Active`. Signing subcommands require
 complete proofs and configured pins; see their `--help` and the spec.
@@ -344,10 +336,10 @@ GRPC_HOST=0.0.0.0 GRPC_PORT=50051 USE_VSOCK=true ENCLAVE_VSOCK_CID=16 ./utexo-br
 
 `deploy/deploy-host.sh` installs the systemd units for a three-enclave host:
 CIDs 16 / 18 / 20 with parents on ports 50051 / 50052 / 50053. It verifies the
-EIF checksum and PCR0 against the S3 manifest before and after start. After a
-restart, swap images recover persisted keys through `init`; configure
-[parent persistence and the KMS relay](docs/kms-persistence.md) first. Mint/burn
-and CCD-only images retain initialization or peer cloning after restart.
+EIF checksum and PCR0 against the S3 manifest before and after start. Keys live
+only in enclave memory. After restart, initialize or clone according to the
+configured custody lifecycle; `kms-persistence` recovers the saved seed through
+`init` after [parent and relay setup](docs/kms-persistence.md).
 
 ### Debug mode
 
@@ -388,7 +380,7 @@ Value bounds (fail closed while unset in a production build):
 
 The gas-tx rule is part of the attested policy. Unset pins commit as zero.
 
-KMS custody (currently enabled and measured into RGB swap EIFs):
+KMS custody (measured into EIFs that enable persistence):
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -511,7 +503,7 @@ provenance. `build/smoke-test.sh` drives a live enclave through the CLI.
 | `rgb` | `spv` | RGB / Bitcoin bridge stack. |
 | `ccd` | - | Concordium stack (Ed25519 is always compiled; this gates the handlers). |
 | `rgb-swap` | `rgb`, `kms-persistence` | RGB flow: send/receive with BFA `Transfer`. In the default set. |
-| `kms-persistence` | - | Attested KMS seed generation/recovery with encrypted S3 persistence. Currently requires `rgb-swap`; other flows need an explicit custody namespace and build wiring. |
+| `kms-persistence` | - | Attested KMS seed generation/recovery with encrypted S3 persistence. Requires an explicitly supported custody flow. |
 | `rgb-mint-burn` | `rgb` | RGB flow: deposits mint with BFA `Bridge`, withdrawals `Burn`. Needs `--no-default-features`. |
 | `bfa-mint` | `rgb-mint-burn`, `bfa-validation` | Mint/burn flow with BFA consensus and settlement checks against verified `FundsIn` locks. |
 | `bfa-validation` | `evm-rpc` | Runs BFA consensus with verified mint ancestry in either RGB flow. Required for BFA swaps and implied by `bfa-mint`. |
@@ -557,10 +549,9 @@ Re-syncing changes PCR0. Procedure in
   connection limits are compiled in. `EVM_MIN_CONFIRMATIONS` and request-size
   caps are read from environment; image-baked values are measured with the EIF.
 - **Key custody.** Seed and keys in `SecretBox`, zeroized on drop.
-  `#![deny(unsafe_code)]`. Swap seeds persist as KMS ciphertext in S3;
-  plaintext signing keys exist only in enclave memory. Mint/burn and CCD-only
-  keys retain their existing in-memory lifecycle.
-- **Cloning (mint/burn and CCD-only).** X25519 + HKDF-SHA256 + ChaCha20-Poly1305, mutual attestation
+  `#![deny(unsafe_code)]`. With `kms-persistence`, seeds persist as KMS ciphertext
+  in S3; plaintext signing keys exist only in enclave memory.
+- **Cloning (without KMS persistence).** X25519 + HKDF-SHA256 + ChaCha20-Poly1305, mutual attestation
   with PCR equality, shared secret, replay guard recorded only after
   authentication.
 - **Release hardening.** `opt-level = "z"`, LTO, stripped, `panic = "abort"`,

@@ -10,15 +10,9 @@ assumptions. Known gaps are collected in Sec 13.
 
 ---
 
-**KMS key lifecycle:** `rgb-swap` enables the reusable `kms-persistence`
-capability for attested AWS KMS seed generation/recovery and encrypted S3
-persistence. Its clone RPCs are disabled;
-an optional EVM identity pin guards restoration. The entropy/cloning lifecycle
-below applies to mint/burn and CCD-only builds. See the
-[KMS persistence specification and deployment guide](kms-persistence.md)
-for the current swap namespace, future flow integration, policies, and storage
-trust assumptions. Signing validation, derivation paths, and signature formats
-are unchanged.
+With `kms-persistence`, initialization uses attested KMS seed generation/recovery
+and encrypted S3 storage; peer cloning is disabled. The entropy/cloning lifecycle
+below applies without that capability. See [KMS seed persistence](kms-persistence.md).
 
 ## 1. Purpose
 

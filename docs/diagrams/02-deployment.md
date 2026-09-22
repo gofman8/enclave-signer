@@ -14,7 +14,6 @@ flowchart TB
         Parent[utexo-bridge-parent<br/>tonic gRPC, GRPC_HOST:GRPC_PORT<br/>―<br/>Default 127.0.0.1:5000.<br/>Deployed hosts: 0.0.0.0:50051-50053,<br/>one parent per enclave CID 16 / 18 / 20.<br/>30 s timeout per enclave RPC.<br/>USE_VSOCK=true in production.]
         Cli[utexo-bridge-parent-cli<br/>attest-verify CLI]
         VP[vsock-proxy port 8001<br/>―<br/>Allowlist → Electrum ssl:// or Esplora.]
-        KmsRelay["KMS relay :8003<br/>Standard host vsock-proxy<br/>TLS terminates inside enclave"]
         VPe["vsock-proxy 8002<br/>―<br/>evm-rpc builds only.<br/>8002 → EVM JSON-RPC via host nginx.<br/>Allowlisted upstream."]
 
         subgraph ENCL [AWS Nitro Enclave — TRUSTED, PCR-pinned]
@@ -25,13 +24,10 @@ flowchart TB
             Fwd[vsock_forwarder<br/>loopback → vsock, per-port<br/>Electrum port or 3443 / 3444<br/>Electrum host pinned to loopback in /etc/hosts]
             RgbVal[RgbValidator<br/>rgb-ops + Electrum or Esplora]
             EvmVer[evm_event verifier<br/>raw RPC (supplied images)<br/>receipt/head correctness trusted]
-            KmsTool["Official Nitro SDK helper<br/>Attested KMS requests and seed unwrap"]
             NSM[/dev/nsm — Nitro Security Module/]
         end
     end
 
-    KMS{{AWS KMS}}
-    SeedObject[(S3 encrypted seed object)]
     Esp{{Electrum / Esplora}}
     EvmRpc{{EVM JSON-RPC}}
 
@@ -42,12 +38,6 @@ flowchart TB
     Parent -->|"vsock CID:5000<br/>u32 LE len + EnclaveRequest /<br/>u32 LE len + EnclaveResponse"| ENCL
 
     Bin --> State
-    Bin --> KmsTool
-    KmsTool --> NSM
-    KmsTool -->|"vsock CID 3:8003; TLS"| KmsRelay
-    KmsRelay --> KMS
-    Bin -->|"kms-persistence: vsock CID 3:8004<br/>credentials and encrypted seed"| Parent
-    Parent -->|"KMS persistence: conditional ciphertext storage"| SeedObject
     Bin --> Replay
     Bin --> Headers
     Bin --> RgbVal
@@ -69,11 +59,11 @@ flowchart TB
   time; changes to the measured image require updating accepted measurements.
   `build-eif.yml` publishes EIF + `PCR.json` + `SHA256SUMS` to S3 under the git
   sha; `deploy/deploy-host.sh` verifies both before and after start.
-- Non-swap cloned enclaves share **one HD seed** via the cloning handshake
+- Without `kms-persistence`, cloned enclaves share **one HD seed** via the cloning handshake
   (`utexo-bridge-parent-cli clone`). Each node holds an identical `KeyManager`
   after `Cloning → Active`. Keys live only in memory; a restart needs re-init or
-  re-clone. RGB swaps instead recover one KMS-encrypted seed from S3 on every
-  restart or replica; cloning RPCs are rejected. No plaintext seed is stored.
+  re-clone. With `kms-persistence`, initialize from the saved encrypted seed
+  instead; peer cloning is disabled. See [KMS seed persistence](../kms-persistence.md).
 - **Bridge-mode `signPsbt` requires the `evm-rpc` feature**: a build without it
   refuses bridge PSBTs, since it cannot independently verify the EVM `FundsIn`
   deposit. Operators MUST run the host `vsock-proxy` allowlist on 8002. Env:
@@ -83,7 +73,7 @@ Clones provide replicas of one signing identity. Independent quorum members
 need independently initialized seeds.
 
 Optional `helios` builds use execution and consensus forwarders on host vsock
-ports 8005/8006 with `kms-persistence` and 8003/8004 otherwise (enclave loopback
-18545/18550) when Helios is selected. KMS custody reserves 8003/8004
-and reject Helios overrides that collide with those ports. These
+ports 8003/8004 (enclave loopback 18545/18550) when Helios is selected. With
+`kms-persistence`, KMS and seed storage reserve 8003/8004; Helios uses 8005/8006
+and rejects overrides that collide with the reserved ports. These
 replace the raw receipt provider and require a pinned beacon checkpoint.
