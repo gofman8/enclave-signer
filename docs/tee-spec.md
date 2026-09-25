@@ -10,10 +10,15 @@ assumptions. Known gaps are collected in Sec 13.
 
 ---
 
-`mint-signer` enables `kms-persistence`: initialization uses attested KMS seed
+KMS seed persistence is exclusive to the `rgb-mint` image (`mint-signer` Cargo
+feature). It enables `kms-persistence`: initialization uses attested KMS seed
 generation/recovery and encrypted S3 storage; peer cloning is disabled. Burn
-signers and other builds without this capability retain the entropy/cloning
-lifecycle below. See [KMS seed persistence](kms-persistence.md).
+signers retain their existing entropy/cloning lifecycle. See
+[KMS seed persistence](kms-persistence.md).
+
+RGB swaps (`rgb-swaps`, implemented by the legacy `rgb-swap` Cargo feature)
+are deprecated and do not use KMS persistence. References below describe their
+existing behavior only.
 
 ## 1. Purpose
 
@@ -96,10 +101,11 @@ Four crates plus the infrastructure they touch:
   protocol, the operator CLI, and the `attest-verify` CLI.
 
 **Cargo features.** `rgb` (implies `spv`, which implies `rgb-validation`),
-`ccd`, exactly one of `rgb-swap` / `rgb-mint-burn`, `evm-rpc`, `bfa-mint`,
+`ccd`, exactly one of `rgb-swap` (deprecated) / `rgb-mint-burn`, `evm-rpc`, `bfa-mint`,
 `vsock`, and for mint/burn exactly one signer role: `mint-signer` (EVM -> RGB)
 or `burn-signer` (RGB -> EVM), each implying `bfa-mint`. `mint-signer` also
-enables `kms-persistence`. Production images are built with
+enables `kms-persistence`; enabling that capability without `mint-signer` is
+rejected at compile time. Production images are built with
 `--no-default-features` and an explicit set (README, Building). Dev-only features
 (`mock-attestation`, `allow-seed-import`) are `compile_error!` in release.
 
@@ -184,10 +190,18 @@ own keys.
 
 ## 5. Key management
 
-- Keys are **generated inside the enclave** from OS entropy (BIP-39 mnemonic
-  -> BIP-32 seed). The 64-byte seed lives in a `SecretBox` and MUST NOT leave
-  the TEE in plaintext . Intermediate buffers are
-  zeroized; the BIP-86 account xprivs are wiped on drop.
+- **`rgb-mint`:** KMS generates the 64-byte seed at first bootstrap; S3 stores
+  only its encrypted `CiphertextBlob`. Initialization and replica recovery
+  decrypt the saved blob inside the enclave using KMS recipient attestation.
+  Peer cloning is disabled, and storage or KMS errors MUST NOT fall back to
+  generating a new seed. The compiled encryption-context flow is `rgb-mint`.
+- **Burn and other builds without persistence:** seeds are generated inside
+  the enclave from OS entropy (BIP-39 mnemonic -> BIP-32 seed), or recovered
+  through the existing cloning lifecycle.
+- Key derivation and signing stay inside the enclave; KMS is not used to sign.
+  The 64-byte seed lives in a `SecretBox` and MUST NOT leave the TEE in
+  plaintext. Intermediate buffers are zeroized; the BIP-86 account xprivs are
+  wiped on drop.
 - Derivation paths:
   - EVM bridge key (authorization): `m/44'/60'/0'/0/0`;
     `evm_address = keccak256(uncompressed_pub[1..])[12..]`.
@@ -208,16 +222,21 @@ own keys.
 
 ## 6. State machine
 
-Three phases; **signing works only in `Active`**, and `Active` is terminal --
+**Signing works only in `Active`**, and `Active` is terminal --
 no in-place rotation or re-init.
 
 | Phase     | Holds                                    | Signing | Entry                                            |
 |-----------|------------------------------------------|---------|--------------------------------------------------|
 | `Initial` | nothing                                  | no      | boot                                             |
-| `Cloning` | ephemeral X25519 + target cluster pubkey | no      | `enter_cloning` (requester)                      |
-| `Active`  | `KeyManager` (seed in `SecretBox`)       | yes     | `initialize_from_entropy`, or `complete_cloning` |
+| `Initializing` | in-progress KMS recovery reservation | no | `rgb-mint` initialization |
+| `Cloning` | ephemeral X25519 + target cluster pubkey | no      | `enter_cloning` (requester; non-KMS builds)       |
+| `Active`  | `KeyManager` (seed in `SecretBox`)       | yes     | KMS persistence recovery for `rgb-mint`; entropy initialization or cloning for other builds |
 
-A second initialize attempt MUST fail (`AlreadyInitialized`). Upgrades MUST be
+For `rgb-mint`, failed or expired KMS recovery returns to `Initial`; only
+successful recovery and key derivation allow transition to `Active`.
+
+Once `Active`, another initialize attempt MUST fail (`AlreadyInitialized`).
+While `Initializing`, concurrent attempts fail with `NotReady`. Upgrades MUST be
 done by standing up a new cluster with new PCRs, not by mutating an `Active`
 enclave. Mnemonic/seed import is rejected unless the
 dev-only `allow-seed-import` feature is compiled in (release: `compile_error!`).
@@ -264,8 +283,8 @@ encoding, and at least one verified lock. This validates settlement references
 but does not establish a unique release identifier (Sec 9, P6).
 
 Which consignment shape a build signs is chosen at compile time by its RGB
-flow feature (`rgb-swap` or `rgb-mint-burn`, exactly one). A **swap** enclave
-signs `TS_TRANSFER` unlocks; a **mint/burn** enclave signs `TS_BURN` unlocks and
+flow feature (`rgb-swap` or `rgb-mint-burn`, exactly one). A deprecated **swap**
+enclave signs `TS_TRANSFER` unlocks; a **mint/burn** enclave signs `TS_BURN` unlocks and
 nothing else, binding the release to the payout target the burn transition
 commits to (`MS_BURN_RECIPIENT`). The BFA line is a mint/burn build
 (`bfa-mint`), where a deposit is a bridge mint against a verified `FundsIn`
@@ -606,10 +625,13 @@ anchored to the consignment; disallowed output script or value cap exceeded
 
 ## 13. Implementation status
 
-The repository supports swap, mint/burn, BFA mint/burn and CCD builds. Defaults
-include `rgb-swap` and `ccd`; the BFA Dockerfiles select `mint-signer`
-(`Dockerfile.enclave.mint`) and `burn-signer` (`Dockerfile.enclave.burn`). These are
-build choices, not evidence of which image is deployed.
+The repository contains mint/burn, BFA mint/burn and CCD builds, plus the
+deprecated RGB swap build. Cargo defaults still include the legacy `rgb-swap`
+feature and `ccd`.
+The BFA Dockerfiles select `mint-signer` (`Dockerfile.enclave.mint`, image
+variant `rgb-mint`) and `burn-signer` (`Dockerfile.enclave.burn`). Only
+`rgb-mint` uses KMS seed persistence. These are build choices, not evidence of
+which image is deployed.
 
 Known limits to account for before deployment:
 
@@ -617,8 +639,8 @@ Known limits to account for before deployment:
   the enclave does not derive a canonical release identifier from the RGB OpId.
   BFA settlement validation binds the set of ancestry deposits, not every
   release field or its unique encoding/order. See Sec 9.
-- **Swap authorization:** the amount floor includes transfer change, and the
-  burn-recipient check does not apply to swaps.
+- **Deprecated swap authorization:** the amount floor includes transfer change,
+  and the burn-recipient check does not apply to swaps.
 - **EVM/CCD trust:** supplied images use raw EVM RPC; CCD source validation
   trusts the listener. Optional Helios is implemented but absent from those
   images and the CI production feature matrix.

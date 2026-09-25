@@ -1,10 +1,14 @@
 # Mint signer KMS seed persistence
 
-The `mint-signer` feature enables `kms-persistence`, using AWS KMS to generate a
-64-byte seed and S3 to persist its encrypted `CiphertextBlob`. On initialization
+KMS seed persistence is supported only by the `rgb-mint` image. Its
+`mint-signer` Cargo feature enables `kms-persistence`, using AWS KMS to generate
+a 64-byte seed and S3 to persist its encrypted `CiphertextBlob`. On initialization
 the enclave loads the saved blob, decrypts it with KMS recipient attestation,
 and passes the seed to its existing key derivation. Signing stays inside the enclave; it does not use
 KMS Sign.
+
+RGB swaps (`rgb-swaps`, legacy Cargo feature `rgb-swap`) are deprecated and do
+not use KMS persistence.
 
 The measured mint image selects `CustodyFlow::RgbMint`, whose encryption-context
 value is `rgb-mint`. Neither a host request nor an environment variable selects
