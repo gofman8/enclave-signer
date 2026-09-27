@@ -380,3 +380,70 @@ message ErrorResponse {
   uint32 code = 1; // Stable enclave error category.
   string message = 2; // Human-readable error description.
 }
+
+// Enclave-to-parent seed persistence uses the same length-prefixed protobuf
+// framing as enclave requests. The parent handles only opaque KMS ciphertext;
+// recipient-attested KMS operations and signing remain inside the enclave.
+message SeedStorageRequest {
+  oneof request {
+    SeedCredentialsRequest credentials = 1;
+    SeedLoadRequest load = 2;
+    SeedCreateRequest create = 3;
+  }
+}
+
+message SeedCredentialsRequest {}
+
+message SeedLoadRequest {
+  string seed_id = 1;
+}
+
+message SeedCreateRequest {
+  string seed_id = 1;
+  bytes ciphertext = 2;
+}
+
+message SeedStorageResponse {
+  oneof response {
+    SeedCredentials credentials = 1;
+    SeedCiphertext ciphertext = 2;
+    SeedNotFound not_found = 3;
+    SeedStorageError error = 4;
+  }
+}
+
+// UTF-8 credential values are bytes so Rust consumers can retain them in a
+// zeroizing frame allocation throughout protobuf decoding.
+message SeedCredentials {
+  bytes access_key_id = 1;
+  bytes secret_access_key = 2;
+  bytes session_token = 3;
+}
+
+message SeedCiphertext {
+  bytes ciphertext = 1;
+}
+
+message SeedNotFound {}
+
+message SeedStorageError {
+  SeedStorageErrorCode code = 1;
+}
+
+// Error categories do not include configuration values, credentials or AWS
+// response bodies. Unknown codes must be treated as failures by the enclave.
+enum SeedStorageErrorCode {
+  SEED_STORAGE_ERROR_CODE_UNSPECIFIED = 0;
+  SEED_STORAGE_ERROR_CODE_CONFIGURATION = 1;
+  SEED_STORAGE_ERROR_CODE_ACCESS_DENIED = 2;
+  SEED_STORAGE_ERROR_CODE_AWS_UNAVAILABLE = 3;
+  SEED_STORAGE_ERROR_CODE_INVALID_CIPHERTEXT = 4;
+  SEED_STORAGE_ERROR_CODE_BUSY = 5;
+  SEED_STORAGE_ERROR_CODE_OPERATION_TIMEOUT = 6;
+  SEED_STORAGE_ERROR_CODE_REQUEST_TIMEOUT = 7;
+  SEED_STORAGE_ERROR_CODE_INVALID_FRAME = 8;
+  SEED_STORAGE_ERROR_CODE_INVALID_REQUEST = 9;
+  SEED_STORAGE_ERROR_CODE_SEED_ID_NOT_ALLOWED = 10;
+  SEED_STORAGE_ERROR_CODE_RESPONSE_TOO_LARGE = 11;
+  SEED_STORAGE_ERROR_CODE_INTERNAL = 12;
+}

@@ -34,7 +34,6 @@ use aws_smithy_types::timeout::TimeoutConfig;
 use bitcoin::Network;
 use rsa::pkcs8::EncodePublicKey;
 use rsa::RsaPrivateKey;
-use serde::Deserialize;
 use zeroize::Zeroizing;
 
 use crate::attestation;
@@ -238,12 +237,6 @@ impl AwsCredentials {
             "enclave-parent-broker",
         )
     }
-}
-
-pub(crate) fn deserialize_secret<'de, D: serde::Deserializer<'de>>(
-    deserializer: D,
-) -> std::result::Result<Zeroizing<String>, D::Error> {
-    String::deserialize(deserializer).map(Zeroizing::new)
 }
 
 pub struct KmsClient {

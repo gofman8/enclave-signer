@@ -1,6 +1,6 @@
 //! Optional seed storage bridge for AWS credentials and opaque KMS ciphertext.
 //! The enclave chooses the flow, performs recipient-attested KMS calls and signs.
-//! This is a separate, bounded JSON protocol, not the parent protobuf framing.
+//! Requests use the shared protobuf schema and length-prefixed framing.
 
 use std::{
     collections::HashMap,
@@ -16,8 +16,7 @@ use aws_sdk_s3::{
     primitives::ByteStream,
     Client,
 };
-use base64::{engine::general_purpose::STANDARD, Engine};
-use serde::{Deserialize, Serialize};
+use prost::{bytes::Bytes, Message};
 use tokio::{
     io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt},
     net::TcpListener,
@@ -27,7 +26,14 @@ use tokio::{
 };
 use zeroize::Zeroizing;
 
-use crate::config::Config;
+use crate::{
+    config::Config,
+    enclave_proto::{
+        seed_storage_request::Request, seed_storage_response::Response, SeedCiphertext,
+        SeedCredentials, SeedNotFound, SeedStorageError, SeedStorageErrorCode, SeedStorageRequest,
+        SeedStorageResponse,
+    },
+};
 
 const MAX_FRAME: usize = 65536;
 const MAX_CIPHERTEXT: usize = 6144;
@@ -164,25 +170,30 @@ pub fn configured() -> bool {
         .any(|name| std::env::var_os(name).is_some())
 }
 
-#[derive(Deserialize)]
-#[serde(tag = "op", rename_all = "lowercase", deny_unknown_fields)]
-enum Request {
-    Credentials {},
-    Load { seed_id: String },
-    Create { seed_id: String, ciphertext: String },
+fn validate_ciphertext(blob: &[u8]) -> Result<(), Error> {
+    if blob.is_empty() || blob.len() > MAX_CIPHERTEXT {
+        return Err(Error::InvalidCiphertext);
+    }
+    Ok(())
 }
 
-fn decode_ciphertext(text: &str) -> Result<Vec<u8>, Error> {
-    if text.len() > MAX_CIPHERTEXT.div_ceil(3) * 4 {
-        return Err(Error::InvalidCiphertext);
+impl From<Error> for SeedStorageErrorCode {
+    fn from(error: Error) -> Self {
+        match error {
+            Error::Configuration => Self::Configuration,
+            Error::AccessDenied => Self::AccessDenied,
+            Error::AwsUnavailable => Self::AwsUnavailable,
+            Error::InvalidCiphertext => Self::InvalidCiphertext,
+            Error::Busy => Self::Busy,
+            Error::OperationTimeout => Self::OperationTimeout,
+            Error::RequestTimeout => Self::RequestTimeout,
+            Error::InvalidFrame => Self::InvalidFrame,
+            Error::InvalidRequest => Self::InvalidRequest,
+            Error::SeedIdNotAllowed => Self::SeedIdNotAllowed,
+            Error::ResponseTooLarge => Self::ResponseTooLarge,
+            Error::Internal => Self::Internal,
+        }
     }
-    let blob = STANDARD
-        .decode(text)
-        .map_err(|_| Error::InvalidCiphertext)?;
-    if blob.is_empty() || blob.len() > MAX_CIPHERTEXT || STANDARD.encode(&blob) != text {
-        return Err(Error::InvalidCiphertext);
-    }
-    Ok(blob)
 }
 
 fn aws_code(code: Option<&str>) -> Error {
@@ -379,31 +390,23 @@ impl Broker {
     }
 
     fn validate(&self, request: &Request) -> Result<(), Error> {
-        match request {
-            Request::Credentials {} => Ok(()),
-            Request::Load { seed_id } | Request::Create { seed_id, .. }
-                if seed_id != &self.settings.seed_id =>
-            {
-                Err(Error::SeedIdNotAllowed)
-            }
-            Request::Create { ciphertext, .. } => decode_ciphertext(ciphertext).map(|_| ()),
-            _ => Ok(()),
+        let seed_id = match request {
+            Request::Credentials(_) => return Ok(()),
+            Request::Load(request) => &request.seed_id,
+            Request::Create(request) => &request.seed_id,
+        };
+        if seed_id != &self.settings.seed_id {
+            return Err(Error::SeedIdNotAllowed);
         }
+        if let Request::Create(request) = request {
+            validate_ciphertext(&request.ciphertext)?;
+        }
+        Ok(())
     }
 
     async fn dispatch(&self, request: Request) -> Result<Zeroizing<Vec<u8>>, Error> {
-        #[derive(Serialize)]
-        struct Credentials<'a> {
-            access_key_id: &'a str,
-            secret_access_key: &'a str,
-            session_token: &'a str,
-        }
-        #[derive(Serialize)]
-        struct Ciphertext {
-            ciphertext: Option<String>,
-        }
-        match request {
-            Request::Credentials {} => {
+        let response = match request {
+            Request::Credentials(_) => {
                 // Admission grants the FULL role. Use a dedicated least-privilege
                 // role; CID reuse is not attestation. KMS verifies the recipient.
                 let credentials = self
@@ -416,21 +419,24 @@ impl Broker {
                 {
                     return Err(Error::Configuration);
                 }
-                json(&Credentials {
-                    access_key_id: credentials.access_key_id(),
-                    secret_access_key: credentials.secret_access_key(),
-                    session_token: credentials.session_token().unwrap_or(""),
+                Response::Credentials(SeedCredentials {
+                    access_key_id: credential_bytes(credentials.access_key_id())?,
+                    secret_access_key: credential_bytes(credentials.secret_access_key())?,
+                    session_token: credential_bytes(credentials.session_token().unwrap_or(""))?,
                 })
             }
-            Request::Load { .. } => json(&Ciphertext {
-                ciphertext: self.load().await?.map(|blob| STANDARD.encode(blob)),
-            }),
-            Request::Create { ciphertext, .. } => json(&Ciphertext {
-                ciphertext: Some(
-                    STANDARD.encode(self.create(decode_ciphertext(&ciphertext)?).await?),
-                ),
-            }),
-        }
+            Request::Load(_) => match self.load().await? {
+                Some(ciphertext) => Response::Ciphertext(SeedCiphertext { ciphertext }),
+                None => Response::NotFound(SeedNotFound {}),
+            },
+            Request::Create(request) => {
+                validate_ciphertext(&request.ciphertext)?;
+                Response::Ciphertext(SeedCiphertext {
+                    ciphertext: self.create(request.ciphertext).await?,
+                })
+            }
+        };
+        encode_response(response)
     }
 
     async fn response(
@@ -457,15 +463,19 @@ impl Broker {
             Ok(request) => self.response(request, &peer, deadline).await,
             Err(error) => Err(error),
         };
-        let payload = result.unwrap_or_else(|error| {
+        let Ok(payload) = result.or_else(|error| {
             tracing::warn!(code = %error, "seed persistence request failed");
-            Zeroizing::new(format!("{{\"error\":\"{error}\"}}").into_bytes())
-        });
+            encode_response(Response::Error(SeedStorageError {
+                code: SeedStorageErrorCode::from(error) as i32,
+            }))
+        }) else {
+            return;
+        };
         let _ = timeout_at(
             deadline.min(Instant::now() + Duration::from_secs(2)),
             async {
                 stream
-                    .write_all(&(payload.len() as u32).to_be_bytes())
+                    .write_all(&(payload.len() as u32).to_le_bytes())
                     .await?;
                 stream.write_all(&payload).await?;
                 stream.shutdown().await
@@ -475,21 +485,28 @@ impl Broker {
     }
 }
 
-fn json(value: &impl Serialize) -> Result<Zeroizing<Vec<u8>>, Error> {
-    // Fixed storage avoids reallocations leaving credential fragments behind.
-    // Cursor refuses overflow before any oversized response is allocated.
-    let mut bytes = Zeroizing::new(vec![0; MAX_FRAME]);
-    let length = {
-        let mut cursor = std::io::Cursor::new(bytes.as_mut_slice());
-        serde_json::to_writer(&mut cursor, value).map_err(|error| {
-            if error.is_io() {
-                Error::ResponseTooLarge
-            } else {
-                Error::Internal
-            }
-        })?;
-        cursor.position() as usize
+fn credential_bytes(value: &str) -> Result<Bytes, Error> {
+    if value.len() > MAX_FRAME {
+        return Err(Error::ResponseTooLarge);
+    }
+    let mut bytes = Zeroizing::new(vec![0; value.len()]);
+    bytes.copy_from_slice(value.as_bytes());
+    Ok(Bytes::from_owner(bytes))
+}
+
+fn encode_response(response: Response) -> Result<Zeroizing<Vec<u8>>, Error> {
+    let response = SeedStorageResponse {
+        response: Some(response),
     };
+    let length = response.encoded_len();
+    if length > MAX_FRAME {
+        return Err(Error::ResponseTooLarge);
+    }
+    // Fixed storage avoids reallocations leaving credential fragments behind.
+    let mut bytes = Zeroizing::new(vec![0; MAX_FRAME]);
+    response
+        .encode(&mut &mut bytes[..length])
+        .map_err(|_| Error::Internal)?;
     bytes.truncate(length);
     Ok(bytes)
 }
@@ -499,7 +516,10 @@ async fn read_request(
     deadline: Instant,
 ) -> Result<Request, Error> {
     timeout_at(deadline, async {
-        let length = stream.read_u32().await.map_err(|_| Error::InvalidFrame)? as usize;
+        let length = stream
+            .read_u32_le()
+            .await
+            .map_err(|_| Error::InvalidFrame)? as usize;
         if length == 0 || length > MAX_FRAME {
             return Err(Error::InvalidFrame);
         }
@@ -508,7 +528,10 @@ async fn read_request(
             .read_exact(&mut bytes)
             .await
             .map_err(|_| Error::InvalidFrame)?;
-        serde_json::from_slice(&bytes).map_err(|_| Error::InvalidRequest)
+        SeedStorageRequest::decode(bytes.as_slice())
+            .map_err(|_| Error::InvalidRequest)?
+            .request
+            .ok_or(Error::InvalidRequest)
     })
     .await
     .map_err(|_| Error::RequestTimeout)?

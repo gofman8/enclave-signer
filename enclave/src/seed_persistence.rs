@@ -1,22 +1,24 @@
 //! Persistent seed lifecycle. The parent holds only an opaque KMS ciphertext;
 //! KMS responses are authenticated and decrypted inside the enclave.
 
-use std::io::{self, Read, Write};
+use std::io;
 #[cfg(not(all(feature = "vsock", target_os = "linux", not(test))))]
 use std::net::{Ipv4Addr, SocketAddr, TcpStream};
 use std::time::{Duration, Instant};
 
-use base64::{engine::general_purpose::STANDARD, Engine};
 use bitcoin::Network;
-use serde::Deserialize;
-use serde_json::json;
+use prost::{bytes::Bytes, Message};
 use zeroize::Zeroizing;
 
 use crate::conn::{remaining_until, DeadlineStream};
 use crate::error::{CustodyFailure, EnclaveError, Result};
+use crate::framing;
 use crate::keys::KeyManager;
-use crate::kms::{
-    deserialize_secret, AwsCredentials, CustodyFlow, KmsClient, KmsConfig, MAX_CIPHERTEXT_BYTES,
+use crate::kms::{AwsCredentials, CustodyFlow, KmsClient, KmsConfig, MAX_CIPHERTEXT_BYTES};
+use crate::proto::{
+    seed_storage_request::Request, seed_storage_response::Response, SeedCreateRequest,
+    SeedCredentialsRequest, SeedLoadRequest, SeedStorageErrorCode, SeedStorageRequest,
+    SeedStorageResponse,
 };
 
 /// Upper bound on one framed broker message in either direction.
@@ -188,80 +190,73 @@ impl SeedBroker {
         }
     }
 
-    fn request<T: serde::de::DeserializeOwned>(
-        &self,
-        request: serde_json::Value,
-        deadline: Instant,
-    ) -> Result<T> {
+    fn request(&self, request: Request, deadline: Instant) -> Result<Response> {
         let deadline = deadline.min(Instant::now() + BROKER_TIMEOUT);
-        remaining_until(deadline).map_err(|_| broker_error("operation_timeout"))?;
+        remaining_until(deadline)
+            .map_err(|_| broker_error(SeedStorageErrorCode::OperationTimeout))?;
         let stream = self
             .connect(deadline)
-            .map_err(|_| broker_error("aws_unavailable"))?;
+            .map_err(|_| broker_error(SeedStorageErrorCode::AwsUnavailable))?;
         let mut stream = DeadlineStream::with_deadline(stream, deadline, BROKER_TIMEOUT);
-        let bytes = serde_json::to_vec(&request).map_err(|_| failure("encode broker request"))?;
-        if bytes.len() > MAX_MESSAGE_BYTES {
+        let request = SeedStorageRequest {
+            request: Some(request),
+        };
+        if request.encoded_len() > MAX_MESSAGE_BYTES {
             return Err(failure("broker request too large"));
         }
-        stream
-            .write_all(&(bytes.len() as u32).to_be_bytes())
-            .map_err(|_| broker_error("aws_unavailable"))?;
-        stream
-            .write_all(&bytes)
-            .map_err(|_| broker_error("aws_unavailable"))?;
-        let mut length = [0u8; 4];
-        stream
-            .read_exact(&mut length)
-            .map_err(|_| broker_error("aws_unavailable"))?;
-        let length = u32::from_be_bytes(length) as usize;
-        if length == 0 || length > MAX_MESSAGE_BYTES {
-            return Err(broker_error("invalid_response"));
+        framing::write_message(&mut stream, &request)
+            .map_err(|_| broker_error(SeedStorageErrorCode::AwsUnavailable))?;
+        let bytes = framing::read_frame(&mut stream, MAX_MESSAGE_BYTES as u32).map_err(
+            |error| match error {
+                EnclaveError::Io(_) => broker_error(SeedStorageErrorCode::AwsUnavailable),
+                _ => broker_error(SeedStorageErrorCode::InvalidFrame),
+            },
+        )?;
+        // Decode from owned Bytes, not a slice: credential fields then share
+        // this zeroizing allocation, even on partial decode or replacement.
+        // Never log the response or the protobuf decoder's untrusted details.
+        let response = SeedStorageResponse::decode(Bytes::from_owner(bytes))
+            .map_err(|_| broker_error(SeedStorageErrorCode::InvalidFrame))?;
+        match response.response {
+            Some(Response::Error(error)) => Err(broker_error(
+                SeedStorageErrorCode::try_from(error.code)
+                    .unwrap_or(SeedStorageErrorCode::Unspecified),
+            )),
+            Some(response) => Ok(response),
+            None => Err(broker_error(SeedStorageErrorCode::InvalidFrame)),
         }
-        // Responses may contain AWS credentials. Avoid Debug/logging and
-        // erase the original JSON buffer as soon as typed parsing finishes.
-        let mut response = Zeroizing::new(vec![0u8; length]);
-        stream
-            .read_exact(&mut response)
-            .map_err(|_| broker_error("aws_unavailable"))?;
-        // Parse only a bounded, exact error envelope before the typed success
-        // response. Borrow the code directly; do not copy credential fields into
-        // an intermediate JSON value or relay an untrusted host message.
-        #[derive(Deserialize)]
-        #[serde(deny_unknown_fields)]
-        struct BrokerFailure<'a> {
-            error: &'a str,
-        }
-        if let Ok(error) = serde_json::from_slice::<BrokerFailure<'_>>(&response) {
-            return Err(broker_error(error.error));
-        }
-        serde_json::from_slice(&response).map_err(|_| broker_error("invalid_response"))
     }
 
     fn credentials(&self, deadline: Instant) -> Result<AwsCredentials> {
-        #[derive(Deserialize)]
-        #[serde(deny_unknown_fields)]
-        struct Credentials {
-            #[serde(deserialize_with = "deserialize_secret")]
-            access_key_id: Zeroizing<String>,
-            #[serde(deserialize_with = "deserialize_secret")]
-            secret_access_key: Zeroizing<String>,
-            #[serde(deserialize_with = "deserialize_secret")]
-            session_token: Zeroizing<String>,
+        let Response::Credentials(credentials) =
+            self.request(Request::Credentials(SeedCredentialsRequest {}), deadline)?
+        else {
+            return Err(broker_error(SeedStorageErrorCode::InvalidFrame));
+        };
+        fn secret(bytes: &[u8], max: usize) -> Result<Zeroizing<String>> {
+            if bytes.len() > max {
+                return Err(broker_error(SeedStorageErrorCode::InvalidFrame));
+            }
+            let text = std::str::from_utf8(bytes)
+                .map_err(|_| broker_error(SeedStorageErrorCode::InvalidFrame))?;
+            Ok(Zeroizing::new(text.to_owned()))
         }
-        let c: Credentials = self.request(json!({"op": "credentials"}), deadline)?;
-        AwsCredentials::from_protected(c.access_key_id, c.secret_access_key, c.session_token)
+        AwsCredentials::from_protected(
+            secret(&credentials.access_key_id, 128)?,
+            secret(&credentials.secret_access_key, 256)?,
+            secret(&credentials.session_token, 16 * 1024)?,
+        )
     }
 }
 
-fn broker_error(code: &str) -> EnclaveError {
+fn broker_error(code: SeedStorageErrorCode) -> EnclaveError {
+    use SeedStorageErrorCode::*;
     let failure = match code {
-        "configuration_error" | "seed_id_not_allowed" => CustodyFailure::Configuration,
-        "access_denied" => CustodyFailure::AccessDenied,
-        "aws_unavailable" | "broker_busy" | "operation_timeout" | "request_timeout" => {
-            CustodyFailure::Unavailable
-        }
-        "invalid_ciphertext" => CustodyFailure::InvalidCiphertext,
-        "internal_error" => CustodyFailure::Internal,
+        Configuration | SeedIdNotAllowed => CustodyFailure::Configuration,
+        AccessDenied => CustodyFailure::AccessDenied,
+        AwsUnavailable | Busy | OperationTimeout | RequestTimeout => CustodyFailure::Unavailable,
+        InvalidCiphertext => CustodyFailure::InvalidCiphertext,
+        Internal => CustodyFailure::Internal,
         _ => CustodyFailure::InvalidResponse,
     };
     EnclaveError::Custody {
@@ -270,43 +265,39 @@ fn broker_error(code: &str) -> EnclaveError {
     }
 }
 
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct BlobResponse {
-    // Value deliberately requires the field to exist: a missing property or
-    // a broker error is not proof that S3 has no object.
-    ciphertext: serde_json::Value,
-}
-
-fn decode_blob(response: BlobResponse) -> Result<Option<Vec<u8>>> {
-    if response.ciphertext.is_null() {
-        return Ok(None);
-    }
-    let encoded = response
-        .ciphertext
-        .as_str()
-        .ok_or_else(|| failure("invalid ciphertext encoding"))?;
-    let blob = STANDARD
-        .decode(encoded)
-        .map_err(|_| failure("invalid ciphertext encoding"))?;
-    validate_ciphertext(&blob)?;
-    Ok(Some(blob))
-}
-
 impl SeedStore for SeedBroker {
     fn load(&self, deadline: Instant) -> Result<Option<Vec<u8>>> {
-        decode_blob(self.request(json!({"op": "load", "seed_id": self.seed_id}), deadline)?)
+        match self.request(
+            Request::Load(SeedLoadRequest {
+                seed_id: self.seed_id.clone(),
+            }),
+            deadline,
+        )? {
+            Response::Ciphertext(blob) => {
+                validate_ciphertext(&blob.ciphertext)?;
+                Ok(Some(blob.ciphertext))
+            }
+            // No missing/default field or error may authorize generation.
+            Response::NotFound(_) => Ok(None),
+            _ => Err(broker_error(SeedStorageErrorCode::InvalidFrame)),
+        }
     }
 
     fn create(&self, ciphertext: &[u8], deadline: Instant) -> Result<Vec<u8>> {
         validate_ciphertext(ciphertext)?;
-        decode_blob(self.request(
-            json!({
-                "op": "create", "seed_id": self.seed_id, "ciphertext": STANDARD.encode(ciphertext),
+        match self.request(
+            Request::Create(SeedCreateRequest {
+                seed_id: self.seed_id.clone(),
+                ciphertext: ciphertext.to_vec(),
             }),
             deadline,
-        )?)?
-        .ok_or_else(|| failure("broker did not return a committed seed"))
+        )? {
+            Response::Ciphertext(blob) => {
+                validate_ciphertext(&blob.ciphertext)?;
+                Ok(blob.ciphertext)
+            }
+            _ => Err(failure("broker did not return a committed seed")),
+        }
     }
 }
 
@@ -369,7 +360,9 @@ fn connect_vsock(port: u32, deadline: Instant) -> io::Result<vsock::VsockStream>
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::proto::{SeedCiphertext, SeedCredentials, SeedNotFound, SeedStorageError};
     use std::cell::{Cell, RefCell};
+    use std::io::Write;
 
     #[derive(Default)]
     struct Store {
@@ -545,23 +538,9 @@ mod tests {
         assert_eq!(kms.decrypts.get(), 1);
     }
 
-    #[test]
-    fn broker_errors_and_bad_blobs_are_not_missing_objects() {
-        for value in [json!({}), json!({"error":"s3_error"})] {
-            assert!(serde_json::from_value::<BlobResponse>(value).is_err());
-        }
-        for value in [json!(""), json!("!bad-base64!"), json!(23)] {
-            assert!(decode_blob(BlobResponse { ciphertext: value }).is_err());
-        }
-        assert!(decode_blob(BlobResponse {
-            ciphertext: json!(null)
-        })
-        .unwrap()
-        .is_none());
-    }
     fn mock_broker(
         reply: impl FnOnce(TcpStream) + Send + 'static,
-    ) -> (SeedBroker, std::thread::JoinHandle<serde_json::Value>) {
+    ) -> (SeedBroker, std::thread::JoinHandle<SeedStorageRequest>) {
         let listener = std::net::TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).unwrap();
         let broker = SeedBroker {
             address: listener.local_addr().unwrap(),
@@ -572,27 +551,40 @@ mod tests {
             stream
                 .set_read_timeout(Some(Duration::from_secs(2)))
                 .unwrap();
-            let mut prefix = [0; 4];
-            stream.read_exact(&mut prefix).unwrap();
-            let mut body = vec![0; u32::from_be_bytes(prefix) as usize];
-            stream.read_exact(&mut body).unwrap();
-            let request = serde_json::from_slice(&body).unwrap();
+            let request = framing::read_message(&mut stream).unwrap();
             reply(stream);
             request
         });
         (broker, server)
     }
 
-    fn frame(value: serde_json::Value) -> Vec<u8> {
-        let body = serde_json::to_vec(&value).unwrap();
-        let mut frame = (body.len() as u32).to_be_bytes().to_vec();
-        frame.extend_from_slice(&body);
-        frame
+    fn frame(response: Response) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        framing::write_message(
+            &mut bytes,
+            &SeedStorageResponse {
+                response: Some(response),
+            },
+        )
+        .unwrap();
+        bytes
+    }
+
+    fn ciphertext(blob: Vec<u8>) -> Response {
+        Response::Ciphertext(SeedCiphertext { ciphertext: blob })
+    }
+
+    fn credentials() -> Response {
+        Response::Credentials(SeedCredentials {
+            access_key_id: Bytes::from_static(b"AKID"),
+            secret_access_key: Bytes::from_static(b"secret"),
+            session_token: Bytes::from_static(b"token"),
+        })
     }
 
     #[test]
     fn broker_socket_protocol_supports_fragmented_frames_for_all_operations() {
-        let reply = frame(json!({"ciphertext": STANDARD.encode([17;64])}));
+        let reply = frame(ciphertext(vec![17; 64]));
         let (broker, server) = mock_broker(move |mut stream| {
             for chunk in reply.chunks(3) {
                 stream.write_all(chunk).unwrap();
@@ -606,13 +598,13 @@ mod tests {
             vec![17; 64]
         );
         assert_eq!(
-            server.join().unwrap(),
-            json!({"op":"load", "seed_id":"pool-1"})
+            server.join().unwrap().request,
+            Some(Request::Load(SeedLoadRequest {
+                seed_id: "pool-1".into()
+            }))
         );
         let (broker, server) = mock_broker(|mut stream| {
-            stream
-                .write_all(&frame(json!({"ciphertext": STANDARD.encode([99;64])})))
-                .unwrap();
+            stream.write_all(&frame(ciphertext(vec![99; 64]))).unwrap();
         });
         assert_eq!(
             broker
@@ -621,33 +613,99 @@ mod tests {
             vec![99; 64]
         );
         assert_eq!(
-            server.join().unwrap(),
-            json!({"op":"create", "seed_id":"pool-1", "ciphertext":STANDARD.encode([17;64])})
+            server.join().unwrap().request,
+            Some(Request::Create(SeedCreateRequest {
+                seed_id: "pool-1".into(),
+                ciphertext: vec![17; 64]
+            }))
         );
         let (broker, server) = mock_broker(|mut stream| {
-            stream.write_all(&frame(json!({"access_key_id":"AKID", "secret_access_key":"secret", "session_token":"token"}))).unwrap();
+            stream.write_all(&frame(credentials())).unwrap();
         });
         assert!(broker
             .credentials(Instant::now() + Duration::from_secs(2))
             .is_ok());
-        assert_eq!(server.join().unwrap(), json!({"op":"credentials"}));
+        assert_eq!(
+            server.join().unwrap().request,
+            Some(Request::Credentials(SeedCredentialsRequest {}))
+        );
     }
 
     #[test]
-    fn broker_socket_rejects_oversized_empty_truncated_or_error_frames() {
+    fn broker_socket_rejects_invalid_frames_without_generating_a_seed() {
+        let legacy_json = br#"{"ciphertext":null}"#;
+        let mut legacy_frame = (legacy_json.len() as u32).to_be_bytes().to_vec();
+        legacy_frame.extend_from_slice(legacy_json);
         for reply in [
-            0u32.to_be_bytes().to_vec(),
-            ((MAX_MESSAGE_BYTES + 1) as u32).to_be_bytes().to_vec(),
+            0u32.to_le_bytes().to_vec(),
+            ((MAX_MESSAGE_BYTES + 1) as u32).to_le_bytes().to_vec(),
             vec![0, 0],
-            vec![0, 0, 0, 10, b'{', b'}'],
-            frame(json!({"error":"s3_error"})),
-            frame(json!({"ciphertext":null,"unexpected":true})),
+            vec![10, 0, 0, 0, 0x12, 0], // truncated body
+            vec![1, 0, 0, 0, 0xff],     // invalid protobuf
+            vec![2, 0, 0, 0, 0x7a, 0],  // unknown-only response: no oneof
+            legacy_frame,
+            frame(credentials()), // wrong operation response
+            frame(ciphertext(vec![])),
+            frame(ciphertext(vec![0; MAX_CIPHERTEXT_BYTES + 1])),
         ] {
             let (broker, server) = mock_broker(move |mut stream| {
-                stream.write_all(&reply).unwrap();
+                let _ = stream.write_all(&reply);
+            });
+            let kms = Kms::default();
+            assert!(
+                recover_seed(&broker, &kms, None, Instant::now() + Duration::from_secs(2)).is_err()
+            );
+            assert_eq!(kms.generates.get(), 0);
+            assert_eq!(kms.decrypts.get(), 0);
+            server.join().unwrap();
+        }
+    }
+
+    #[test]
+    fn only_explicit_not_found_on_load_means_absent() {
+        let (broker, server) = mock_broker(|mut stream| {
+            stream
+                .write_all(&frame(Response::NotFound(SeedNotFound {})))
+                .unwrap();
+        });
+        assert!(broker
+            .load(Instant::now() + Duration::from_secs(2))
+            .unwrap()
+            .is_none());
+        server.join().unwrap();
+        let (broker, server) = mock_broker(|mut stream| {
+            stream
+                .write_all(&frame(Response::NotFound(SeedNotFound {})))
+                .unwrap();
+        });
+        assert!(broker
+            .create(&[17; 64], Instant::now() + Duration::from_secs(2))
+            .is_err());
+        server.join().unwrap();
+    }
+
+    #[test]
+    fn credentials_reject_wrong_variants_invalid_utf8_and_oversized_fields() {
+        for reply in [
+            Response::NotFound(SeedNotFound {}),
+            ciphertext(vec![17; 64]),
+            Response::Credentials(SeedCredentials::default()),
+            Response::Credentials(SeedCredentials {
+                access_key_id: Bytes::from_static(b"AKID"),
+                secret_access_key: Bytes::from_static(&[0xff]),
+                session_token: Bytes::new(),
+            }),
+            Response::Credentials(SeedCredentials {
+                access_key_id: Bytes::from_static(b"AKID"),
+                secret_access_key: Bytes::from_static(b"secret"),
+                session_token: Bytes::from(vec![b'a'; 16 * 1024 + 1]),
+            }),
+        ] {
+            let (broker, server) = mock_broker(move |mut stream| {
+                stream.write_all(&frame(reply)).unwrap();
             });
             assert!(broker
-                .load(Instant::now() + Duration::from_secs(2))
+                .credentials(Instant::now() + Duration::from_secs(2))
                 .is_err());
             server.join().unwrap();
         }
@@ -655,20 +713,36 @@ mod tests {
 
     #[test]
     fn broker_error_categories_are_preserved_without_host_text_or_creation() {
+        use SeedStorageErrorCode::*;
         for (code, expected) in [
-            ("configuration_error", CustodyFailure::Configuration),
-            ("seed_id_not_allowed", CustodyFailure::Configuration),
-            ("access_denied", CustodyFailure::AccessDenied),
-            ("aws_unavailable", CustodyFailure::Unavailable),
-            ("broker_busy", CustodyFailure::Unavailable),
-            ("operation_timeout", CustodyFailure::Unavailable),
-            ("request_timeout", CustodyFailure::Unavailable),
-            ("invalid_ciphertext", CustodyFailure::InvalidCiphertext),
-            ("internal_error", CustodyFailure::Internal),
-            ("sensitive-host-text", CustodyFailure::InvalidResponse),
+            (Configuration as i32, CustodyFailure::Configuration),
+            (SeedIdNotAllowed as i32, CustodyFailure::Configuration),
+            (AccessDenied as i32, CustodyFailure::AccessDenied),
+            (AwsUnavailable as i32, CustodyFailure::Unavailable),
+            (Busy as i32, CustodyFailure::Unavailable),
+            (OperationTimeout as i32, CustodyFailure::Unavailable),
+            (RequestTimeout as i32, CustodyFailure::Unavailable),
+            (InvalidCiphertext as i32, CustodyFailure::InvalidCiphertext),
+            (Internal as i32, CustodyFailure::Internal),
+            (InvalidFrame as i32, CustodyFailure::InvalidResponse),
+            (InvalidRequest as i32, CustodyFailure::InvalidResponse),
+            (ResponseTooLarge as i32, CustodyFailure::InvalidResponse),
+            (Unspecified as i32, CustodyFailure::InvalidResponse),
+            (999, CustodyFailure::InvalidResponse),
         ] {
             let (broker, server) = mock_broker(move |mut stream| {
-                stream.write_all(&frame(json!({"error":code}))).unwrap();
+                let mut reply = SeedStorageResponse {
+                    response: Some(Response::Error(SeedStorageError { code })),
+                }
+                .encode_to_vec();
+                // An unknown string field must never be echoed into errors/logs.
+                let text = b"sensitive-host-text";
+                reply.extend_from_slice(&[0x7a, text.len() as u8]);
+                reply.extend_from_slice(text);
+                stream
+                    .write_all(&(reply.len() as u32).to_le_bytes())
+                    .unwrap();
+                stream.write_all(&reply).unwrap();
             });
             let kms = Kms::default();
             let error = recover_seed(&broker, &kms, None, Instant::now() + Duration::from_secs(2))
@@ -685,7 +759,7 @@ mod tests {
     fn broker_deadline_bounds_prefix_and_body_trickle() {
         for trickle_prefix in [true, false] {
             let (broker, server) = mock_broker(move |mut stream| {
-                let response = frame(json!({"ciphertext": STANDARD.encode([17;64])}));
+                let response = frame(ciphertext(vec![17; 64]));
                 let bytes = if trickle_prefix {
                     &response[..]
                 } else {
@@ -716,12 +790,9 @@ mod tests {
         let server = std::thread::spawn(move || {
             for _ in 0..2 {
                 let (mut stream, _) = listener.accept().unwrap();
-                let mut prefix = [0; 4];
-                stream.read_exact(&mut prefix).unwrap();
-                let mut body = vec![0; u32::from_be_bytes(prefix) as usize];
-                stream.read_exact(&mut body).unwrap();
+                let _: SeedStorageRequest = framing::read_message(&mut stream).unwrap();
                 std::thread::sleep(Duration::from_millis(80));
-                let _ = stream.write_all(&frame(json!({"ciphertext":null})));
+                let _ = stream.write_all(&frame(Response::NotFound(SeedNotFound {})));
             }
         });
         let deadline = Instant::now() + Duration::from_millis(130);

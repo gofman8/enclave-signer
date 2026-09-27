@@ -34,9 +34,13 @@ disagree, or if the commit recorded below drifts from the `rev` that
 
 | | |
 |---|---|
-| Upstream | https://github.com/UTEXO-Protocol/federated-signer-proto |
-| Commit | `3677a5a311e741f5940866f7fdd98a513ec9b79f` ("feat(enclave): add Health request/response for deploy readiness probes") |
-| Commit date | 2026-09-17T12:45:14+03:00 |
+| Upstream | https://github.com/gofman8/federated-signer-proto |
+| Commit | `ee801bcc17c0c1a913e5be1795b58b4f2d2db9b1` ("feat(enclave): add protobuf seed storage messages") |
+| Commit date | 2026-09-27T12:28:06+03:00 |
+
+This private fork carries the seed-storage messages; the source project is
+`UTEXO-Protocol/federated-signer-proto`. Parent build credentials must have read
+access to the pinned fork.
 
 This is the same commit `parent/Cargo.toml` still pins as a git dependency, so
 both crates compile against one schema version. Keep them in lockstep.
@@ -50,8 +54,8 @@ both crates compile against one schema version. Keep them in lockstep.
 Verify against upstream (needs read access to the private repo):
 
 ```bash
-REV=3677a5a311e741f5940866f7fdd98a513ec9b79f
-git clone https://github.com/UTEXO-Protocol/federated-signer-proto /tmp/fsp
+REV=ee801bcc17c0c1a913e5be1795b58b4f2d2db9b1
+git clone https://github.com/gofman8/federated-signer-proto /tmp/fsp
 git -C /tmp/fsp checkout "$REV"
 diff /tmp/fsp/rust-gen/src/enclave/enclave.rs enclave-proto/src/enclave.rs
 diff /tmp/fsp/proto/enclave/enclave.proto     enclave-proto/proto/enclave.proto
@@ -65,8 +69,8 @@ git hash-object enclave-proto/src/enclave.rs enclave-proto/proto/enclave.proto
 
 | File | Upstream blob hash |
 |---|---|
-| `rust-gen/src/enclave/enclave.rs` | `d575d3efdf33eae38eb069acc81a2923bf09f71b` |
-| `proto/enclave/enclave.proto` | `e44aa7cb37a3b1ccbc531093500b86944df1db1a` |
+| `rust-gen/src/enclave/enclave.rs` | `e2d54594560be329615f7b7595bd182bae4e7788` |
+| `proto/enclave/enclave.proto` | `0c0b264e0fa6fd608158e14acb5eaab83ffb3ce4` |
 
 ## Why only `prost`
 

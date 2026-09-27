@@ -56,8 +56,14 @@ permissions. These endpoint settings support the standard AWS commercial partiti
 
 The existing [Rust parent](../parent/src/seed_persistence.rs) returns AWS
 credentials and reads/conditionally creates one S3 object. It never receives
-the plaintext seed. Configure persistence on the parent process that serves
-this mint signer:
+the plaintext seed. The enclave initiates `SeedStorageRequest` calls and reads
+`SeedStorageResponse` messages from the shared protobuf schema, using the same
+4-byte little-endian framing as signing requests with a tighter 64 KiB limit.
+Ciphertext is binary, and only an explicit `not_found` response permits creation.
+Upgrade the parent and mint enclave together; the former JSON broker format
+is no longer accepted. The encrypted S3 object and KMS context are unchanged.
+
+Configure persistence on the parent process that serves this mint signer:
 
 ```bash
 export AWS_REGION=eu-central-1

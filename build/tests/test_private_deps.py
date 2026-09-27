@@ -90,7 +90,7 @@ print(os.environ['GIT_CONFIG_GLOBAL'])
         result = self.run_auth('parent', f'''
 for url in {urls!r}:
     actual = subprocess.check_output(['git', 'ls-remote', '--get-url', url], text=True).strip()
-    expected = 'https://x-access-token@github.com/UTEXO-Protocol/' + url.split('/UTEXO-Protocol/')[1]
+    expected = 'https://x-access-token@github.com/' + url.split('/', 3)[3]
     assert actual == expected, (actual, expected)
 config = pathlib.Path(os.environ['GIT_CONFIG_GLOBAL'])
 assert {token!r} not in config.read_text()
@@ -100,6 +100,17 @@ print(str(config))
 ''')
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertNotIn(token, result.stdout + result.stderr)
+        self.assertFalse(Path(result.stdout.strip()).parent.exists())
+
+    def test_token_preserves_fork_owner_when_rewriting_proto_alias(self):
+        (self.secrets / 'github_token').write_text('fixture-token-not-a-real-credential')
+        result = self.run_auth('parent', """
+url = 'ssh://git@github-federated-signer/gofman8/federated-signer-proto.git'
+actual = subprocess.check_output(['git', 'ls-remote', '--get-url', url], text=True).strip()
+assert actual == 'https://x-access-token@github.com/gofman8/federated-signer-proto.git', actual
+print(os.environ['GIT_CONFIG_GLOBAL'])
+""")
+        self.assertEqual(result.returncode, 0, result.stderr)
         self.assertFalse(Path(result.stdout.strip()).parent.exists())
 
     def test_failed_command_preserves_status_and_cleans_config(self):

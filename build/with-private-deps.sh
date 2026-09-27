@@ -24,7 +24,7 @@ if [ -s "$PRIVATE_DEPS_DIR/github_token" ]; then
     # Rewrite the actual Cargo SSH aliases, as well as older HTTPS URLs.
     # The token is read by askpass, never interpolated into a URL or config.
     for alias in github-rgb-consignment github-rgb-consensus github-rgb-ops github-rgb-schemas github-federated-signer; do
-        git config --global --add url."https://x-access-token@github.com/UTEXO-Protocol/".insteadOf "ssh://git@$alias/UTEXO-Protocol/"
+        git config --global --add url."https://x-access-token@github.com/".insteadOf "ssh://git@$alias/"
     done
     git config --global --add url."https://x-access-token@github.com/UTEXO-Protocol/".insteadOf "https://github.com/UTEXO-Protocol/"
     cat > "$auth_dir/askpass" <<'ASKPASS'

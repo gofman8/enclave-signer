@@ -646,4 +646,143 @@ pub struct ErrorResponse {
     #[prost(string, tag="2")]
     pub message: ::prost::alloc::string::String,
 }
+/// Enclave-to-parent seed persistence uses the same length-prefixed protobuf
+/// framing as enclave requests. The parent handles only opaque KMS ciphertext;
+/// recipient-attested KMS operations and signing remain inside the enclave.
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct SeedStorageRequest {
+    #[prost(oneof="seed_storage_request::Request", tags="1, 2, 3")]
+    pub request: ::core::option::Option<seed_storage_request::Request>,
+}
+/// Nested message and enum types in `SeedStorageRequest`.
+pub mod seed_storage_request {
+    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Oneof)]
+    pub enum Request {
+        #[prost(message, tag="1")]
+        Credentials(super::SeedCredentialsRequest),
+        #[prost(message, tag="2")]
+        Load(super::SeedLoadRequest),
+        #[prost(message, tag="3")]
+        Create(super::SeedCreateRequest),
+    }
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct SeedCredentialsRequest {
+}
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct SeedLoadRequest {
+    #[prost(string, tag="1")]
+    pub seed_id: ::prost::alloc::string::String,
+}
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct SeedCreateRequest {
+    #[prost(string, tag="1")]
+    pub seed_id: ::prost::alloc::string::String,
+    #[prost(bytes="vec", tag="2")]
+    pub ciphertext: ::prost::alloc::vec::Vec<u8>,
+}
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct SeedStorageResponse {
+    #[prost(oneof="seed_storage_response::Response", tags="1, 2, 3, 4")]
+    pub response: ::core::option::Option<seed_storage_response::Response>,
+}
+/// Nested message and enum types in `SeedStorageResponse`.
+pub mod seed_storage_response {
+    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Oneof)]
+    pub enum Response {
+        #[prost(message, tag="1")]
+        Credentials(super::SeedCredentials),
+        #[prost(message, tag="2")]
+        Ciphertext(super::SeedCiphertext),
+        #[prost(message, tag="3")]
+        NotFound(super::SeedNotFound),
+        #[prost(message, tag="4")]
+        Error(super::SeedStorageError),
+    }
+}
+/// UTF-8 credential values are bytes so Rust consumers can retain them in a
+/// zeroizing frame allocation throughout protobuf decoding.
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct SeedCredentials {
+    #[prost(bytes="bytes", tag="1")]
+    pub access_key_id: ::prost::bytes::Bytes,
+    #[prost(bytes="bytes", tag="2")]
+    pub secret_access_key: ::prost::bytes::Bytes,
+    #[prost(bytes="bytes", tag="3")]
+    pub session_token: ::prost::bytes::Bytes,
+}
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct SeedCiphertext {
+    #[prost(bytes="vec", tag="1")]
+    pub ciphertext: ::prost::alloc::vec::Vec<u8>,
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct SeedNotFound {
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct SeedStorageError {
+    #[prost(enumeration="SeedStorageErrorCode", tag="1")]
+    pub code: i32,
+}
+/// Error categories do not include configuration values, credentials or AWS
+/// response bodies. Unknown codes must be treated as failures by the enclave.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+#[repr(i32)]
+pub enum SeedStorageErrorCode {
+    Unspecified = 0,
+    Configuration = 1,
+    AccessDenied = 2,
+    AwsUnavailable = 3,
+    InvalidCiphertext = 4,
+    Busy = 5,
+    OperationTimeout = 6,
+    RequestTimeout = 7,
+    InvalidFrame = 8,
+    InvalidRequest = 9,
+    SeedIdNotAllowed = 10,
+    ResponseTooLarge = 11,
+    Internal = 12,
+}
+impl SeedStorageErrorCode {
+    /// String value of the enum field names used in the ProtoBuf definition.
+    ///
+    /// The values are not transformed in any way and thus are considered stable
+    /// (if the ProtoBuf definition does not change) and safe for programmatic use.
+    pub fn as_str_name(&self) -> &'static str {
+        match self {
+            Self::Unspecified => "SEED_STORAGE_ERROR_CODE_UNSPECIFIED",
+            Self::Configuration => "SEED_STORAGE_ERROR_CODE_CONFIGURATION",
+            Self::AccessDenied => "SEED_STORAGE_ERROR_CODE_ACCESS_DENIED",
+            Self::AwsUnavailable => "SEED_STORAGE_ERROR_CODE_AWS_UNAVAILABLE",
+            Self::InvalidCiphertext => "SEED_STORAGE_ERROR_CODE_INVALID_CIPHERTEXT",
+            Self::Busy => "SEED_STORAGE_ERROR_CODE_BUSY",
+            Self::OperationTimeout => "SEED_STORAGE_ERROR_CODE_OPERATION_TIMEOUT",
+            Self::RequestTimeout => "SEED_STORAGE_ERROR_CODE_REQUEST_TIMEOUT",
+            Self::InvalidFrame => "SEED_STORAGE_ERROR_CODE_INVALID_FRAME",
+            Self::InvalidRequest => "SEED_STORAGE_ERROR_CODE_INVALID_REQUEST",
+            Self::SeedIdNotAllowed => "SEED_STORAGE_ERROR_CODE_SEED_ID_NOT_ALLOWED",
+            Self::ResponseTooLarge => "SEED_STORAGE_ERROR_CODE_RESPONSE_TOO_LARGE",
+            Self::Internal => "SEED_STORAGE_ERROR_CODE_INTERNAL",
+        }
+    }
+    /// Creates an enum from field names used in the ProtoBuf definition.
+    pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
+        match value {
+            "SEED_STORAGE_ERROR_CODE_UNSPECIFIED" => Some(Self::Unspecified),
+            "SEED_STORAGE_ERROR_CODE_CONFIGURATION" => Some(Self::Configuration),
+            "SEED_STORAGE_ERROR_CODE_ACCESS_DENIED" => Some(Self::AccessDenied),
+            "SEED_STORAGE_ERROR_CODE_AWS_UNAVAILABLE" => Some(Self::AwsUnavailable),
+            "SEED_STORAGE_ERROR_CODE_INVALID_CIPHERTEXT" => Some(Self::InvalidCiphertext),
+            "SEED_STORAGE_ERROR_CODE_BUSY" => Some(Self::Busy),
+            "SEED_STORAGE_ERROR_CODE_OPERATION_TIMEOUT" => Some(Self::OperationTimeout),
+            "SEED_STORAGE_ERROR_CODE_REQUEST_TIMEOUT" => Some(Self::RequestTimeout),
+            "SEED_STORAGE_ERROR_CODE_INVALID_FRAME" => Some(Self::InvalidFrame),
+            "SEED_STORAGE_ERROR_CODE_INVALID_REQUEST" => Some(Self::InvalidRequest),
+            "SEED_STORAGE_ERROR_CODE_SEED_ID_NOT_ALLOWED" => Some(Self::SeedIdNotAllowed),
+            "SEED_STORAGE_ERROR_CODE_RESPONSE_TOO_LARGE" => Some(Self::ResponseTooLarge),
+            "SEED_STORAGE_ERROR_CODE_INTERNAL" => Some(Self::Internal),
+            _ => None,
+        }
+    }
+}
 // @@protoc_insertion_point(module)

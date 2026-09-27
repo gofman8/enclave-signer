@@ -1,4 +1,5 @@
 use super::*;
+use crate::enclave_proto::{SeedCreateRequest, SeedCredentialsRequest, SeedLoadRequest};
 use aws_sdk_s3::config::{Credentials, RequestChecksumCalculation};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -114,57 +115,103 @@ fn default_cid_allowlist_and_explicit_dev_transport() {
     assert!(Settings::read(&production, |key| env.get(key).cloned()).is_err());
 }
 
-#[test]
-fn json_rejects_duplicates_unknown_fields_and_wrong_shapes() {
-    for text in [
-        r#"{"op":"credentials","op":"credentials"}"#,
-        r#"{"op":"load","seed_id":"a","seed_id":"b"}"#,
-        r#"{"op":"credentials","seed_id":null}"#,
-        r#"{"op":"credentials","extra":0}"#,
-        r#"{"op":"load","seed_id":"a","extra":0}"#,
-        r#"{"op":"create","seed_id":"a","ciphertext":"AQ==","ciphertext":"Ag=="}"#,
-        r#"{"op":"delete","seed_id":"a"}"#,
-        r#"{"op":"load"}"#,
-        r#"{"op":"load","seed_id":1}"#,
-        r#"[]"#,
-        r#"null"#,
-        r#"{"op":"credentials"} {}"#,
-    ] {
-        assert!(serde_json::from_str::<Request>(text).is_err(), "{text}");
+fn credentials_request() -> Request {
+    Request::Credentials(SeedCredentialsRequest {})
+}
+
+fn request_bytes(request: Request) -> Vec<u8> {
+    SeedStorageRequest {
+        request: Some(request),
     }
-    for text in [
-        r#"{"op":"credentials"}"#,
-        r#"{"op":"load","seed_id":"a"}"#,
-        r#"{"op":"create","seed_id":"a","ciphertext":"AQ=="}"#,
-    ] {
-        assert!(serde_json::from_str::<Request>(text).is_ok());
-    }
+    .encode_to_vec()
+}
+
+fn framed(payload: &[u8]) -> Vec<u8> {
+    let mut bytes = (payload.len() as u32).to_le_bytes().to_vec();
+    bytes.extend_from_slice(payload);
+    bytes
+}
+
+fn decoded_response(bytes: &[u8]) -> Response {
+    SeedStorageResponse::decode(bytes)
+        .unwrap()
+        .response
+        .unwrap()
 }
 
 #[test]
-fn ciphertext_is_nonempty_bounded_and_canonical() {
+fn ciphertext_is_nonempty_bounded_and_binary() {
     for size in [1, 2, 3, MAX_CIPHERTEXT] {
         let blob = vec![137; size];
-        assert_eq!(decode_ciphertext(&STANDARD.encode(&blob)).unwrap(), blob);
+        validate_ciphertext(&blob).unwrap();
     }
-    for text in ["", "AQ", "AR==", "AQ===", "AQ==\n", "_-==", "é==="] {
-        assert_eq!(decode_ciphertext(text), Err(Error::InvalidCiphertext));
+    validate_ciphertext(&[0, 255, 128, 10]).unwrap();
+    for blob in [vec![], vec![1; MAX_CIPHERTEXT + 1]] {
+        assert_eq!(validate_ciphertext(&blob), Err(Error::InvalidCiphertext));
     }
-    assert_eq!(
-        decode_ciphertext(&STANDARD.encode(vec![1; MAX_CIPHERTEXT + 1])),
-        Err(Error::InvalidCiphertext)
-    );
 }
 
 #[test]
-fn response_encoding_is_bounded_even_with_json_escaping() {
+fn response_encoding_is_bounded_and_preserves_binary_ciphertext() {
     assert_eq!(
-        json(&"\0".repeat(MAX_FRAME)).unwrap_err(),
+        encode_response(Response::Credentials(SeedCredentials {
+            access_key_id: credential_bytes(&"a".repeat(MAX_FRAME)).unwrap(),
+            secret_access_key: credential_bytes("secret").unwrap(),
+            session_token: Bytes::new(),
+        }))
+        .unwrap_err(),
         Error::ResponseTooLarge
     );
-    let payload = json(&"small").unwrap();
-    assert_eq!(&*payload, b"\"small\"");
+    assert_eq!(
+        credential_bytes(&"a".repeat(MAX_FRAME + 1)).unwrap_err(),
+        Error::ResponseTooLarge
+    );
+    let response = Response::Ciphertext(SeedCiphertext {
+        ciphertext: vec![0, 255, 128, 10],
+    });
+    let payload = encode_response(response.clone()).unwrap();
+    assert_eq!(decoded_response(&payload), response);
     assert_eq!(payload.capacity(), MAX_FRAME);
+}
+
+#[test]
+fn errors_use_typed_codes_without_diagnostics() {
+    for (error, code) in [
+        (Error::Configuration, SeedStorageErrorCode::Configuration),
+        (Error::AccessDenied, SeedStorageErrorCode::AccessDenied),
+        (Error::AwsUnavailable, SeedStorageErrorCode::AwsUnavailable),
+        (
+            Error::InvalidCiphertext,
+            SeedStorageErrorCode::InvalidCiphertext,
+        ),
+        (Error::Busy, SeedStorageErrorCode::Busy),
+        (
+            Error::OperationTimeout,
+            SeedStorageErrorCode::OperationTimeout,
+        ),
+        (Error::RequestTimeout, SeedStorageErrorCode::RequestTimeout),
+        (Error::InvalidFrame, SeedStorageErrorCode::InvalidFrame),
+        (Error::InvalidRequest, SeedStorageErrorCode::InvalidRequest),
+        (
+            Error::SeedIdNotAllowed,
+            SeedStorageErrorCode::SeedIdNotAllowed,
+        ),
+        (
+            Error::ResponseTooLarge,
+            SeedStorageErrorCode::ResponseTooLarge,
+        ),
+        (Error::Internal, SeedStorageErrorCode::Internal),
+    ] {
+        let payload = encode_response(Response::Error(SeedStorageError {
+            code: SeedStorageErrorCode::from(error) as i32,
+        }))
+        .unwrap();
+        assert_eq!(
+            decoded_response(&payload),
+            Response::Error(SeedStorageError { code: code as i32 })
+        );
+        assert!(payload.len() <= 4);
+    }
 }
 
 #[derive(Debug)]
@@ -199,42 +246,91 @@ async fn missing_credentials_remain_configuration_errors_for_both_wire_operation
             .build(),
     );
     assert!(matches!(
-        broker.dispatch(Request::Credentials {}).await,
+        broker.dispatch(credentials_request()).await,
         Err(Error::Configuration)
     ));
     assert_eq!(broker.load().await, Err(Error::Configuration));
 }
 
 #[tokio::test]
-async fn frame_is_big_endian_bounded_and_exact() {
-    let payload = br#"{"op":"credentials"}"#;
-    let mut framed = (payload.len() as u32).to_be_bytes().to_vec();
-    framed.extend(payload);
+async fn frame_is_little_endian_bounded_and_exact() {
+    let payload = request_bytes(credentials_request());
     assert!(matches!(
-        read_request(&mut framed.as_slice(), Instant::now() + REQUEST_TIMEOUT).await,
-        Ok(Request::Credentials {})
+        read_request(
+            &mut framed(&payload).as_slice(),
+            Instant::now() + REQUEST_TIMEOUT
+        )
+        .await,
+        Ok(Request::Credentials(_))
     ));
     for frame in [
         vec![0, 0],
         vec![0, 0, 0, 0],
-        (MAX_FRAME as u32 + 1).to_be_bytes().to_vec(),
-        vec![0, 0, 0, 5, b'{'],
+        (MAX_FRAME as u32 + 1).to_le_bytes().to_vec(),
+        vec![5, 0, 0, 0, 0x0a],
+        (payload.len() as u32).to_be_bytes().to_vec(),
     ] {
         assert!(matches!(
             read_request(&mut frame.as_slice(), Instant::now() + REQUEST_TIMEOUT).await,
             Err(Error::InvalidFrame)
         ));
     }
-    let frame = [0, 0, 0, 1, 0xff];
+}
+
+#[tokio::test]
+async fn malformed_missing_and_legacy_json_requests_are_rejected() {
+    for payload in [
+        vec![0xff],
+        vec![0x0a, 0x02],
+        vec![0x22, 0x00], // Unknown field with no request variant.
+        br#"{"op":"credentials"}"#.to_vec(),
+        br#"{"op":"load","seed_id":"seed-1"}"#.to_vec(),
+        br#"{"op":"create","seed_id":"seed-1","ciphertext":"AQ=="}"#.to_vec(),
+    ] {
+        assert!(matches!(
+            read_request(
+                &mut framed(&payload).as_slice(),
+                Instant::now() + REQUEST_TIMEOUT
+            )
+            .await,
+            Err(Error::InvalidRequest)
+        ));
+    }
+    // Normal protobuf forward compatibility retains a known variant.
+    let mut payload = request_bytes(credentials_request());
+    payload.extend_from_slice(&[0x98, 0x06, 0x01]);
     assert!(matches!(
-        read_request(&mut frame.as_slice(), Instant::now() + REQUEST_TIMEOUT).await,
-        Err(Error::InvalidRequest)
+        read_request(
+            &mut framed(&payload).as_slice(),
+            Instant::now() + REQUEST_TIMEOUT
+        )
+        .await,
+        Ok(Request::Credentials(_))
     ));
 }
 
 #[tokio::test]
+async fn frame_accepts_fragmented_prefix_and_body() {
+    let request = Request::Create(SeedCreateRequest {
+        seed_id: "seed-1".into(),
+        ciphertext: vec![0, 255, 128, 10],
+    });
+    let frame = framed(&request_bytes(request.clone()));
+    let (mut reader, mut writer) = tokio::io::duplex(1);
+    let sending = async {
+        for byte in frame {
+            writer.write_u8(byte).await.unwrap();
+            tokio::task::yield_now().await;
+        }
+    };
+    let reading = read_request(&mut reader, Instant::now() + REQUEST_TIMEOUT);
+    let (result, ()) = tokio::join!(reading, sending);
+    assert_eq!(result.unwrap(), request);
+}
+
+#[tokio::test]
 async fn deadline_covers_partial_prefix_and_partial_body() {
-    for initial in [vec![0], vec![0, 0, 0, 20, b'{']] {
+    for initial in [vec![0], vec![20, 0, 0, 0, 0x0a]] {
         let (mut reader, mut writer) = tokio::io::duplex(64);
         writer.write_all(&initial).await.unwrap();
         let before = Instant::now();
@@ -384,14 +480,27 @@ async fn endpoint(replies: Vec<Reply>) -> (String, Arc<Mutex<Vec<String>>>, Join
 }
 
 #[tokio::test]
-async fn credentials_wire_shape_and_empty_optional_session_token() {
-    let broker = broker("http://127.0.0.1:1");
-    let bytes = broker.dispatch(Request::Credentials {}).await.unwrap();
-    let value: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
-    assert_eq!(
-        value,
-        serde_json::json!({"access_key_id":"test-access","secret_access_key":"test-secret","session_token":""})
-    );
+async fn credentials_wire_shape_preserves_optional_session_token() {
+    for token in [None, Some("test-session-token".to_string())] {
+        let mut broker = broker("http://127.0.0.1:1");
+        broker.credentials = SharedCredentialsProvider::new(Credentials::new(
+            "test-access",
+            "test-secret",
+            token.clone(),
+            None,
+            "test",
+        ));
+        let bytes = broker.dispatch(credentials_request()).await.unwrap();
+        let Response::Credentials(credentials) = decoded_response(&bytes) else {
+            panic!("expected credentials");
+        };
+        assert_eq!(credentials.access_key_id, b"test-access".as_slice());
+        assert_eq!(credentials.secret_access_key, b"test-secret".as_slice());
+        assert_eq!(
+            credentials.session_token,
+            token.unwrap_or_default().as_bytes()
+        );
+    }
 }
 
 #[tokio::test]
@@ -401,9 +510,9 @@ async fn invalid_requests_do_not_consume_aws_capacity_or_tokens() {
     assert!(matches!(
         broker
             .response(
-                Request::Load {
+                Request::Load(SeedLoadRequest {
                     seed_id: "other".into()
-                },
+                }),
                 &peer,
                 Instant::now() + REQUEST_TIMEOUT
             )
@@ -413,10 +522,10 @@ async fn invalid_requests_do_not_consume_aws_capacity_or_tokens() {
     assert!(matches!(
         broker
             .response(
-                Request::Create {
+                Request::Create(SeedCreateRequest {
                     seed_id: "seed-1".into(),
-                    ciphertext: "invalid".into()
-                },
+                    ciphertext: Vec::new()
+                }),
                 &peer,
                 Instant::now() + REQUEST_TIMEOUT
             )
@@ -528,9 +637,9 @@ async fn response_deadline_includes_sdk_body_and_releases_cancelled_operation() 
     assert!(matches!(
         broker
             .response(
-                Request::Load {
+                Request::Load(SeedLoadRequest {
                     seed_id: "seed-1".into()
-                },
+                }),
                 &peer,
                 now + Duration::from_millis(100)
             )
@@ -585,7 +694,7 @@ async fn stalled_credentials_are_bounded_per_peer_and_cancelled_before_permit_re
         let peer = peer.clone();
         workers.push(tokio::spawn(async move {
             broker
-                .response(Request::Credentials {}, &peer, deadline)
+                .response(credentials_request(), &peer, deadline)
                 .await
         }));
     }
@@ -598,7 +707,7 @@ async fn stalled_credentials_are_bounded_per_peer_and_cancelled_before_permit_re
     .expect("credential requests started");
     assert!(matches!(
         broker
-            .response(Request::Credentials {}, &peer, deadline)
+            .response(credentials_request(), &peer, deadline)
             .await,
         Err(Error::Busy)
     ));
@@ -606,7 +715,7 @@ async fn stalled_credentials_are_bounded_per_peer_and_cancelled_before_permit_re
     assert!(matches!(
         broker
             .response(
-                Request::Credentials {},
+                credentials_request(),
                 &other,
                 Instant::now() + Duration::from_millis(10)
             )
@@ -632,17 +741,130 @@ async fn live_tcp_protocol_and_admission_use_the_same_broker() {
     broker.peers = HashMap::from([(0, Arc::new(Peer::new()))]);
     let server = tokio::spawn(serve(Listener::Tcp(listener), Arc::new(broker)));
     let mut stream = tokio::net::TcpStream::connect(addr).await.unwrap();
-    let request = br#"{"op":"credentials"}"#;
-    stream.write_u32(request.len() as u32).await.unwrap();
-    stream.write_all(request).await.unwrap();
-    let length = stream.read_u32().await.unwrap();
+    let request = request_bytes(credentials_request());
+    stream.write_all(&framed(&request)).await.unwrap();
+    let length = stream.read_u32_le().await.unwrap();
     let mut response = vec![0; length as usize];
     stream.read_exact(&mut response).await.unwrap();
-    let value: serde_json::Value = serde_json::from_slice(&response).unwrap();
-    assert_eq!(value["access_key_id"], "test-access");
+    let Response::Credentials(credentials) = decoded_response(&response) else {
+        panic!("expected credentials");
+    };
+    assert_eq!(credentials.access_key_id, b"test-access".as_slice());
     assert_eq!(
         stream.read_u8().await.unwrap_err().kind(),
         std::io::ErrorKind::UnexpectedEof
     );
     server.abort();
+}
+
+async fn wire_response(broker: Broker, payload: &[u8]) -> Response {
+    let (mut client, server) = tokio::io::duplex(MAX_FRAME + 4);
+    let serving = broker.handle(
+        Box::new(server),
+        Arc::new(Peer::new()),
+        Instant::now() + REQUEST_TIMEOUT,
+    );
+    let exchange = async {
+        client.write_all(&framed(payload)).await.unwrap();
+        let length = client.read_u32_le().await.unwrap() as usize;
+        assert!(length > 0 && length <= MAX_FRAME);
+        let mut bytes = vec![0; length];
+        client.read_exact(&mut bytes).await.unwrap();
+        decoded_response(&bytes)
+    };
+    let ((), response) = tokio::join!(serving, exchange);
+    response
+}
+
+#[tokio::test]
+async fn load_wire_distinguishes_missing_ciphertext_and_typed_errors() {
+    for (reply, expected) in [
+        (
+            Reply::error(404, "NoSuchKey"),
+            Response::NotFound(SeedNotFound {}),
+        ),
+        (
+            Reply::blob(&[0, 255, 128, 10]),
+            Response::Ciphertext(SeedCiphertext {
+                ciphertext: vec![0, 255, 128, 10],
+            }),
+        ),
+        (
+            Reply::error(404, "NoSuchBucket"),
+            Response::Error(SeedStorageError {
+                code: SeedStorageErrorCode::Configuration as i32,
+            }),
+        ),
+        (
+            Reply::error(403, "AccessDenied"),
+            Response::Error(SeedStorageError {
+                code: SeedStorageErrorCode::AccessDenied as i32,
+            }),
+        ),
+        (
+            Reply::error(500, "InternalError"),
+            Response::Error(SeedStorageError {
+                code: SeedStorageErrorCode::AwsUnavailable as i32,
+            }),
+        ),
+    ] {
+        let (url, requests, server) = endpoint(vec![reply]).await;
+        let payload = request_bytes(Request::Load(SeedLoadRequest {
+            seed_id: "seed-1".into(),
+        }));
+        assert_eq!(wire_response(broker(&url), &payload).await, expected);
+        timeout(Duration::from_secs(2), server)
+            .await
+            .unwrap()
+            .unwrap();
+        assert_eq!(requests.lock().unwrap().len(), 1);
+    }
+}
+
+#[tokio::test]
+async fn create_wire_returns_binary_committed_ciphertext() {
+    let winner = vec![0, 255, 128, 10];
+    let (url, requests, server) = endpoint(vec![Reply::blob(&[]), Reply::blob(&winner)]).await;
+    let payload = request_bytes(Request::Create(SeedCreateRequest {
+        seed_id: "seed-1".into(),
+        ciphertext: vec![128, 255, 0],
+    }));
+    assert_eq!(
+        wire_response(broker(&url), &payload).await,
+        Response::Ciphertext(SeedCiphertext { ciphertext: winner })
+    );
+    timeout(Duration::from_secs(2), server)
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(requests.lock().unwrap().len(), 2);
+}
+
+#[tokio::test]
+async fn invalid_wire_requests_return_typed_errors() {
+    for (payload, code) in [
+        (
+            br#"{"op":"credentials"}"#.to_vec(),
+            SeedStorageErrorCode::InvalidRequest,
+        ),
+        (vec![0x22, 0x00], SeedStorageErrorCode::InvalidRequest),
+        (
+            request_bytes(Request::Load(SeedLoadRequest {
+                seed_id: "other".into(),
+            })),
+            SeedStorageErrorCode::SeedIdNotAllowed,
+        ),
+        (
+            request_bytes(Request::Create(SeedCreateRequest {
+                seed_id: "seed-1".into(),
+                ciphertext: Vec::new(),
+            })),
+            SeedStorageErrorCode::InvalidCiphertext,
+        ),
+    ] {
+        assert_eq!(
+            wire_response(broker("http://127.0.0.1:1"), &payload).await,
+            Response::Error(SeedStorageError { code: code as i32 })
+        );
+    }
 }

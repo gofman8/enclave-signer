@@ -2045,7 +2045,7 @@ dependencies = [
 [[package]]
 name = "federated-signer-proto"
 version = "0.1.0"
-source = "git+ssh://git@github-federated-signer/UTEXO-Protocol/federated-signer-proto.git?rev=3677a5a311e741f5940866f7fdd98a513ec9b79f#3677a5a311e741f5940866f7fdd98a513ec9b79f"
+source = "git+ssh://git@github-federated-signer/gofman8/federated-signer-proto.git?rev=ee801bcc17c0c1a913e5be1795b58b4f2d2db9b1#ee801bcc17c0c1a913e5be1795b58b4f2d2db9b1"
 dependencies = [
  "bytes",
  "prost",
@@ -5129,7 +5129,6 @@ dependencies = [
  "aws-credential-types",
  "aws-sdk-s3",
  "axum",
- "base64 0.22.1",
  "bitcoin",
  "clap",
  "federated-signer-proto",
@@ -5138,7 +5137,6 @@ dependencies = [
  "prost",
  "rand 0.8.8",
  "rustls 0.23.44",
- "serde",
  "serde_json",
  "sha2 0.10.9",
  "sha3 0.10.9",
