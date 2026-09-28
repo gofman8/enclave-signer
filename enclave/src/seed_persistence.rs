@@ -31,7 +31,7 @@ type BrokerStream = TcpStream;
 type BrokerStream = vsock::VsockStream;
 
 pub const BROKER_LOCAL_PORT: u16 = 3446;
-pub const BROKER_VSOCK_PORT: u32 = 8004;
+pub const BROKER_VSOCK_PORT: u32 = 8006;
 // Leave room inside the 30-second parent/request timeout for ingress and reply.
 pub const RECOVERY_TIMEOUT: Duration = Duration::from_secs(25);
 pub(crate) const RESPONSE_RESERVE: Duration = Duration::from_secs(2);

@@ -96,6 +96,11 @@ impl<S: SocketTimeout> DeadlineStream<S> {
         }
     }
 
+    /// The accept-time deadline, also used for work performed during dispatch.
+    pub fn deadline(&self) -> Instant {
+        self.deadline
+    }
+
     /// Time left until the deadline, or `None` (with a ready-made error) if the
     /// budget is exhausted. The armed value is clamped to `idle`.
     fn arm(&self) -> io::Result<Duration> {
@@ -103,7 +108,7 @@ impl<S: SocketTimeout> DeadlineStream<S> {
     }
 }
 
-/// Shared absolute-deadline check for sockets and custody subprocesses.
+/// Shared absolute-deadline check for sockets and custody operations.
 pub(crate) fn remaining_until(deadline: Instant) -> io::Result<Duration> {
     let remaining = deadline.saturating_duration_since(Instant::now());
     if remaining.is_zero() {

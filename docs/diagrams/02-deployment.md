@@ -74,7 +74,5 @@ Clones provide replicas of one signing identity. Independent quorum members
 need independently initialized seeds.
 
 Optional `helios` builds use execution and consensus forwarders on host vsock
-ports 8003/8004 (enclave loopback 18545/18550) when Helios is selected. With
-`kms-persistence`, KMS and seed storage reserve 8003/8004; Helios uses 8005/8006
-and rejects overrides that collide with the reserved ports. These
+ports 8003/8004 (enclave loopback 18545/18550) when Helios is selected. These
 replace the raw receipt provider and require a pinned beacon checkpoint.

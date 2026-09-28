@@ -67,6 +67,7 @@ fn partial_or_invalid_configuration_is_rejected() {
         ("KMS_ALLOWED_CIDS", "16,16"),
         ("KMS_ALLOWED_CIDS", "+16"),
         ("KMS_ALLOWED_CIDS", "-16"),
+        ("KMS_BROKER_PORT", "8004"),
         ("KMS_BROKER_PORT", "8005"),
         ("KMS_BROKER_TCP", "0.0.0.0:3446"),
         ("KMS_BROKER_TCP", "[::1]:3446"),
@@ -94,6 +95,8 @@ fn partial_or_invalid_configuration_is_rejected() {
 fn default_cid_allowlist_and_explicit_dev_transport() {
     assert_eq!(settings().cids, [16]);
     let mut env = environment();
+    env.insert("KMS_BROKER_PORT".into(), "8006".into());
+    assert!(Settings::read(&parent(), |key| env.get(key).cloned()).is_ok());
     env.insert("KMS_ALLOWED_CIDS".into(), "16, 17".into());
     assert_eq!(
         Settings::read(&parent(), |key| env.get(key).cloned())
@@ -533,7 +536,7 @@ async fn invalid_requests_do_not_consume_aws_capacity_or_tokens() {
         Err(Error::InvalidCiphertext)
     ));
     assert_eq!(peer.tokens.lock().unwrap().0, 8.0);
-    assert_eq!(broker.operations.available_permits(), 16);
+    assert_eq!(peer.operations.available_permits(), OPERATIONS_PER_CID);
 }
 
 #[tokio::test]
@@ -648,7 +651,6 @@ async fn response_deadline_includes_sdk_body_and_releases_cancelled_operation() 
     ));
     assert!(now.elapsed() < Duration::from_secs(1));
     assert_eq!(requests.lock().unwrap().len(), 1);
-    assert_eq!(broker.operations.available_permits(), 16);
     assert_eq!(peer.operations.available_permits(), 2);
     server.abort();
 }
@@ -730,7 +732,7 @@ async fn stalled_credentials_are_bounded_per_peer_and_cancelled_before_permit_re
         ));
     }
     assert_eq!(active.load(Ordering::SeqCst), 0);
-    assert_eq!(broker.operations.available_permits(), 16);
+    assert_eq!(peer.operations.available_permits(), OPERATIONS_PER_CID);
 }
 
 #[tokio::test]

@@ -141,7 +141,7 @@ impl Settings {
             }
             vec![parent.enclave_vsock_cid]
         };
-        if get("KMS_BROKER_PORT").is_some_and(|port| port != "8004") {
+        if get("KMS_BROKER_PORT").is_some_and(|port| port != "8006") {
             return Err(Error::Configuration);
         }
         Ok(Some(Self {
@@ -262,7 +262,7 @@ fn service_error_is<E: ProvideErrorMetadata>(
 
 struct Peer {
     connections: Arc<Semaphore>,
-    operations: Arc<Semaphore>,
+    operations: Semaphore,
     tokens: Mutex<(f64, Instant)>,
 }
 
@@ -270,7 +270,7 @@ impl Peer {
     fn new() -> Self {
         Self {
             connections: Arc::new(Semaphore::new(CONNECTIONS_PER_CID)),
-            operations: Arc::new(Semaphore::new(OPERATIONS_PER_CID)),
+            operations: Semaphore::new(OPERATIONS_PER_CID),
             tokens: Mutex::new((OPERATION_BURST, Instant::now())),
         }
     }
@@ -304,7 +304,6 @@ struct Broker {
     s3: Client,
     credentials: SharedCredentialsProvider,
     connections: Arc<Semaphore>,
-    operations: Arc<Semaphore>,
     peers: HashMap<u32, Arc<Peer>>,
 }
 
@@ -323,7 +322,6 @@ impl Broker {
             s3,
             credentials,
             connections: Arc::new(Semaphore::new(MAX_CONNECTIONS)),
-            operations: Arc::new(Semaphore::new(MAX_CONNECTIONS)),
             peers,
         }
     }
@@ -446,7 +444,9 @@ impl Broker {
         deadline: Instant,
     ) -> Result<Zeroizing<Vec<u8>>, Error> {
         self.validate(&request)?;
-        let _permits = acquire(&self.operations, &peer.operations)?;
+        // Each admitted connection runs one operation; its permit already
+        // bounds the global count. Apply the tighter per-peer limit here.
+        let _permit = peer.operations.try_acquire().map_err(|_| Error::Busy)?;
         peer.take_token(Instant::now())?;
         // Cancellation drops the entire async SDK/body future; there is no
         // detached blocking worker that can accumulate after repeated timeouts.
@@ -556,7 +556,7 @@ impl Listener {
         }
         #[cfg(target_os = "linux")]
         {
-            tokio_vsock::VsockListener::bind(tokio_vsock::VsockAddr::new(3, 8004))
+            tokio_vsock::VsockListener::bind(tokio_vsock::VsockAddr::new(3, 8006))
                 .map(Self::Vsock)
                 .map_err(|_| Error::Configuration)
         }

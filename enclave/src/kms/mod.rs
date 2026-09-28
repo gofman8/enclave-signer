@@ -15,8 +15,7 @@
 //! Amazon Trust Services roots are trusted; there is no system store.
 //!
 //! Failures are reported as fixed [`CustodyFailure`] categories. Service
-//! messages never reach a wire error or a log line; only an allow-listed
-//! error code does.
+//! messages and error codes never reach a wire error or a log line.
 
 use std::collections::HashMap;
 use std::future::Future;
@@ -55,7 +54,7 @@ const RECIPIENT_RSA_BITS: usize = 2048;
 /// KMS HTTPS port; a vsock build forwards it to the parent.
 pub const KMS_PORT: u16 = 443;
 /// Parent `vsock-proxy` port for KMS (`KMS_VSOCK_PORT` overrides it).
-pub const DEFAULT_KMS_VSOCK_PORT: u32 = 8003;
+pub const DEFAULT_KMS_VSOCK_PORT: u32 = 8005;
 const AMAZON_TRUST_ROOTS: &[u8] = include_bytes!("amazon_trust_roots.pem");
 
 /// Mint custody domain, compiled into the measured image. Neither host
@@ -267,13 +266,13 @@ impl KmsClient {
     /// `CiphertextBlob` is returned; recover the committed winner separately
     /// before activation.
     pub fn generate_ciphertext(&self, deadline: Instant) -> Result<Vec<u8>> {
-        let budget = call_budget(deadline)?;
+        let deadline = call_deadline(deadline)?;
         let recipient = self.recipient()?;
-        let client = self.sdk_client(budget)?;
+        let client = self.sdk_client(crate::conn::remaining_until(deadline)?)?;
         let key_arn = self.config.key_arn.clone();
         let context = self.encryption_context();
         let info = recipient.info.clone();
-        let output = block_on(budget, async move {
+        let output = block_on(deadline, async move {
             client
                 .generate_data_key()
                 .key_id(key_arn)
@@ -298,6 +297,7 @@ impl KmsClient {
         // write, but keep its seed in this frame only.
         let seed = recipient.open(output.ciphertext_for_recipient.as_ref())?;
         drop(seed);
+        crate::conn::remaining_until(deadline)?;
         Ok(ciphertext)
     }
 
@@ -310,14 +310,14 @@ impl KmsClient {
         if ciphertext_blob.is_empty() || ciphertext_blob.len() > MAX_CIPHERTEXT_BYTES {
             return Err(fail("invalid persisted KMS ciphertext length"));
         }
-        let budget = call_budget(deadline)?;
+        let deadline = call_deadline(deadline)?;
         let recipient = self.recipient()?;
-        let client = self.sdk_client(budget)?;
+        let client = self.sdk_client(crate::conn::remaining_until(deadline)?)?;
         let key_arn = self.config.key_arn.clone();
         let context = self.encryption_context();
         let info = recipient.info.clone();
         let blob = Blob::new(ciphertext_blob);
-        let output = block_on(budget, async move {
+        let output = block_on(deadline, async move {
             client
                 .decrypt()
                 .key_id(key_arn)
@@ -335,7 +335,9 @@ impl KmsClient {
         if output.encryption_algorithm != Some(EncryptionAlgorithmSpec::SymmetricDefault) {
             return Err(invalid("KMS reported an unexpected encryption algorithm"));
         }
-        recipient.open(output.ciphertext_for_recipient.as_ref())
+        let seed = recipient.open(output.ciphertext_for_recipient.as_ref())?;
+        crate::conn::remaining_until(deadline)?;
+        Ok(seed)
     }
 
     /// The four public context entries every policy must require verbatim
@@ -458,13 +460,15 @@ impl Recipient {
     }
 }
 
-fn call_budget(deadline: Instant) -> Result<Duration> {
-    Ok(crate::conn::remaining_until(deadline)?.min(CALL_TIMEOUT))
+fn call_deadline(deadline: Instant) -> Result<Instant> {
+    crate::conn::remaining_until(deadline)?;
+    Ok(deadline.min(Instant::now() + CALL_TIMEOUT))
 }
 
 /// Drive one SDK call on a private single-threaded runtime. The runtime, its
-/// connection and the SDK client all end with this call.
-fn block_on<F, T>(budget: Duration, future: F) -> Result<T>
+/// connection and the SDK client all end with this call. Local RSA/NSM and
+/// client preparation consume the same budget as transport.
+fn block_on<F, T>(deadline: Instant, future: F) -> Result<T>
 where
     F: Future<Output = T>,
 {
@@ -473,9 +477,12 @@ where
         .build()
         .map_err(|_| custody(CustodyFailure::Internal))?;
     // The timer must be created inside the runtime, hence the async block.
-    runtime
-        .block_on(async { tokio::time::timeout(budget, future).await })
-        .map_err(|_| custody(CustodyFailure::Unavailable))
+    runtime.block_on(async {
+        crate::conn::remaining_until(deadline).map_err(|_| custody(CustodyFailure::Unavailable))?;
+        tokio::time::timeout_at(tokio::time::Instant::from_std(deadline), future)
+            .await
+            .map_err(|_| custody(CustodyFailure::Unavailable))
+    })
 }
 
 fn reject_plaintext(plaintext: Option<&Blob>) -> Result<()> {
@@ -488,36 +495,31 @@ fn reject_plaintext(plaintext: Option<&Blob>) -> Result<()> {
     }
 }
 
-/// Map an SDK failure to a fixed category. Service text is dropped; only an
-/// allow-listed error code is logged.
+/// Map an SDK failure to a fixed category. No provider-supplied text is logged.
 fn classify<E>(error: SdkError<E, HttpResponse>) -> EnclaveError
 where
     E: ProvideErrorMetadata + std::error::Error + 'static,
 {
-    let (failure, code) = match &error {
-        SdkError::ConstructionFailure(_) => (CustodyFailure::Internal, None),
-        SdkError::TimeoutError(_) => (CustodyFailure::Unavailable, None),
+    let failure = match &error {
+        SdkError::ConstructionFailure(_) => CustodyFailure::Internal,
+        SdkError::TimeoutError(_) => CustodyFailure::Unavailable,
         SdkError::DispatchFailure(dispatch) => {
-            let failure = match dispatch.as_connector_error() {
+            match dispatch.as_connector_error() {
                 // Only documented transport failures are retryable. A TLS
                 // authentication failure is a bad peer, not a retry hint.
                 Some(c) if c.is_timeout() || c.is_io() => CustodyFailure::Unavailable,
                 Some(c) if c.is_user() => CustodyFailure::Configuration,
                 _ => CustodyFailure::InvalidResponse,
-            };
-            (failure, None)
+            }
         }
-        SdkError::ResponseError(_) => (CustodyFailure::InvalidResponse, None),
+        SdkError::ResponseError(_) => CustodyFailure::InvalidResponse,
         SdkError::ServiceError(service) => {
             let code = service.err().code().map(kms_error_name);
-            (
-                classify_service(service.raw().status().as_u16(), code),
-                code,
-            )
+            classify_service(service.raw().status().as_u16(), code)
         }
-        _ => (CustodyFailure::Internal, None),
+        _ => CustodyFailure::Internal,
     };
-    tracing::warn!(?failure, code = code.unwrap_or("-"), "KMS request failed");
+    tracing::warn!(?failure, "KMS request failed");
     custody(failure)
 }
 

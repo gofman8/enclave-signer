@@ -60,8 +60,6 @@ the plaintext seed. The enclave initiates `SeedStorageRequest` calls and reads
 `SeedStorageResponse` messages from the shared protobuf schema, using the same
 4-byte little-endian framing as signing requests with a tighter 64 KiB limit.
 Ciphertext is binary, and only an explicit `not_found` response permits creation.
-Upgrade the parent and mint enclave together; the former JSON broker format
-is no longer accepted. The encrypted S3 object and KMS context are unchanged.
 
 Configure persistence on the parent process that serves this mint signer:
 
@@ -84,13 +82,13 @@ role**, so give it only this signer's KMS/S3 permissions. A CID is a routing
 address, not attested image identity.
 
 Enable the custody listener in only one parent process per host. The enclave
-connects to parent CID `3`, vsock port `8004`. Local development can instead set
+connects to parent CID `3`, vsock port `8006`. Local development can instead set
 `KMS_BROKER_TCP=127.0.0.1:3446` with `USE_VSOCK=false`.
 
 In another terminal, or through your existing host supervisor, run AWS's
 standard `vsock-proxy` for the same KMS region. The enclave pins
 `kms.<region>.amazonaws.com` to loopback and forwards port 443 to vsock port
-`8003` (`KMS_VSOCK_PORT` overrides it), so TLS still validates the real KMS
+`8005` (`KMS_VSOCK_PORT` overrides it), so TLS still validates the real KMS
 certificate and the proxy only relays bytes:
 
 ```bash
@@ -99,15 +97,15 @@ cat > kms-vsock-proxy.yaml <<EOF_KMS
 allowlist:
 - {address: kms.${AWS_REGION}.amazonaws.com, port: 443}
 EOF_KMS
-vsock-proxy 8003 "kms.${AWS_REGION}.amazonaws.com" 443 --config kms-vsock-proxy.yaml
+vsock-proxy 8005 "kms.${AWS_REGION}.amazonaws.com" 443 --config kms-vsock-proxy.yaml
 ```
 
 Permit outbound HTTPS to KMS/S3 and role access to IMDS. KMS TLS terminates in
 the enclave; the proxy only forwards bytes. The standard proxy restricts the
 destination, not source CIDs; isolation and process supervision belong to the
-host deployment. Do not run a second listener on `8003` or `8004`. KMS-enabled Helios
-uses `8005`/`8006` when enabled. No systemd units or deployment automation are
-provided by this feature.
+host deployment. KMS uses port `8005` and seed storage uses `8006`. Keep these
+ports distinct from each other and from Helios ports `8003`/`8004` when overriding
+relay settings.
 
 ## AWS permissions and persistence
 

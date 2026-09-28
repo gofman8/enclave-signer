@@ -98,21 +98,6 @@ fn seal(public_key: &RsaPublicKey, plaintext: &[u8]) -> Vec<u8> {
 }
 
 #[test]
-fn bitcoin_network_names_are_plain_context_values() {
-    for network in [
-        Network::Bitcoin,
-        Network::Testnet,
-        Network::Testnet4,
-        Network::Signet,
-        Network::Regtest,
-    ] {
-        let name = network.to_string();
-        assert!((1..=8).contains(&name.len()));
-        assert!(name.bytes().all(|b| b.is_ascii_graphic()));
-    }
-}
-
-#[test]
 fn configuration_rejects_endpoint_injection_alias_and_wrong_region() {
     assert!(config().validate().is_ok());
     assert_eq!(config().endpoint_host(), "kms.eu-west-1.amazonaws.com");
@@ -322,6 +307,39 @@ fn expired_deadline_never_starts_a_call() {
             Instant::now() + Duration::from_secs(1)
         )
         .is_err());
+}
+
+#[test]
+fn preparation_that_exhausts_the_deadline_never_polls_transport() {
+    let deadline = Instant::now() + Duration::from_millis(10);
+    std::thread::sleep(Duration::from_millis(20));
+    let polled = std::cell::Cell::new(false);
+    let error = block_on(deadline, async { polled.set(true) }).unwrap_err();
+    assert!(!polled.get());
+    assert!(matches!(
+        error,
+        EnclaveError::Custody {
+            failure: CustodyFailure::Unavailable,
+            ..
+        }
+    ));
+}
+
+#[test]
+fn pending_transport_uses_the_deadline_left_after_preparation() {
+    let deadline = Instant::now() + Duration::from_millis(300);
+    std::thread::sleep(Duration::from_millis(250));
+    let started = Instant::now();
+    let error = block_on(deadline, std::future::pending::<()>()).unwrap_err();
+    assert!(Instant::now() >= deadline);
+    assert!(started.elapsed() < Duration::from_millis(200));
+    assert!(matches!(
+        error,
+        EnclaveError::Custody {
+            failure: CustodyFailure::Unavailable,
+            ..
+        }
+    ));
 }
 
 /// Canned KMS exchanges. The recipient key is fixed so a response can be

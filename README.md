@@ -399,18 +399,8 @@ Value bounds (fail closed while unset in a production build):
 
 The gas-tx rule is part of the attested policy. Unset pins commit as zero.
 
-Mint signer KMS custody (measured into `Dockerfile.enclave.mint` EIFs):
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `KMS_KEY_ARN` | required | Full symmetric KMS key ARN; aliases are rejected. |
-| `KMS_REGION` | required | Commercial AWS region matching the key ARN. |
-| `KMS_SEED_ID` | required | Stable signer identity used in the KMS encryption context and storage namespace. |
-| `KMS_EXPECTED_EVM_ADDRESS` | empty | Optional first-start identity pin: 40 hex digits with optional `0x`. Pin the verified signer before funding; missing ciphertext then fails without replacement. |
-
-Startup reuses existing ciphertext or conditionally creates it after confirmed
-absence. No creation-mode setting is required. See the [deployment and recovery
-procedure](docs/kms-persistence.md) for parent storage and relay configuration.
+For mint signer KMS configuration and recovery, see the
+[mint KMS persistence guide](docs/kms-persistence.md).
 
 Data sources and transport:
 
@@ -434,8 +424,8 @@ Optional Helios configuration (`--features helios`, with one RGB flow):
 | `HELIOS_NETWORK` | `mainnet` | Code accepts `mainnet`, `sepolia`, `holesky`; must match pinned `EVM_CHAIN_ID`. |
 | `HELIOS_CHECKPOINT` | unset | Required 32-byte beacon block root, hex; committed in the production policy. |
 | `HELIOS_STRICT_CHECKPOINT_AGE` | `true` | `false` or `0` disables strict checkpoint-age checking. |
-| `HELIOS_EXECUTION_LOCAL_PORT` / `HELIOS_EXECUTION_VSOCK_PORT` | `18545` / `8005` with `kms-persistence`, `8003` otherwise | Execution RPC forwarder ports. KMS persistence reserves vsock ports `8003`/`8004` for KMS and seed storage. |
-| `HELIOS_CONSENSUS_LOCAL_PORT` / `HELIOS_CONSENSUS_VSOCK_PORT` | `18550` / `8006` with `kms-persistence`, `8004` otherwise | Consensus RPC forwarder ports. KMS-enabled builds reject custody-port collisions. |
+| `HELIOS_EXECUTION_LOCAL_PORT` / `HELIOS_EXECUTION_VSOCK_PORT` | `18545` / `8003` | Execution RPC forwarder ports. |
+| `HELIOS_CONSENSUS_LOCAL_PORT` / `HELIOS_CONSENSUS_VSOCK_PORT` | `18550` / `8004` | Consensus RPC forwarder ports. |
 
 Selected Helios initialization/sync failure leaves the provider unavailable;
 receipt-dependent signing refuses instead of falling back to raw RPC.
